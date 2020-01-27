@@ -1,0 +1,384 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="ChangeListManager">
+    <list default="true" id="e0242445-90ea-47c8-ba9c-89116defbc0e" name="Default Changelist" comment="" />
+    <option name="SHOW_DIALOG" value="false" />
+    <option name="HIGHLIGHT_CONFLICTS" value="true" />
+    <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
+    <option name="LAST_RESOLUTION" value="IGNORE" />
+  </component>
+  <component name="DatabaseView">
+    <option name="SHOW_INTERMEDIATE" value="true" />
+    <option name="GROUP_DATA_SOURCES" value="true" />
+    <option name="GROUP_SCHEMA" value="true" />
+    <option name="GROUP_CONTENTS" value="false" />
+    <option name="SORT_POSITIONED" value="false" />
+    <option name="SHOW_EMPTY_GROUPS" value="false" />
+    <option name="AUTO_SCROLL_FROM_SOURCE" value="false" />
+    <option name="HIDDEN_KINDS">
+      <set />
+    </option>
+    <expand />
+    <select />
+  </component>
+  <component name="FileTemplateManagerImpl">
+    <option name="RECENT_TEMPLATES">
+      <list>
+        <option value="Go File" />
+      </list>
+    </option>
+  </component>
+  <component name="GOROOT" path="/usr/lib/go1.13.1" />
+  <component name="GoLibraries">
+    <option name="urls">
+      <list>
+        <option value="file://$PROJECT_DIR$/../.." />
+      </list>
+    </option>
+  </component>
+  <component name="ProjectId" id="1Sz8OLBKLPuOkOnKe2i9viiyPMb" />
+  <component name="ProjectViewState">
+    <option name="hideEmptyMiddlePackages" value="true" />
+    <option name="showExcludedFiles" value="true" />
+    <option name="showLibraryContents" value="true" />
+  </component>
+  <component name="PropertiesComponent">
+    <property name="DatabaseDriversLRU" value="postgresql" />
+    <property name="DefaultGoTemplateProperty" value="Go File" />
+    <property name="RunOnceActivity.ShowReadmeOnStart" value="true" />
+    <property name="WebServerToolWindowFactoryState" value="false" />
+    <property name="configurable.Global.GOPATH.is.expanded" value="true" />
+    <property name="configurable.Module.GOPATH.is.expanded" value="false" />
+    <property name="configurable.Project.GOPATH.is.expanded" value="true" />
+    <property name="go.import.settings.migrated" value="true" />
+    <property name="last_opened_file_path" value="$PROJECT_DIR$/reflect" />
+    <property name="node.js.detected.package.eslint" value="true" />
+    <property name="node.js.detected.package.tslint" value="true" />
+    <property name="node.js.path.for.package.eslint" value="project" />
+    <property name="node.js.path.for.package.tslint" value="project" />
+    <property name="node.js.selected.package.eslint" value="(autodetect)" />
+    <property name="node.js.selected.package.tslint" value="(autodetect)" />
+    <property name="nodejs_interpreter_path.stuck_in_default_project" value="undefined stuck path" />
+    <property name="nodejs_npm_path_reset_for_default_project" value="true" />
+    <property name="nodejs_package_manager_path" value="npm" />
+    <property name="settings.editor.selected.configurable" value="MTConfigurable" />
+  </component>
+  <component name="RecentsManager">
+    <key name="MoveFile.RECENT_KEYS">
+      <recent name="$PROJECT_DIR$/reflect" />
+      <recent name="$PROJECT_DIR$/orm" />
+      <recent name="$PROJECT_DIR$/orm/" />
+      <recent name="$PROJECT_DIR$/orm/entity" />
+      <recent name="$PROJECT_DIR$/entity" />
+    </key>
+    <key name="GoMoveDeclarationDialog.RECENT_KEY">
+      <recent name="$PROJECT_DIR$/reflect" />
+      <recent name="$PROJECT_DIR$/orm/relation" />
+      <recent name="$PROJECT_DIR$/orm/query" />
+      <recent name="$PROJECT_DIR$/orm/reflect" />
+      <recent name="$PROJECT_DIR$/entity" />
+    </key>
+    <key name="CopyFile.RECENT_KEYS">
+      <recent name="$PROJECT_DIR$/test/testdata" />
+    </key>
+  </component>
+  <component name="RunManager" selected="Go Test.TestNoQueryCreateForCachedEntities in storm/test/integration/cache">
+    <configuration default="true" type="GoApplicationRunConfiguration" factoryName="Go Application">
+      <module name="d3" />
+      <working_directory value="$PROJECT_DIR$/" />
+      <go_parameters value="-i" />
+      <kind value="FILE" />
+      <filePath value="$PROJECT_DIR$/" />
+      <package value="repr" />
+      <directory value="$PROJECT_DIR$/" />
+      <method v="2" />
+    </configuration>
+    <configuration name="TestEagerRelation in storm/test/integration/relation" type="GoTestRunConfiguration" factoryName="Go Test" temporary="true" nameIsGenerated="true">
+      <module name="d3" />
+      <working_directory value="$PROJECT_DIR$/test/integration/relation" />
+      <parameters value=" -testify.m ^TestEagerRelation$" />
+      <framework value="gotest" />
+      <kind value="PACKAGE" />
+      <package value="storm/test/integration/relation" />
+      <directory value="$PROJECT_DIR$/" />
+      <filePath value="$PROJECT_DIR$/" />
+      <method v="2" />
+    </configuration>
+    <configuration name="TestFetchWithOneToOne in storm/test/integration/relation" type="GoTestRunConfiguration" factoryName="Go Test" temporary="true" nameIsGenerated="true">
+      <module name="d3" />
+      <working_directory value="$PROJECT_DIR$/test/integration/relation" />
+      <parameters value=" -testify.m ^TestFetchWithOneToOne$" />
+      <framework value="gotest" />
+      <kind value="PACKAGE" />
+      <package value="storm/test/integration/relation" />
+      <directory value="$PROJECT_DIR$/" />
+      <filePath value="$PROJECT_DIR$/" />
+      <method v="2" />
+    </configuration>
+    <configuration name="TestIdentityCache in storm/test/integration/cache" type="GoTestRunConfiguration" factoryName="Go Test" temporary="true" nameIsGenerated="true">
+      <module name="d3" />
+      <working_directory value="$PROJECT_DIR$/test/integration/cache" />
+      <parameters value=" -testify.m ^TestIdentityCache$" />
+      <framework value="gotest" />
+      <kind value="PACKAGE" />
+      <package value="storm/test/integration/cache" />
+      <directory value="$PROJECT_DIR$/" />
+      <filePath value="$PROJECT_DIR$/" />
+      <method v="2" />
+    </configuration>
+    <configuration name="TestLazyRelation in storm/test/integration/cache" type="GoTestRunConfiguration" factoryName="Go Test" temporary="true" nameIsGenerated="true">
+      <module name="d3" />
+      <working_directory value="$PROJECT_DIR$/test/integration/cache" />
+      <parameters value=" -testify.m ^TestLazyRelation$" />
+      <framework value="gotest" />
+      <kind value="PACKAGE" />
+      <package value="storm/test/integration/cache" />
+      <directory value="$PROJECT_DIR$/" />
+      <filePath value="$PROJECT_DIR$/" />
+      <method v="2" />
+    </configuration>
+    <configuration name="TestNoQueryCreateForCachedEntities in storm/test/integration/cache" type="GoTestRunConfiguration" factoryName="Go Test" temporary="true" nameIsGenerated="true">
+      <module name="d3" />
+      <working_directory value="$PROJECT_DIR$/test/integration/cache" />
+      <parameters value=" -testify.m ^TestNoQueryCreateForCachedEntities$" />
+      <framework value="gotest" />
+      <kind value="PACKAGE" />
+      <package value="storm/test/integration/cache" />
+      <directory value="$PROJECT_DIR$/" />
+      <filePath value="$PROJECT_DIR$/" />
+      <method v="2" />
+    </configuration>
+    <configuration default="true" type="GoTestRunConfiguration" factoryName="Go Test">
+      <module name="d3" />
+      <working_directory value="$PROJECT_DIR$/" />
+      <go_parameters value="-i" />
+      <framework value="gotest" />
+      <kind value="DIRECTORY" />
+      <package value="repr" />
+      <directory value="$PROJECT_DIR$/" />
+      <filePath value="$PROJECT_DIR$/" />
+      <method v="2" />
+    </configuration>
+    <recent_temporary>
+      <list>
+        <item itemvalue="Go Test.TestNoQueryCreateForCachedEntities in storm/test/integration/cache" />
+        <item itemvalue="Go Test.TestIdentityCache in storm/test/integration/cache" />
+        <item itemvalue="Go Test.TestLazyRelation in storm/test/integration/cache" />
+        <item itemvalue="Go Test.TestEagerRelation in storm/test/integration/relation" />
+        <item itemvalue="Go Test.TestFetchWithOneToOne in storm/test/integration/relation" />
+      </list>
+    </recent_temporary>
+  </component>
+  <component name="ServiceViewManager">
+    <option name="viewStates">
+      <list>
+        <serviceView>
+          <treeState>
+            <expand />
+            <select />
+          </treeState>
+        </serviceView>
+      </list>
+    </option>
+  </component>
+  <component name="TypeScriptGeneratedFilesManager">
+    <option name="version" value="1" />
+  </component>
+  <component name="VgoProject">
+    <integration-enabled>true</integration-enabled>
+    <proxy>direct</proxy>
+  </component>
+  <component name="WindowStateProjectService">
+    <state x="580" y="214" width="800" height="677" key="#SQL_Dialects" timestamp="1576011270609">
+      <screen x="51" y="27" width="1869" height="1053" />
+    </state>
+    <state x="580" y="214" width="800" height="677" key="#SQL_Dialects/51.27.1869.1053@51.27.1869.1053" timestamp="1576011270609" />
+    <state x="636" y="224" width="800" height="677" key="#com.intellij.execution.impl.EditConfigurationsDialog" timestamp="1576011229752">
+      <screen x="51" y="27" width="1869" height="1053" />
+    </state>
+    <state x="636" y="224" width="800" height="677" key="#com.intellij.execution.impl.EditConfigurationsDialog/51.27.1869.1053@51.27.1869.1053" timestamp="1576011229752" />
+    <state x="151" y="125" width="1669" height="855" key="#com.intellij.execution.junit2.states.ComparisonFailureState$DiffDialog" timestamp="1578232156479">
+      <screen x="51" y="27" width="1869" height="1053" />
+    </state>
+    <state x="151" y="125" width="1669" height="855" key="#com.intellij.execution.junit2.states.ComparisonFailureState$DiffDialog/51.27.1869.1053@51.27.1869.1053" timestamp="1578232156479" />
+    <state x="793" y="271" width="374" height="562" key="#com.intellij.ide.util.MemberChooser" timestamp="1579960125605">
+      <screen x="51" y="27" width="1869" height="1053" />
+    </state>
+    <state x="793" y="271" width="374" height="562" key="#com.intellij.ide.util.MemberChooser/51.27.1869.1053@51.27.1869.1053" timestamp="1579960125605" />
+    <state x="654" y="168" width="652" height="768" key="#go_build_q.go" timestamp="1578143055216">
+      <screen x="51" y="27" width="1869" height="1053" />
+    </state>
+    <state x="654" y="168" width="652" height="768" key="#go_build_q.go/51.27.1869.1053@51.27.1869.1053" timestamp="1578143055216" />
+    <state x="677" y="81" width="760" height="763" key="#xdebugger.evaluate" timestamp="1579962101453">
+      <screen x="51" y="27" width="1869" height="1053" />
+    </state>
+    <state x="677" y="81" width="760" height="763" key="#xdebugger.evaluate/51.27.1869.1053@51.27.1869.1053" timestamp="1579962101453" />
+    <state width="1057" height="644" key="DebuggerActiveHint" timestamp="1579961948848">
+      <screen x="51" y="27" width="1869" height="1053" />
+    </state>
+    <state width="1057" height="644" key="DebuggerActiveHint/51.27.1869.1053@51.27.1869.1053" timestamp="1579961948848" />
+    <state x="763" y="310" width="424" height="484" key="FileChooserDialogImpl" timestamp="1579704616983">
+      <screen x="51" y="27" width="1869" height="1053" />
+    </state>
+    <state x="763" y="310" width="424" height="484" key="FileChooserDialogImpl/51.27.1869.1053@51.27.1869.1053" timestamp="1579704616983" />
+    <state width="1823" height="255" key="GridCell.Tab.0.bottom" timestamp="1580144077580">
+      <screen x="51" y="27" width="1869" height="1053" />
+    </state>
+    <state width="1823" height="255" key="GridCell.Tab.0.bottom/51.27.1869.1053@51.27.1869.1053" timestamp="1580144077580" />
+    <state width="1823" height="255" key="GridCell.Tab.0.center" timestamp="1580144077577">
+      <screen x="51" y="27" width="1869" height="1053" />
+    </state>
+    <state width="1823" height="255" key="GridCell.Tab.0.center/51.27.1869.1053@51.27.1869.1053" timestamp="1580144077577" />
+    <state width="1823" height="255" key="GridCell.Tab.0.left" timestamp="1580144077576">
+      <screen x="51" y="27" width="1869" height="1053" />
+    </state>
+    <state width="1823" height="255" key="GridCell.Tab.0.left/51.27.1869.1053@51.27.1869.1053" timestamp="1580144077576" />
+    <state width="1823" height="255" key="GridCell.Tab.0.right" timestamp="1580144077578">
+      <screen x="51" y="27" width="1869" height="1053" />
+    </state>
+    <state width="1823" height="255" key="GridCell.Tab.0.right/51.27.1869.1053@51.27.1869.1053" timestamp="1580144077578" />
+    <state width="1823" height="318" key="GridCell.Tab.1.bottom" timestamp="1579962476871">
+      <screen x="51" y="27" width="1869" height="1053" />
+    </state>
+    <state width="1823" height="318" key="GridCell.Tab.1.bottom/51.27.1869.1053@51.27.1869.1053" timestamp="1579962476871" />
+    <state width="1823" height="318" key="GridCell.Tab.1.center" timestamp="1579962476870">
+      <screen x="51" y="27" width="1869" height="1053" />
+    </state>
+    <state width="1823" height="318" key="GridCell.Tab.1.center/51.27.1869.1053@51.27.1869.1053" timestamp="1579962476870" />
+    <state width="1823" height="318" key="GridCell.Tab.1.left" timestamp="1579962476870">
+      <screen x="51" y="27" width="1869" height="1053" />
+    </state>
+    <state width="1823" height="318" key="GridCell.Tab.1.left/51.27.1869.1053@51.27.1869.1053" timestamp="1579962476870" />
+    <state width="1823" height="318" key="GridCell.Tab.1.right" timestamp="1579962476871">
+      <screen x="51" y="27" width="1869" height="1053" />
+    </state>
+    <state width="1823" height="318" key="GridCell.Tab.1.right/51.27.1869.1053@51.27.1869.1053" timestamp="1579962476871" />
+    <state x="484" y="187" key="SettingsEditor" timestamp="1579191071485">
+      <screen x="51" y="27" width="1869" height="1053" />
+    </state>
+    <state x="484" y="187" key="SettingsEditor/51.27.1869.1053@51.27.1869.1053" timestamp="1579191071485" />
+    <state width="934" height="527" key="XDebugger.FullValuePopup" timestamp="1579961108117">
+      <screen x="51" y="27" width="1869" height="1053" />
+    </state>
+    <state width="934" height="527" key="XDebugger.FullValuePopup/51.27.1869.1053@51.27.1869.1053" timestamp="1579961108117" />
+    <state x="773" y="114" width="446" height="864" key="com.goide.refactor.move.GoMoveDeclarationDialog" timestamp="1579704628746">
+      <screen x="51" y="27" width="1869" height="1053" />
+    </state>
+    <state x="773" y="114" width="446" height="864" key="com.goide.refactor.move.GoMoveDeclarationDialog/51.27.1869.1053@51.27.1869.1053" timestamp="1579704628746" />
+    <state x="595" y="166" width="770" height="772" key="com.intellij.openapi.editor.actions.MultiplePasteAction$ClipboardContentChooser" timestamp="1579959228096">
+      <screen x="51" y="27" width="1869" height="1053" />
+    </state>
+    <state x="595" y="166" width="770" height="772" key="com.intellij.openapi.editor.actions.MultiplePasteAction$ClipboardContentChooser/51.27.1869.1053@51.27.1869.1053" timestamp="1579959228096" />
+    <state x="623" y="272" width="724" height="560" key="find.popup" timestamp="1580144740407">
+      <screen x="51" y="27" width="1869" height="1053" />
+    </state>
+    <state x="623" y="272" width="724" height="560" key="find.popup/51.27.1869.1053@51.27.1869.1053" timestamp="1580144740407" />
+    <state x="649" y="198" width="670" height="676" key="search.everywhere.popup" timestamp="1575668917831">
+      <screen x="51" y="27" width="1869" height="1053" />
+    </state>
+    <state x="649" y="198" width="670" height="676" key="search.everywhere.popup/51.27.1869.1053@51.27.1869.1053" timestamp="1575668917831" />
+  </component>
+  <component name="XDebuggerManager">
+    <breakpoint-manager>
+      <breakpoints>
+        <line-breakpoint enabled="true" type="DlvLineBreakpoint">
+          <url>file://$PROJECT_DIR$/../d3/uow_test.go</url>
+          <line>51</line>
+          <option name="timeStamp" value="1" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" type="DlvLineBreakpoint">
+          <url>file://$PROJECT_DIR$/../d3/test/integration/repository/repository_pg_test.go</url>
+          <line>45</line>
+          <option name="timeStamp" value="50" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" type="DlvLineBreakpoint">
+          <url>file://$PROJECT_DIR$/../d3/adapter/squirrel.go</url>
+          <line>60</line>
+          <option name="timeStamp" value="83" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" type="DlvLineBreakpoint">
+          <url>file://$PROJECT_DIR$/../d3/test/integration/relation/onetoone_test.go</url>
+          <option name="timeStamp" value="129" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" type="DlvLineBreakpoint">
+          <url>file://$PROJECT_DIR$/../d3/test/integration/relation/onetomany_test.go</url>
+          <line>139</line>
+          <option name="timeStamp" value="135" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" type="DlvLineBreakpoint">
+          <url>file://$PROJECT_DIR$/../d3/test/integration/relation/onetoone_test.go</url>
+          <line>163</line>
+          <option name="timeStamp" value="138" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" type="DlvLineBreakpoint">
+          <url>file://$PROJECT_DIR$/../d3/test/integration/relation/manytomany_test.go</url>
+          <line>62</line>
+          <option name="timeStamp" value="140" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" type="DlvLineBreakpoint">
+          <url>file://$PROJECT_DIR$/../d3/test/integration/relation/manytomany_test.go</url>
+          <line>101</line>
+          <option name="timeStamp" value="144" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" type="DlvLineBreakpoint">
+          <url>file://$PROJECT_DIR$/../d3/test/integration/relation/manytomany_test.go</url>
+          <line>116</line>
+          <option name="timeStamp" value="147" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" type="DlvLineBreakpoint">
+          <url>file://$PROJECT_DIR$/../d3/test/integration/relation/onetomany_test.go</url>
+          <line>13</line>
+          <option name="timeStamp" value="151" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" type="DlvLineBreakpoint">
+          <url>file://$PROJECT_DIR$/../d3/test/integration/relation/onetoone_test.go</url>
+          <line>148</line>
+          <option name="timeStamp" value="160" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" type="DlvLineBreakpoint">
+          <url>file://$PROJECT_DIR$/../d3/test/integration/relation/onetomany_test.go</url>
+          <line>136</line>
+          <option name="timeStamp" value="165" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" type="DlvLineBreakpoint">
+          <url>file://$PROJECT_DIR$/../d3/test/integration/relation/fetchwith_test.go</url>
+          <line>115</line>
+          <option name="timeStamp" value="176" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" type="DlvLineBreakpoint">
+          <url>file://$PROJECT_DIR$/../d3/test/integration/relation/fetchwith_test.go</url>
+          <line>153</line>
+          <option name="timeStamp" value="180" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" type="DlvLineBreakpoint">
+          <url>file://$PROJECT_DIR$/../d3/test/integration/relation/fetchwith_test.go</url>
+          <line>152</line>
+          <option name="timeStamp" value="181" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" type="DlvLineBreakpoint">
+          <url>file://$PROJECT_DIR$/../d3/test/integration/relation/fetchwith_test.go</url>
+          <line>217</line>
+          <option name="timeStamp" value="183" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" type="DlvLineBreakpoint">
+          <url>file://$PROJECT_DIR$/../../pkg/mod/github.com/jackc/pgx/v4@v4.2.1/rows.go</url>
+          <line>275</line>
+          <option name="timeStamp" value="184" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" type="DlvLineBreakpoint">
+          <url>file://$PROJECT_DIR$/../d3/orm/session.go</url>
+          <line>33</line>
+          <option name="timeStamp" value="193" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" type="DlvLineBreakpoint">
+          <url>file://$PROJECT_DIR$/../d3/orm/session.go</url>
+          <line>36</line>
+          <option name="timeStamp" value="195" />
+        </line-breakpoint>
+      </breakpoints>
+    </breakpoint-manager>
+  </component>
+  <component name="com.intellij.coverage.CoverageDataManagerImpl">
+    <SUITE FILE_PATH="coverage/storm$TestLazyRelation_in_storm_test_integration_relation.out" NAME="TestLazyRelation in storm/test/integration/relation Coverage Results" MODIFIED="1578680830664" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="GoCoverage" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" />
+  </component>
+</project>

@@ -1,0 +1,95 @@
+package adapter
+
+import (
+	"d3/orm/query"
+	"fmt"
+	"github.com/Masterminds/squirrel"
+)
+
+type SquirrelAdapter struct {
+}
+
+func (s *SquirrelAdapter) ToSql(q *query.Query) (string, []interface{}, error) {
+	sqQuery, err := toSquirrel(q)
+	if err != nil {
+		return "", nil, err
+	}
+
+	return sqQuery.PlaceholderFormat(squirrel.Dollar).ToSql()
+}
+
+func toSquirrel(q *query.Query) (*squirrel.SelectBuilder, error) {
+	sb := squirrel.SelectBuilder{}
+
+	var whereExpr squirrel.Sqlizer
+
+	q.Visit(func(pred interface{}) {
+		switch p := pred.(type) {
+		case query.From:
+			sb = sb.From(string(p))
+		case query.Columns:
+			for i := range p {
+				p[i] = fmt.Sprintf("%s as \"%s\"", p[i], p[i])
+			}
+			sb = sb.Columns(p...)
+
+		case *query.AndWhere:
+			if whereExpr == nil {
+				whereExpr = squirrel.Expr(p.Where.Expr, p.Params...)
+			} else {
+				whereExpr = squirrel.And{whereExpr, squirrel.Expr(p.Where.Expr, p.Params...)}
+			}
+		case *query.OrWhere:
+			if whereExpr == nil {
+				whereExpr = squirrel.Expr(p.Where.Expr, p.Params...)
+			} else {
+				whereExpr = squirrel.Or{whereExpr, squirrel.Expr(p.Where.Expr, p.Params...)}
+			}
+		case *query.Having:
+			sb = sb.Having(p.Expr, p.Params...)
+		case *query.Join:
+			switch p.Type {
+			case query.JoinLeft:
+				sb = sb.LeftJoin(p.Join + " ON " + p.On)
+			case query.JoinInner:
+				sb = sb.Join(p.Join + " ON " + p.On)
+			case query.JoinRight:
+				sb = sb.RightJoin(p.Join + " ON " + p.On)
+			}
+
+		case *query.Union:
+			sqQuery, err := toSquirrel(p.Q)
+			if err != nil {
+				return
+			}
+			sql, args, err := sqQuery.PlaceholderFormat(squirrel.Question).ToSql()
+			if err != nil {
+				return
+			}
+
+			switch p.UType {
+			case "UNION":
+				sb = sb.Suffix("UNION " + sql, args...)
+			case "UNION ALL":
+				sb = sb.Suffix("UNION ALL " + sql, args...)
+			case "INTERSECT":
+				sb = sb.Suffix("INTERSECT " + sql, args...)
+			case "INTERSECT ALL":
+				sb = sb.Suffix("INTERSECT ALL " + sql, args...)
+			case "EXCEPT":
+				sb = sb.Suffix("EXCEPT " + sql, args...)
+			case "EXCEPT ALL":
+				sb = sb.Suffix("EXCEPT ALL " + sql, args...)
+			}
+		case query.GroupBy:
+			sb = sb.GroupBy(string(p))
+		case query.Limit:
+			sb = sb.Limit(uint64(p))
+		case query.Offset:
+			sb = sb.Offset(uint64(p))
+		}
+	})
+	sb = sb.Where(whereExpr)
+
+	return &sb, nil
+}
