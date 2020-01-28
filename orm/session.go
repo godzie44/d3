@@ -1,7 +1,6 @@
 package orm
 
 import (
-	"d3"
 	"d3/orm/entity"
 	"d3/orm/query"
 )
@@ -21,20 +20,19 @@ type StorageAdapter interface {
 
 type Session struct {
 	storage      StorageAdapter
-	uow          *d3.UnitOfWork
+	uow          *UnitOfWork
 	MetaRegistry *entity.MetaRegistry
-	iMap         *identityMap
 }
 
-func NewSession(storage StorageAdapter, uow *d3.UnitOfWork, metaRegistry *entity.MetaRegistry) *Session {
-	return &Session{storage: storage, uow: uow, MetaRegistry: metaRegistry, iMap: newIdentityMap()}
+func NewSession(storage StorageAdapter, uow *UnitOfWork, metaRegistry *entity.MetaRegistry) *Session {
+	return &Session{storage: storage, uow: uow, MetaRegistry: metaRegistry}
 }
 
 func (s *Session) Execute(q *query.Query) (interface{}, error) {
 	fetchPlan := query.Preprocessor.CreateFetchPlan(q)
 
-	if s.iMap.canApply(fetchPlan) {
-		entities, err := s.iMap.executePlan(fetchPlan)
+	if s.uow.identityMap.canApply(fetchPlan) {
+		entities, err := s.uow.identityMap.executePlan(fetchPlan)
 		if err == nil {
 			return entities, nil
 		}
@@ -52,7 +50,7 @@ func (s *Session) Execute(q *query.Query) (interface{}, error) {
 		return nil, err
 	}
 
-	s.iMap.putEntities(q.OwnerMeta(), result)
+	s.uow.identityMap.putEntities(q.OwnerMeta(), result)
 
 	return result, nil
 }

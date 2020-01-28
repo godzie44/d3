@@ -1,4 +1,4 @@
-package d3
+package orm
 
 type DomainEntity interface {
 	GetId() interface{}
@@ -17,7 +17,8 @@ type UnitOfWork struct {
 	dirtyEntities   map[interface{}]DomainEntity
 	deletedEntities map[interface{}]DomainEntity
 
-	storage DbAdapter
+	storage     DbAdapter
+	identityMap *identityMap
 }
 
 func NewUOW(storage DbAdapter) *UnitOfWork {
@@ -26,6 +27,7 @@ func NewUOW(storage DbAdapter) *UnitOfWork {
 		dirtyEntities:   make(map[interface{}]DomainEntity),
 		deletedEntities: make(map[interface{}]DomainEntity),
 		storage:         storage,
+		identityMap:     newIdentityMap(),
 	}
 }
 

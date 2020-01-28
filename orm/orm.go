@@ -1,7 +1,6 @@
 package orm
 
 import (
-	"d3"
 	stEntity "d3/orm/entity"
 	"fmt"
 )
@@ -42,7 +41,7 @@ func (o *Orm) Register(entities ...interface{}) error {
 }
 
 func (o *Orm) CreateSession() *Session {
-	return NewSession(o.PgDb, d3.NewUOW(o.PgDb), o.metaRegistry)
+	return NewSession(o.PgDb, NewUOW(o.PgDb), o.metaRegistry)
 }
 
 func (o *Orm) CreateRepository(session *Session, entity interface{}) (*Repository, error) {
