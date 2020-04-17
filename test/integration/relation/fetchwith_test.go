@@ -22,7 +22,7 @@ func (o *FetchWithRelationTS) SetupSuite() {
 	dsn := fmt.Sprintf("postgres://%s:%s@%s/%s?sslmode=disable", "postgres", "postgres", "0.0.0.0:5432", "d3db")
 	o.pgDb, _ = pgx.Connect(context.Background(), dsn)
 
-	_, err := o.pgDb.Exec(context.Background(),`CREATE TABLE IF NOT EXISTS test_entity_1(
+	_, err := o.pgDb.Exec(context.Background(), `CREATE TABLE IF NOT EXISTS test_entity_1(
 		id integer NOT NULL,
 		data text NOT NULL,
 		e2_id integer,
@@ -30,14 +30,14 @@ func (o *FetchWithRelationTS) SetupSuite() {
 	)`)
 	o.Assert().NoError(err)
 
-	_, err = o.pgDb.Exec(context.Background(),`CREATE TABLE IF NOT EXISTS test_entity_2(
+	_, err = o.pgDb.Exec(context.Background(), `CREATE TABLE IF NOT EXISTS test_entity_2(
 		id integer NOT NULL,
 		data character varying(200) NOT NULL,
 		CONSTRAINT test_entity_t2_pkey PRIMARY KEY (id)
 	)`)
 	o.Assert().NoError(err)
 
-	_, err = o.pgDb.Exec(context.Background(),`CREATE TABLE IF NOT EXISTS test_entity_3(
+	_, err = o.pgDb.Exec(context.Background(), `CREATE TABLE IF NOT EXISTS test_entity_3(
 		id integer NOT NULL,
 		data character varying(200) NOT NULL,
 		e2_id integer,
@@ -46,20 +46,20 @@ func (o *FetchWithRelationTS) SetupSuite() {
 	)`)
 	o.Assert().NoError(err)
 
-	_, err = o.pgDb.Exec(context.Background(),`CREATE TABLE IF NOT EXISTS test_entity_4(
+	_, err = o.pgDb.Exec(context.Background(), `CREATE TABLE IF NOT EXISTS test_entity_4(
 		id integer NOT NULL,
 		data character varying(200) NOT NULL,
 		CONSTRAINT test_entity_t4_pkey PRIMARY KEY (id)
 	)`)
 	o.Assert().NoError(err)
 
-	_, err = o.pgDb.Exec(context.Background(),`CREATE TABLE IF NOT EXISTS t3_t4(
+	_, err = o.pgDb.Exec(context.Background(), `CREATE TABLE IF NOT EXISTS t3_t4(
 		t3_id integer NOT NULL,
 		t4_id integer NOT NULL
 	)`)
 	o.Assert().NoError(err)
 
-	_, err = o.pgDb.Exec(context.Background(),`
+	_, err = o.pgDb.Exec(context.Background(), `
 INSERT INTO test_entity_1(id, data, e2_id) VALUES (1, 'entity_1_data_1', 1);
 INSERT INTO test_entity_1(id, data, e2_id) VALUES (2, 'entity_1_data_2', 2);
 INSERT INTO test_entity_1(id, data, e2_id) VALUES (3, 'entity_1_data_3', null);
@@ -74,20 +74,18 @@ INSERT INTO test_entity_4(id, data) VALUES (3, 'entity_4_data_2');
 INSERT INTO t3_t4(t3_id, t4_id) VALUES (1, 1);
 INSERT INTO t3_t4(t3_id, t4_id) VALUES (1, 2);
 INSERT INTO t3_t4(t3_id, t4_id) VALUES (2, 2);
--- INSERT INTO t2_t3(t2_id, t3_id) VALUES (1, 1);
 `)
 	o.Assert().NoError(err)
 
 }
 
 func (o *FetchWithRelationTS) TearDownSuite() {
-	_, err := o.pgDb.Exec(context.Background(),`
+	_, err := o.pgDb.Exec(context.Background(), `
 DROP TABLE test_entity_1;
 DROP TABLE test_entity_2;
 DROP TABLE test_entity_3;
 DROP TABLE test_entity_4;
 DROP TABLE t3_t4;
--- DROP TABLE t2_t3;
 `)
 	o.Assert().NoError(err)
 }
@@ -110,10 +108,9 @@ type fwTestEntity2 struct {
 	Data   string
 }
 
-
 func (o *FetchWithRelationTS) TestFetchWithOneToOne() {
 	wrappedDbAdapter := helpers.NewDbAdapterWithQueryCounter(adapter.NewGoPgXAdapter(o.pgDb, &adapter.SquirrelAdapter{}))
-	d3Orm := orm.NewOrm(wrappedDbAdapter.DbAdapter())
+	d3Orm := orm.NewOrm(wrappedDbAdapter)
 
 	_ = d3Orm.Register((*fwTestEntity1)(nil), (*fwTestEntity2)(nil), (*fwTestEntity3)(nil), (*fwTestEntity4)(nil))
 	session := d3Orm.CreateSession()
@@ -144,7 +141,7 @@ type fwTestEntity3 struct {
 
 func (o *FetchWithRelationTS) TestFetchWithOneToMany() {
 	wrappedDbAdapter := helpers.NewDbAdapterWithQueryCounter(adapter.NewGoPgXAdapter(o.pgDb, &adapter.SquirrelAdapter{}))
-	d3Orm := orm.NewOrm(wrappedDbAdapter.DbAdapter())
+	d3Orm := orm.NewOrm(wrappedDbAdapter)
 
 	_ = d3Orm.Register((*fwTestEntity1)(nil), (*fwTestEntity2)(nil), (*fwTestEntity3)(nil), (*fwTestEntity4)(nil))
 	session := d3Orm.CreateSession()
@@ -175,7 +172,7 @@ type fwTestEntity4 struct {
 
 func (o *FetchWithRelationTS) TestFetchWithManyToMany() {
 	wrappedDbAdapter := helpers.NewDbAdapterWithQueryCounter(adapter.NewGoPgXAdapter(o.pgDb, &adapter.SquirrelAdapter{}))
-	d3Orm := orm.NewOrm(wrappedDbAdapter.DbAdapter())
+	d3Orm := orm.NewOrm(wrappedDbAdapter)
 
 	_ = d3Orm.Register((*fwTestEntity1)(nil), (*fwTestEntity2)(nil), (*fwTestEntity3)(nil), (*fwTestEntity4)(nil))
 	session := d3Orm.CreateSession()
@@ -201,7 +198,7 @@ func (o *FetchWithRelationTS) TestFetchWithManyToMany() {
 
 func (o *FetchWithRelationTS) TestFetchFullGraph() {
 	wrappedDbAdapter := helpers.NewDbAdapterWithQueryCounter(adapter.NewGoPgXAdapter(o.pgDb, &adapter.SquirrelAdapter{}))
-	d3Orm := orm.NewOrm(wrappedDbAdapter.DbAdapter())
+	d3Orm := orm.NewOrm(wrappedDbAdapter)
 
 	_ = d3Orm.Register((*fwTestEntity1)(nil), (*fwTestEntity2)(nil), (*fwTestEntity3)(nil), (*fwTestEntity4)(nil))
 	session := d3Orm.CreateSession()

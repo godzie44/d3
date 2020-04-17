@@ -8,38 +8,75 @@ type Collection interface {
 	Get(index int) interface{}
 	Count() int
 	Empty() bool
+	Remove(index int)
 }
 
 type baseCollection struct {
-	data []interface{}
+	Data []interface{}
 }
 
 func (e *baseCollection) ToSlice() []interface{} {
-	return e.data
+	return e.Data
 }
 
 func (e *baseCollection) Add(el interface{}) {
-	e.data = append(e.data, el)
+	e.Data = append(e.Data, el)
 }
 
 func (e *baseCollection) Get(index int) interface{} {
-	return e.data[index]
+	return e.Data[index]
 }
 
 func (e *baseCollection) Count() int {
-	return len(e.data)
+	return len(e.Data)
 }
 
 func (e *baseCollection) Empty() bool {
-	return len(e.data) == 0
+	return len(e.Data) == 0
+}
+
+func (e *baseCollection) Remove(index int) {
+	copy(e.Data[index:], e.Data[index+1:])
+	e.Data[len(e.Data)-1] = nil
+	e.Data = e.Data[:len(e.Data)-1]
 }
 
 type EagerCollection struct {
-	baseCollection
+	base *baseCollection
 }
 
-func NewEagerCollection(data []interface{}) *EagerCollection {
-	return &EagerCollection{baseCollection: baseCollection{data: data}}
+func NewCollection(entities []interface{}) *EagerCollection {
+	return &EagerCollection{base: &baseCollection{Data: entities}}
+}
+
+func (e *EagerCollection) DeepCopy() interface{} {
+	dstData := make([]interface{}, len(e.base.Data))
+	copy(dstData, e.base.Data)
+	return &EagerCollection{base: &baseCollection{Data: dstData}}
+}
+
+func (e *EagerCollection) ToSlice() []interface{} {
+	return e.base.ToSlice()
+}
+
+func (e *EagerCollection) Add(el interface{}) {
+	e.base.Add(el)
+}
+
+func (e *EagerCollection) Get(index int) interface{} {
+	return e.base.Get(index)
+}
+
+func (e *EagerCollection) Count() int {
+	return e.base.Count()
+}
+
+func (e *EagerCollection) Empty() bool {
+	return e.base.Empty()
+}
+
+func (e *EagerCollection) Remove(index int) {
+	e.base.Remove(index)
 }
 
 type lazyCollection struct {
@@ -76,8 +113,13 @@ func (l *lazyCollection) Empty() bool {
 	return l.collection.Empty()
 }
 
+func (l *lazyCollection) Remove(index int) {
+	l.initIfNeeded()
+	l.collection.Remove(index)
+}
+
 func (l *lazyCollection) initIfNeeded() {
 	if l.collection == nil {
-		l.collection = &baseCollection{data: reflect.BreakUpSlice(l.extractor())}
+		l.collection = &baseCollection{Data: reflect.BreakUpSlice(l.extractor())}
 	}
 }

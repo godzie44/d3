@@ -18,13 +18,13 @@ func (h *Hydrator) Hydrate(fetchedData []map[string]interface{}, plan *query.Fet
 	groupByEntityData := make(map[interface{}][]map[string]interface{})
 
 	for _, rowData := range fetchedData {
-		pkVal := rowData[h.meta.FullFieldAlias(h.meta.PkField())]
+		pkVal := rowData[h.meta.Pk.FullDbAlias()]
 		groupByEntityData[pkVal] = append(groupByEntityData[pkVal], rowData)
 	}
 
 	entityType := reflect.TypeOf(h.meta.Tpl)
 
-	modelSlice := d3reflect.CreateSliceOfEntities(entityType, len(groupByEntityData))
+	modelSlice := d3reflect.CreateSliceOfStructPtrs(entityType, len(groupByEntityData))
 	sliceVal := reflect.ValueOf(modelSlice)
 
 	var lastInsertedNum int
@@ -48,40 +48,35 @@ func (h *Hydrator) hydrateOne(model interface{}, entityData []map[string]interfa
 	modelType := modelReflectVal.Type()
 	for i := 0; i < modelReflectVal.NumField(); i++ {
 		f := modelReflectVal.Field(i)
-		if !f.IsValid() || !f.CanSet() {
-			continue
-		}
-
-		fieldMeta, exists := h.meta.Fields[modelType.Field(i).Name]
-		if !exists {
+		if err := d3reflect.ValidateField(&f); err != nil {
 			continue
 		}
 
 		var fieldValue interface{}
-		var err error
 
-		if fieldMeta.IsRelation() {
-			if plan.CanFetchRelation(fieldMeta.Relation) {
-				if entityData[0][h.meta.FullFieldAlias(h.meta.PkField())] == nil {
+		if fieldInfo, exists := h.meta.Fields[modelType.Field(i).Name]; exists {
+			fieldValue, exists = entityData[0][fieldInfo.FullDbAlias]
+			if !exists {
+				continue
+			}
+		} else if relation, exists := h.meta.Relations[modelType.Field(i).Name]; exists {
+			var err error
+			if plan.CanFetchRelation(relation) {
+				if entityData[0][h.meta.Pk.FullDbAlias()] == nil {
 					fieldValue = nil
 				} else {
-					fieldValue, err = h.fetchRelation(fieldMeta.Relation, entityData, plan)
+					fieldValue, err = h.fetchRelation(relation, entityData, plan)
 				}
 			} else {
-				fieldValue, err = h.createLazyRelation(fieldMeta.Relation, entityData[0])
+				fieldValue, err = h.createRelation(relation, entityData[0])
 			}
 
 			if err != nil {
 				return err
 			}
-		} else {
-			fieldValue, exists = entityData[0][h.meta.FullFieldAlias(fieldMeta)]
-			if !exists {
-				continue
-			}
 		}
 
-		f.Set(reflect.ValueOf(fieldValue))
+		d3reflect.SetField(&f, fieldValue)
 	}
 
 	return nil
@@ -97,11 +92,11 @@ func (h *Hydrator) fetchRelation(relation d3entity.Relation, entityData []map[st
 
 	switch relation.(type) {
 	case *d3entity.OneToOne:
-		relationPkVal := entityData[0][relationMeta.FullFieldAlias(relationMeta.PkField())]
+		relationPkVal := entityData[0][relationMeta.Pk.FullDbAlias()]
 
 		var entity interface{}
 		if relationPkVal == nil {
-			return d3entity.NewEagerEntity(nil), nil
+			return d3entity.NewWrapEntity(nil), nil
 		}
 
 		entity = d3reflect.CreateEmptyEntity(relationMeta.Tpl)
@@ -110,14 +105,14 @@ func (h *Hydrator) fetchRelation(relation d3entity.Relation, entityData []map[st
 			return nil, fmt.Errorf("hydration: %w", err)
 		}
 
-		return d3entity.NewEagerEntity(entity), nil
+		return d3entity.NewWrapEntity(entity), nil
 	case *d3entity.OneToMany, *d3entity.ManyToMany:
 		var entities []interface{}
 
 		groupByEntity := make(map[interface{}][]map[string]interface{})
 
 		for _, entityData := range entityData {
-			pkVal := entityData[relationMeta.FullFieldAlias(relationMeta.PkField())]
+			pkVal := entityData[relationMeta.Pk.FullDbAlias()]
 			if pkVal == nil {
 				continue
 			}
@@ -134,15 +129,13 @@ func (h *Hydrator) fetchRelation(relation d3entity.Relation, entityData []map[st
 			entities = append(entities, entity)
 		}
 
-		return mapper.NewEagerCollection(entities), nil
-		//case *d3entity.ManyToMany:
-
+		return mapper.NewCollection(entities), nil
 	}
 
 	return nil, nil
 }
 
-func (h *Hydrator) createLazyRelation(relation d3entity.Relation, entityData map[string]interface{}) (interface{}, error) {
+func (h *Hydrator) createRelation(relation d3entity.Relation, entityData map[string]interface{}) (interface{}, error) {
 	switch rel := relation.(type) {
 	case *d3entity.OneToOne:
 		relatedId, exists := entityData[h.meta.FullColumnAlias(rel.JoinColumn)]
@@ -151,20 +144,20 @@ func (h *Hydrator) createLazyRelation(relation d3entity.Relation, entityData map
 		}
 
 		if relatedId == nil {
-			return d3entity.NewEagerEntity(nil), nil
+			return d3entity.NewWrapEntity(nil), nil
 		}
 
-		extractor := createOneToOneExtractor(h.session, relatedId, h.meta.RelatedMeta[rel.TargetEntity])
+		extractor := h.session.createOneToOneExtractor(relatedId, h.meta.RelatedMeta[rel.RelatedWith()])
 
 		if rel.IsLazy() {
-			return d3entity.NewLazyEntity(extractor), nil
+			return d3entity.NewLazyWrappedEntity(extractor), nil
 		}
 
 		if rel.IsEager() {
-			return d3entity.NewEagerEntity(extractor()), nil
+			return d3entity.NewWrapEntity(extractor()), nil
 		}
 	case *d3entity.OneToMany, *d3entity.ManyToMany:
-		relatedId, exists := entityData[h.meta.FullColumnAlias(h.meta.PkField().DbAlias)]
+		relatedId, exists := entityData[h.meta.Pk.FullDbAlias()]
 		if !exists {
 			return nil, fmt.Errorf("hydration: owner pk not exists")
 		}
@@ -172,9 +165,9 @@ func (h *Hydrator) createLazyRelation(relation d3entity.Relation, entityData map
 		var extractor func() interface{}
 		switch rel := rel.(type) {
 		case *d3entity.OneToMany:
-			extractor = createOneToManyExtractor(h.session, relatedId, rel, h.meta.RelatedMeta[rel.TargetEntity])
+			extractor = h.session.createOneToManyExtractor(relatedId, rel, h.meta.RelatedMeta[rel.RelatedWith()])
 		case *d3entity.ManyToMany:
-			extractor = createManyToManyExtractor(h.session, relatedId, rel, h.meta.RelatedMeta[rel.TargetEntity])
+			extractor = h.session.createManyToManyExtractor(relatedId, rel, h.meta.RelatedMeta[rel.RelatedWith()])
 		default:
 			panic("unreachable statement")
 		}
@@ -184,7 +177,7 @@ func (h *Hydrator) createLazyRelation(relation d3entity.Relation, entityData map
 		}
 
 		if rel.IsEager() {
-			return mapper.NewEagerCollection(d3reflect.BreakUpSlice(extractor())), nil
+			return mapper.NewCollection(d3reflect.BreakUpSlice(extractor())), nil
 		}
 	}
 

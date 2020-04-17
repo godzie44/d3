@@ -7,7 +7,7 @@ import (
 )
 
 type testEntity struct {
-	id   int
+	Id   int `d3:"pk:auto"`
 	data string
 }
 
@@ -31,7 +31,7 @@ func TestRegistryGet(t *testing.T) {
 }
 
 type testEntity2 struct {
-	id   int
+	Id   int `d3:"pk:auto"`
 	data string
 }
 

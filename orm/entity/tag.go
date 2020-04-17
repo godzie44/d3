@@ -24,14 +24,28 @@ type parsedTag struct {
 	properties map[string]property
 }
 
-func (f *parsedTag) hasProperty(name string) bool {
-	_, exists := f.properties[name]
+func (p *parsedTag) hasProperty(name string) bool {
+	_, exists := p.properties[name]
 	return exists
 }
 
-func (f *parsedTag) getProperty(name string) (property, bool) {
-	property, exists := f.properties[name]
+func (p *parsedTag) getProperty(name string) (property, bool) {
+	property, exists := p.properties[name]
 	return property, exists
+}
+
+func (p *parsedTag) hasRelation() bool {
+	if _, has := p.getProperty("one_to_one"); has {
+		return true
+	}
+	if _, has := p.getProperty("one_to_many"); has {
+		return true
+	}
+	if _, has := p.getProperty("many_to_many"); has {
+		return true
+	}
+
+	return false
 }
 
 // one_to_one:"target_entity:Address, join_column:address_id, reference:id"

@@ -8,24 +8,31 @@ import (
 	"strings"
 )
 
+type PkStrategy int
+
+const (
+	_ PkStrategy = iota
+	Auto
+	Manual
+)
+
 type MetaInfo struct {
-	Tpl         interface{}
-	Fields      map[string]*FieldInfo
-	TableName   string
+	Tpl        interface{}
+	EntityName Name
+	TableName  string
+
+	Relations map[string]Relation
+	Fields    map[string]*FieldInfo
+	Pk        *pk
+
 	RelatedMeta map[Name]*MetaInfo
-	EntityName  Name
 }
 
 type FieldInfo struct {
 	Name           string
-	Relation       Relation
-	associatedType interface{}
+	associatedType reflect.Type
 	DbAlias        string
-	Pk             bool
-}
-
-func (f *FieldInfo) IsRelation() bool {
-	return f.Relation != nil
+	FullDbAlias    string
 }
 
 func CreateMeta(e interface{}) (*MetaInfo, error) {
@@ -39,7 +46,15 @@ func CreateMeta(e interface{}) (*MetaInfo, error) {
 		tableName = strings.ToLower(eType.Name())
 	}
 
-	fields := make(map[string]*FieldInfo, eType.NumField())
+	meta := &MetaInfo{
+		Tpl:         e,
+		TableName:   tableName,
+		Fields:      make(map[string]*FieldInfo),
+		Relations:   make(map[string]Relation),
+		RelatedMeta: make(map[Name]*MetaInfo),
+		EntityName:  Name(d3reflect.FullName(eType)),
+	}
+
 	for i := 0; i < eType.NumField(); i++ {
 		fieldReflection := eType.Field(i)
 
@@ -48,35 +63,37 @@ func CreateMeta(e interface{}) (*MetaInfo, error) {
 		}
 
 		tag := parseTag(fieldReflection.Tag)
-		relation := extractRelation(tag)
 
-		var dbAlias string
-		if relation != nil {
-			switch rel := relation.(type) {
-			case *OneToOne:
-				dbAlias = rel.JoinColumn
-			case *OneToMany:
-			}
-		} else {
-			dbAlias = extractDbFieldAlias(tag, fieldReflection.Name)
+		field := &FieldInfo{
+			Name:           fieldReflection.Name,
+			associatedType: fieldReflection.Type,
 		}
 
-		fields[fieldReflection.Name] = &FieldInfo{
-			Relation:       relation,
-			associatedType: fieldReflection.Type,
-			Name:           fieldReflection.Name,
-			DbAlias:        dbAlias,
-			Pk:             tag.hasProperty("pk"),
+		if tag.hasRelation() {
+			relation := extractRelation(tag, field)
+			switch rel := relation.(type) {
+			case *OneToOne:
+				field.DbAlias = rel.JoinColumn
+			case *OneToMany:
+			}
+			meta.Relations[fieldReflection.Name] = relation
+		} else {
+			field.DbAlias = extractDbFieldAlias(tag, fieldReflection.Name)
+			meta.Fields[fieldReflection.Name] = field
+		}
+
+		field.FullDbAlias = meta.FullColumnAlias(field.DbAlias)
+
+		if tag.hasProperty("pk") {
+			meta.Pk = &pk{field, extractPkStrategy(tag)}
 		}
 	}
 
-	return &MetaInfo{
-		Tpl:         e,
-		Fields:      fields,
-		TableName:   tableName,
-		RelatedMeta: make(map[Name]*MetaInfo),
-		EntityName:  Name(d3reflect.FullName(eType)),
-	}, nil
+	if meta.Pk == nil {
+		panic("pk not found in entity: " + meta.EntityName)
+	}
+
+	return meta, nil
 }
 
 func parseEntityTableName(eType reflect.Type) (string, error) {
@@ -97,11 +114,7 @@ func parseEntityTableName(eType reflect.Type) (string, error) {
 	return "", errors.New("field entity not found")
 }
 
-func extractRelation(tag *parsedTag) Relation {
-	if tag == nil {
-		return nil
-	}
-
+func extractRelation(tag *parsedTag, field *FieldInfo) Relation {
 	var relTypeAlias string
 	relType, exists := tag.getProperty("type")
 	if !exists {
@@ -112,7 +125,7 @@ func extractRelation(tag *parsedTag) Relation {
 
 	if prop, exists := tag.getProperty("one_to_one"); exists {
 		return &OneToOne{
-			baseRelation:    baseRelation{RelType: relTypeAlias, TargetEntity: Name(prop.getSubPropVal("target_entity"))},
+			baseRelation:    baseRelation{relType: relTypeAlias, targetEntity: Name(prop.getSubPropVal("target_entity")), field: field},
 			JoinColumn:      prop.getSubPropVal("join_on"),
 			ReferenceColumn: prop.getSubPropVal("reference_on"),
 		}
@@ -120,7 +133,7 @@ func extractRelation(tag *parsedTag) Relation {
 
 	if prop, exists := tag.getProperty("one_to_many"); exists {
 		return &OneToMany{
-			baseRelation:    baseRelation{RelType: relTypeAlias, TargetEntity: Name(prop.getSubPropVal("target_entity"))},
+			baseRelation:    baseRelation{relType: relTypeAlias, targetEntity: Name(prop.getSubPropVal("target_entity")), field: field},
 			JoinColumn:      prop.getSubPropVal("join_on"),
 			ReferenceColumn: prop.getSubPropVal("reference_on"),
 		}
@@ -128,7 +141,7 @@ func extractRelation(tag *parsedTag) Relation {
 
 	if prop, exists := tag.getProperty("many_to_many"); exists {
 		return &ManyToMany{
-			baseRelation:    baseRelation{RelType: relTypeAlias, TargetEntity: Name(prop.getSubPropVal("target_entity"))},
+			baseRelation:    baseRelation{relType: relTypeAlias, targetEntity: Name(prop.getSubPropVal("target_entity")), field: field},
 			JoinColumn:      prop.getSubPropVal("join_on"),
 			ReferenceColumn: prop.getSubPropVal("reference_on"),
 			JoinTable:       prop.getSubPropVal("join_table"),
@@ -161,13 +174,11 @@ func extractDbFieldAlias(tag *parsedTag, fieldName string) string {
 	return prop.val
 }
 
-func (m *MetaInfo) DependencyEntities() []Name {
-	var dependencies []Name
+func (m *MetaInfo) DependencyEntities() map[Name]struct{} {
+	dependencies := make(map[Name]struct{})
 
-	for _, field := range m.Fields {
-		if field.Relation != nil {
-			dependencies = append(dependencies, field.Relation.RelatedWith())
-		}
+	for _, relation := range m.Relations {
+		dependencies[relation.RelatedWith()] = struct{}{}
 	}
 
 	return dependencies
@@ -175,16 +186,6 @@ func (m *MetaInfo) DependencyEntities() []Name {
 
 func (m *MetaInfo) dependenciesIsSet() bool {
 	return len(m.RelatedMeta) == len(m.DependencyEntities())
-}
-
-func (m *MetaInfo) PkField() *FieldInfo {
-	for i := range m.Fields {
-		if m.Fields[i].Pk != false {
-			return m.Fields[i]
-		}
-	}
-
-	panic("pk field must be set")
 }
 
 func (m *MetaInfo) FindRelativeMetaRecursive(entityName Name) (*MetaInfo, bool) {
@@ -202,10 +203,48 @@ func (m *MetaInfo) FindRelativeMetaRecursive(entityName Name) (*MetaInfo, bool) 
 	return nil, false
 }
 
-func (m *MetaInfo) FullFieldAlias(field *FieldInfo) string {
-	return m.FullColumnAlias(field.DbAlias)
-}
-
 func (m *MetaInfo) FullColumnAlias(colName string) string {
 	return m.TableName + "." + colName
+}
+
+func (m *MetaInfo) OneToOneRelations() []*OneToOne {
+	var result []*OneToOne
+	for _, relation := range m.Relations {
+		if rel, ok := relation.(*OneToOne); ok {
+			result = append(result, rel)
+		}
+	}
+	return result
+}
+
+func (m *MetaInfo) OneToManyRelations() []*OneToMany {
+	var result []*OneToMany
+	for _, relation := range m.Relations {
+		if r, ok := relation.(*OneToMany); ok {
+			result = append(result, r)
+		}
+	}
+	return result
+}
+
+func (m *MetaInfo) ManyToManyRelations() []*ManyToMany {
+	var result []*ManyToMany
+	for _, relation := range m.Relations {
+		if rel, ok := relation.(*ManyToMany); ok {
+			result = append(result, rel)
+		}
+	}
+	return result
+}
+
+func extractPkStrategy(tag *parsedTag) PkStrategy {
+	strategy, _ := tag.getProperty("pk")
+	switch strategy.val {
+	case "auto":
+		return Auto
+	case "manual":
+		return Manual
+	}
+
+	return 0
 }

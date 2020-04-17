@@ -2,17 +2,15 @@ package entity
 
 import (
 	d3reflect "d3/reflect"
-	"errors"
+	"fmt"
 	"reflect"
 	"sync"
 )
 
-var ErrMetaNotFound = errors.New("meta info not found")
-
 type MetaRegistry struct {
 	metaMap map[Name]*MetaInfo
 
-	sync.RWMutex
+	mutex sync.RWMutex
 }
 
 func NewMetaRegistry() *MetaRegistry {
@@ -22,8 +20,8 @@ func NewMetaRegistry() *MetaRegistry {
 }
 
 func (r *MetaRegistry) Add(entities ...interface{}) error {
-	r.Lock()
-	defer r.Unlock()
+	r.mutex.Lock()
+	defer r.mutex.Unlock()
 	for _, e := range entities {
 		meta, err := CreateMeta(e)
 		if err != nil {
@@ -42,30 +40,38 @@ func (r *MetaRegistry) GetMeta(entity interface{}) (MetaInfo, error) {
 }
 
 func (r *MetaRegistry) GetMetaByName(entityName Name) (MetaInfo, error) {
-	r.RLock()
-	defer r.RUnlock()
+	r.mutex.RLock()
+	defer r.mutex.RUnlock()
 	if meta, exists := r.metaMap[entityName]; exists {
-		r.enrichWithRelations(meta)
+		if err := r.enrichWithRelations(meta); err != nil {
+			return MetaInfo{}, err
+		}
 		return *meta, nil
 	}
 
-	return MetaInfo{}, ErrMetaNotFound
+	return MetaInfo{}, fmt.Errorf("unregister entity: %s", entityName)
 }
 
-func (r *MetaRegistry) enrichWithRelations(meta *MetaInfo) {
+func (r *MetaRegistry) enrichWithRelations(meta *MetaInfo) error {
 	if !meta.dependenciesIsSet() {
-		for _, entityName := range meta.DependencyEntities() {
+		for entityName := range meta.DependencyEntities() {
+			if _, exists := r.metaMap[entityName]; !exists {
+				return fmt.Errorf("unregister entity: %s", entityName)
+			}
 			meta.RelatedMeta[entityName] = r.metaMap[entityName]
 		}
 		for key := range meta.RelatedMeta {
-			r.enrichWithRelations(meta.RelatedMeta[key])
+			if err := r.enrichWithRelations(meta.RelatedMeta[key]); err != nil {
+				return err
+			}
 		}
 	}
+	return nil
 }
 
 func (r *MetaRegistry) ForEach(f func(meta *MetaInfo)) {
-	r.Lock()
-	defer r.Unlock()
+	r.mutex.Lock()
+	defer r.mutex.Unlock()
 
 	for _, meta := range r.metaMap {
 		f(meta)

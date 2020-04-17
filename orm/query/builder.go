@@ -37,7 +37,8 @@ type Having struct {
 type JoinType int
 
 const (
-	JoinLeft JoinType = iota
+	_ JoinType = iota
+	JoinLeft
 	JoinRight
 	JoinInner
 )
@@ -95,13 +96,11 @@ func (q *Query) OwnerMeta() *entity.MetaInfo {
 
 func (q *Query) addEntityFieldsToSelect(meta *entity.MetaInfo) {
 	for _, field := range meta.Fields {
-		if field.IsRelation() {
-			switch field.Relation.(type) {
-			case *entity.OneToMany, *entity.ManyToMany:
-				continue
-			}
-		}
-		q.columns = append(q.columns, meta.FullFieldAlias(field))
+		q.columns = append(q.columns, field.FullDbAlias)
+	}
+
+	for _, rel := range meta.OneToOneRelations() {
+		q.columns = append(q.columns, rel.Field().FullDbAlias)
 	}
 }
 
@@ -135,9 +134,9 @@ func (q *Query) Having(expr string, params ...interface{}) *Query {
 	return q
 }
 
-func (q *Query) Join(joinType JoinType, join string, on string) *Query {
+func (q *Query) Join(joinType JoinType, table string, on string) *Query {
 	q.join = append(q.join, &Join{
-		Join: join,
+		Join: table,
 		On:   on,
 		Type: joinType,
 	})
@@ -221,19 +220,20 @@ func (q *Query) joinEntity(name entity.Name, ownerMeta *entity.MetaInfo) error {
 		return fmt.Errorf("%s: %w", name, ErrRelatedEntityNotFound)
 	}
 
-	var relatedField *entity.FieldInfo
-	for _, field := range ownerMeta.Fields {
-		if field.IsRelation() && field.Relation.RelatedWith().Equal(name) {
-			relatedField = field
-			break
+	var relation entity.Relation
+	{
+		for _, relation = range ownerMeta.Relations {
+			if relation.RelatedWith().Equal(name) {
+				break
+			}
 		}
 	}
 
-	if relatedField == nil {
+	if relation == nil {
 		return fmt.Errorf("%s: %w", name, ErrRelatedFieldNotFound)
 	}
 
-	switch rel := relatedField.Relation.(type) {
+	switch rel := relation.(type) {
 	case *entity.OneToOne:
 		q.Join(JoinLeft, relatedEntityMeta.TableName, fmt.Sprintf(
 			"%s = %s",
@@ -243,18 +243,18 @@ func (q *Query) joinEntity(name entity.Name, ownerMeta *entity.MetaInfo) error {
 	case *entity.OneToMany:
 		q.Join(JoinLeft, relatedEntityMeta.TableName, fmt.Sprintf(
 			"%s = %s",
-			ownerMeta.FullFieldAlias(ownerMeta.PkField()), relatedEntityMeta.FullColumnAlias(rel.JoinColumn),
+			ownerMeta.Pk.FullDbAlias(), relatedEntityMeta.FullColumnAlias(rel.JoinColumn),
 		))
 
 	case *entity.ManyToMany:
 		q.
 			Join(JoinLeft, rel.JoinTable, fmt.Sprintf(
 				"%s = %s.%s",
-				ownerMeta.FullFieldAlias(ownerMeta.PkField()), rel.JoinTable, rel.JoinColumn,
+				ownerMeta.Pk.FullDbAlias(), rel.JoinTable, rel.JoinColumn,
 			)).
 			Join(JoinLeft, relatedEntityMeta.TableName, fmt.Sprintf(
 				"%s.%s = %s",
-				rel.JoinTable, rel.ReferenceColumn, relatedEntityMeta.FullFieldAlias(relatedEntityMeta.PkField()),
+				rel.JoinTable, rel.ReferenceColumn, relatedEntityMeta.Pk.FullDbAlias(),
 			))
 	}
 

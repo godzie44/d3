@@ -1,24 +1,25 @@
 package mapper
 
 import (
+	"d3/reflect"
 	"github.com/stretchr/testify/assert"
 	"testing"
 )
 
 func TestEagerCollectionCount(t *testing.T) {
-	collection := NewEagerCollection([]interface{}{1, 2})
+	collection := NewCollection([]interface{}{1, 2})
 
 	assert.Equal(t, 2, collection.Count())
 }
 
 func TestEagerCollectionEmpty(t *testing.T) {
-	collection := NewEagerCollection([]interface{}{})
+	collection := NewCollection([]interface{}{})
 
 	assert.True(t, collection.Empty())
 }
 
 func TestEagerCollectionAdd(t *testing.T) {
-	collection := NewEagerCollection([]interface{}{})
+	collection := NewCollection([]interface{}{})
 
 	collection.Add(1)
 	collection.Add(2)
@@ -27,13 +28,13 @@ func TestEagerCollectionAdd(t *testing.T) {
 }
 
 func TestEagerCollectionGet(t *testing.T) {
-	collection := NewEagerCollection([]interface{}{1, 2})
+	collection := NewCollection([]interface{}{1, 2})
 
 	assert.Equal(t, 1, collection.Get(0))
 }
 
 func TestEagerCollectionToSlice(t *testing.T) {
-	collection := NewEagerCollection([]interface{}{1, 2})
+	collection := NewCollection([]interface{}{1, 2})
 	collection.Add(3)
 
 	assert.Equal(t, []interface{}{1, 2, 3}, collection.ToSlice())
@@ -81,4 +82,20 @@ func TestLazyCollectionToSlice(t *testing.T) {
 	collection.Add(3)
 
 	assert.Equal(t, []interface{}{1, 2, 3}, collection.ToSlice())
+}
+
+type testEntity struct {
+	ID  int
+	Rel Collection
+}
+
+func TestCopy(t *testing.T) {
+	te := &testEntity{ID: 1, Rel: NewCollection([]interface{}{1, 2, 3})}
+
+	copyTe := reflect.Copy(te).(*testEntity)
+	assert.Equal(t, te.Rel.ToSlice(), copyTe.Rel.ToSlice())
+
+	te.Rel.Remove(1)
+
+	assert.NotEqual(t, te.Rel.ToSlice(), copyTe.Rel.ToSlice())
 }

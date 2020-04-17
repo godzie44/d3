@@ -1,19 +1,19 @@
 package orm
 
 import (
-	stEntity "d3/orm/entity"
+	d3Entity "d3/orm/entity"
 	"fmt"
 )
 
 type Orm struct {
-	PgDb         StorageAdapter
-	metaRegistry *stEntity.MetaRegistry
+	PgDb         Storage
+	metaRegistry *d3Entity.MetaRegistry
 }
 
-func NewOrm(adapter StorageAdapter) *Orm {
+func NewOrm(adapter Storage) *Orm {
 	return &Orm{
 		PgDb:         adapter,
-		metaRegistry: stEntity.NewMetaRegistry(),
+		metaRegistry: d3Entity.NewMetaRegistry(),
 	}
 }
 
@@ -23,17 +23,17 @@ func (o *Orm) Register(entities ...interface{}) error {
 		return err
 	}
 
-	dependencies := make(map[stEntity.Name]struct{})
-	o.metaRegistry.ForEach(func(meta *stEntity.MetaInfo) {
-		for _, entityName := range meta.DependencyEntities() {
-			dependencies[entityName] = struct{}{}
+	allDependencies := make(map[d3Entity.Name]struct{})
+	o.metaRegistry.ForEach(func(meta *d3Entity.MetaInfo) {
+		for entityName := range meta.DependencyEntities() {
+			allDependencies[entityName] = struct{}{}
 		}
 	})
 
-	for dep, _ := range dependencies {
+	for dep := range allDependencies {
 		_, err := o.metaRegistry.GetMetaByName(dep)
 		if err != nil {
-			panic(fmt.Errorf("found unregister entity: %s", dep))
+			return err
 		}
 	}
 
@@ -51,8 +51,7 @@ func (o *Orm) CreateRepository(session *Session, entity interface{}) (*Repositor
 	}
 
 	return &Repository{
-		sourceEntity: entity,
-		session:      session,
-		entityMeta:   entityMeta,
+		session:    session,
+		entityMeta: entityMeta,
 	}, nil
 }

@@ -2,15 +2,15 @@ package adapter
 
 import (
 	"context"
+	"d3/orm/entity"
+	"d3/orm/query"
 	"database/sql"
 	_ "github.com/lib/pq"
-	"d3/orm/query"
 )
 
 type GoPgAdapter struct {
-	pgDb           *sql.DB
-	actionRegistry map[int]interface{}
-	queryAdapter   *SquirrelAdapter
+	pgDb         *sql.DB
+	queryAdapter *SquirrelAdapter
 
 	beforeQCallback, afterQCallback func(query string, args ...interface{})
 }
@@ -25,9 +25,8 @@ func (g *GoPgAdapter) AfterQuery(fn func(query string, args ...interface{})) {
 
 func NewGoPgAdapter(pgDb *sql.DB, queryAdapter *SquirrelAdapter) *GoPgAdapter {
 	return &GoPgAdapter{
-		pgDb:           pgDb,
-		actionRegistry: make(map[int]interface{}),
-		queryAdapter:   queryAdapter,
+		pgDb:         pgDb,
+		queryAdapter: queryAdapter,
 	}
 }
 
@@ -79,28 +78,19 @@ func (g *GoPgAdapter) ExecuteQuery(query *query.Query) ([]map[string]interface{}
 	return result, nil
 }
 
-const (
-	actionInsert = iota
-	actionUpdate
-	actionDelete
-)
-
-func (g *GoPgAdapter) Insert(entity interface{}) error {
-	g.actionRegistry[actionInsert] = entity
-	return nil
+func (g *GoPgAdapter) Insert([]interface{}, *entity.MetaInfo) {
+	//g.actionRegistry[persistence.ActionInsert] = action
 }
 
-func (g *GoPgAdapter) Update(entity interface{}) error {
-	g.actionRegistry[actionUpdate] = entity
-	return nil
+func (g *GoPgAdapter) Update(entity []interface{}, meta *entity.MetaInfo) {
+	//g.actionRegistry[persistence.ActionUpdate] = entity
 }
 
-func (g *GoPgAdapter) Remove(entity interface{}) error {
-	g.actionRegistry[actionDelete] = entity
-	return nil
+func (g *GoPgAdapter) Remove(entity []interface{}, meta *entity.MetaInfo) {
+	//g.actionRegistry[persistence.ActionDelete] = entity
 }
 
-func (g *GoPgAdapter) DoInTransaction(f func()) error {
+func (g *GoPgAdapter) DoInTransaction(func() error) error {
 	tx, err := g.pgDb.BeginTx(context.Background(), nil)
 	if err != nil {
 		return err
@@ -111,14 +101,14 @@ func (g *GoPgAdapter) DoInTransaction(f func()) error {
 	//txFunc := func(tx *pg.Tx) error {
 	//	f()
 	//
-	//	for action, arg := range g.actionRegistry {
+	//	for ActionType, arg := range g.actionRegistry {
 	//		var err error
-	//		switch action {
-	//		case actionInsert:
+	//		switch ActionType {
+	//		case ActionInsert:
 	//			err = tx.Insert(arg)
-	//		case actionUpdate:
+	//		case ActionUpdate:
 	//			err = tx.Update(arg)
-	//		case actionDelete:
+	//		case ActionDelete:
 	//			err = tx.Delete(arg)
 	//		}
 	//

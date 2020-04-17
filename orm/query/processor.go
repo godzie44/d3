@@ -9,43 +9,10 @@ var Preprocessor preprocessor
 
 type preprocessor struct{}
 
-func (preprocessor) Process(q *Query) error {
-	meta := q.mainMeta
-
-	err := handleEagerRelations(q, meta)
-	if err != nil {
-		return err
-	}
-
-	return nil
-}
-
-func handleEagerRelations(q *Query, meta *entity.MetaInfo) error {
-	for _, field := range meta.Fields {
-		if field.Relation != nil && field.Relation.IsEager() {
-			relatedEntityName := field.Relation.RelatedWith()
-
-			if q.inJoinedEntities(relatedEntityName) {
-				continue
-			}
-
-			err := q.With(relatedEntityName)
-			if err != nil {
-				return err
-			}
-			err = handleEagerRelations(q, meta.RelatedMeta[relatedEntityName])
-			if err != nil {
-				return err
-			}
-		}
-	}
-	return nil
-}
-
 func (preprocessor) CreateFetchPlan(q *Query) *FetchPlan {
 	return &FetchPlan{
-		query: q,
-		entityIds: extractIdsIfPossible(q),
+		query:         q,
+		pks:           extractIdsIfPossible(q),
 		fetchWithList: getFetchList(q.mainMeta, q),
 	}
 }
@@ -60,7 +27,7 @@ func extractIdsIfPossible(q *Query) []interface{} {
 		case *AndWhere:
 			fields := strings.Fields(where.Expr)
 			for i := range fields {
-				if fields[i] == q.OwnerMeta().FullFieldAlias(q.OwnerMeta().PkField()) {
+				if fields[i] == q.OwnerMeta().Pk.FullDbAlias() {
 					idList = append(idList, where.Params...)
 					return
 				}
@@ -81,19 +48,15 @@ func extractIdsIfPossible(q *Query) []interface{} {
 func getFetchList(meta *entity.MetaInfo, q *Query) []*executeWith {
 	var result []*executeWith
 
-	for _, f := range meta.Fields {
-		if !f.IsRelation() {
-			continue
-		}
-
-		if _, exists := q.withList[f.Relation.RelatedWith()]; !exists {
+	for _, rel := range meta.Relations {
+		if _, exists := q.withList[rel.RelatedWith()]; !exists {
 			continue
 		}
 
 		result = append(result, &executeWith{
-			entityMeta: meta.RelatedMeta[f.Relation.RelatedWith()],
-			relation:   f.Relation,
-			withList:   getFetchList(meta.RelatedMeta[f.Relation.RelatedWith()], q),
+			entityMeta: meta.RelatedMeta[rel.RelatedWith()],
+			relation:   rel,
+			withList:   getFetchList(meta.RelatedMeta[rel.RelatedWith()], q),
 		})
 	}
 
@@ -102,7 +65,7 @@ func getFetchList(meta *entity.MetaInfo, q *Query) []*executeWith {
 
 type FetchPlan struct {
 	query         *Query
-	entityIds     []interface{}
+	pks           []interface{}
 	fetchWithList []*executeWith
 }
 
@@ -110,8 +73,8 @@ func (e *FetchPlan) Query() *Query {
 	return e.query
 }
 
-func (e *FetchPlan) EntityIds() []interface{} {
-	return e.entityIds
+func (e *FetchPlan) PKs() []interface{} {
+	return e.pks
 }
 
 type executeWith struct {

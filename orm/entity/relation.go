@@ -1,5 +1,11 @@
 package entity
 
+import (
+	"d3/mapper"
+	"d3/reflect"
+	"errors"
+)
+
 type Relation interface {
 	IsLazy() bool
 	IsEager() bool
@@ -7,7 +13,7 @@ type Relation interface {
 
 	RelatedWith() Name
 
-	CreateExtractor() func() interface{}
+	Field() *FieldInfo
 }
 
 //type QueryExecutor interface {
@@ -15,24 +21,29 @@ type Relation interface {
 //}
 
 type baseRelation struct {
-	RelType      string
-	TargetEntity Name
+	relType      string
+	targetEntity Name
+	field        *FieldInfo
 }
 
 func (b *baseRelation) IsLazy() bool {
-	return b.RelType == "lazy"
+	return b.relType == "lazy"
 }
 
 func (b *baseRelation) IsEager() bool {
-	return b.RelType == "eager"
+	return b.relType == "eager"
 }
 
 func (b *baseRelation) IsSmartLazy() bool {
-	return b.RelType == "smart_lazy"
+	return b.relType == "smart_lazy"
 }
 
 func (b *baseRelation) RelatedWith() Name {
-	return b.TargetEntity
+	return b.targetEntity
+}
+
+func (b *baseRelation) Field() *FieldInfo {
+	return b.field
 }
 
 type ManyToOne struct {
@@ -41,39 +52,57 @@ type ManyToOne struct {
 	ReferenceColumn string
 }
 
-func (o *ManyToOne) CreateExtractor() func() interface{} {
-	return nil
-}
-
 type ManyToOneInverse struct {
 	baseRelation
 	MappedBy string
 }
 
-func (o *ManyToOneInverse) CreateExtractor() func() interface{} {
-	return nil
-}
-
-// done
 type OneToMany struct {
 	baseRelation
 	JoinColumn      string
 	ReferenceColumn string
 }
 
-func (o *OneToMany) CreateExtractor() func() interface{} {
-	return nil
+func (o *OneToMany) ExtractCollection(owner interface{}) (mapper.Collection, error) {
+	val, err := reflect.ExtractStructField(owner, o.Field().Name)
+	if err != nil {
+		return nil, err
+	}
+
+	if val == nil {
+		return mapper.NewCollection(nil), nil
+	}
+
+	collection, ok := val.(mapper.Collection)
+	if !ok {
+		return nil, errors.New("field type must be Collection")
+	}
+
+	return collection, nil
 }
 
-//done
 type OneToOne struct {
 	baseRelation
 	JoinColumn      string
 	ReferenceColumn string
 }
 
-func (o *OneToOne) CreateExtractor() func() interface{} {
-	return nil
+func (o *OneToOne) Extract(owner interface{}) (WrappedEntity, error) {
+	val, err := reflect.ExtractStructField(owner, o.Field().Name)
+	if err != nil {
+		return nil, err
+	}
+
+	if val == nil {
+		return NewWrapEntity(nil), nil
+	}
+
+	wrappedEntity, ok := val.(WrappedEntity)
+	if !ok {
+		return nil, errors.New("field type must be WrappedEntity")
+	}
+
+	return wrappedEntity, nil
 }
 
 //type OneToOneInverse struct {
@@ -88,6 +117,20 @@ type ManyToMany struct {
 	JoinTable       string
 }
 
-func (o *ManyToMany) CreateExtractor() func() interface{} {
-	return nil
+func (o *ManyToMany) ExtractCollection(owner interface{}) (mapper.Collection, error) {
+	val, err := reflect.ExtractStructField(owner, o.Field().Name)
+	if err != nil {
+		return nil, err
+	}
+
+	if val == nil {
+		return mapper.NewCollection(nil), nil
+	}
+
+	collection, ok := val.(mapper.Collection)
+	if !ok {
+		return nil, errors.New("field type must be Collection")
+	}
+
+	return collection, nil
 }

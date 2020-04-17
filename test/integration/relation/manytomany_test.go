@@ -2,12 +2,12 @@ package relation
 
 import (
 	"context"
-	"fmt"
-	"github.com/jackc/pgx/v4"
-	"github.com/stretchr/testify/suite"
 	"d3/adapter"
 	"d3/mapper"
 	"d3/orm"
+	"fmt"
+	"github.com/jackc/pgx/v4"
+	"github.com/stretchr/testify/suite"
 	"testing"
 )
 
@@ -20,63 +20,62 @@ func (o *ManyToManyRelationTS) SetupSuite() {
 	dsn := fmt.Sprintf("postgres://%s:%s@%s/%s?sslmode=disable", "postgres", "postgres", "0.0.0.0:5432", "d3db")
 	o.pgDb, _ = pgx.Connect(context.Background(), dsn)
 
-	_, err := o.pgDb.Exec(context.Background(),`CREATE TABLE IF NOT EXISTS test_entity_1(
+	_, err := o.pgDb.Exec(context.Background(), `CREATE TABLE IF NOT EXISTS book(
 		id integer NOT NULL,
-		data text NOT NULL,
-		CONSTRAINT test_entity_1_pkey PRIMARY KEY (id)
+		name text NOT NULL,
+		CONSTRAINT book_pkey PRIMARY KEY (id)
 	)`)
 	o.Assert().NoError(err)
 
-	_, err = o.pgDb.Exec(context.Background(),`CREATE TABLE IF NOT EXISTS test_entity_2(
+	_, err = o.pgDb.Exec(context.Background(), `CREATE TABLE IF NOT EXISTS author(
 		id integer NOT NULL,
-		data character varying(200) NOT NULL,
-		CONSTRAINT test_entity_2_pkey PRIMARY KEY (id)
+		name character varying(200) NOT NULL,
+		CONSTRAINT author_pkey PRIMARY KEY (id)
 	)`)
 	o.Assert().NoError(err)
 
-	_, err = o.pgDb.Exec(context.Background(),`CREATE TABLE IF NOT EXISTS t1_t2(
-		t1_id integer NOT NULL,
-		t2_id integer NOT NULL
+	_, err = o.pgDb.Exec(context.Background(), `CREATE TABLE IF NOT EXISTS book_author(
+		book_id integer NOT NULL,
+		author_id integer NOT NULL
 	)`)
 	o.Assert().NoError(err)
 
-	_, err = o.pgDb.Exec(context.Background(),`CREATE TABLE IF NOT EXISTS test_entity_3(
+	_, err = o.pgDb.Exec(context.Background(), `CREATE TABLE IF NOT EXISTS redactor(
 		id integer NOT NULL,
-		data character varying(200) NOT NULL,
-		CONSTRAINT test_entity_3_pkey PRIMARY KEY (id)
+		name character varying(200) NOT NULL,
+		CONSTRAINT redactor_pkey PRIMARY KEY (id)
 	)`)
 	o.Assert().NoError(err)
 
-	_, err = o.pgDb.Exec(context.Background(),`CREATE TABLE IF NOT EXISTS t2_t3(
-		t2_id integer NOT NULL,
-		t3_id integer NOT NULL
+	_, err = o.pgDb.Exec(context.Background(), `CREATE TABLE IF NOT EXISTS author_redactor(
+		author_id integer NOT NULL,
+		redactor_id integer NOT NULL
 	)`)
 	o.Assert().NoError(err)
 
-	_, err = o.pgDb.Exec(context.Background(),`
-INSERT INTO test_entity_1(id, data) VALUES (1, 'entity_1_data_1');
-INSERT INTO test_entity_1(id, data) VALUES (2, 'entity_1_data_2');
-INSERT INTO test_entity_1(id, data) VALUES (3, 'entity_1_data_3');
-INSERT INTO test_entity_2(id, data) VALUES (1, 'entity_2_data_1');
-INSERT INTO test_entity_2(id, data) VALUES (2, 'entity_2_data_2');
-INSERT INTO test_entity_3(id, data) VALUES (1, 'entity_3_data_1');
-INSERT INTO t1_t2(t1_id, t2_id) VALUES (1, 1);
-INSERT INTO t1_t2(t1_id, t2_id) VALUES (1, 2);
-INSERT INTO t1_t2(t1_id, t2_id) VALUES (2, 2);
-INSERT INTO t1_t2(t1_id, t2_id) VALUES (3, 1);
-INSERT INTO t2_t3(t2_id, t3_id) VALUES (1, 1);
+	_, err = o.pgDb.Exec(context.Background(), `
+INSERT INTO book(id, name) VALUES (1, 'Antic Hay');
+INSERT INTO book(id, name) VALUES (2, 'An Evil Cradling');
+INSERT INTO book(id, name) VALUES (3, 'Arms and the Man');
+INSERT INTO author(id, name) VALUES (1, 'Aldous Huxley');
+INSERT INTO author(id, name) VALUES (2, 'Brian Keenan');
+INSERT INTO redactor(id, name) VALUES (1, 'George Bernard Shaw');
+INSERT INTO book_author(book_id, author_id) VALUES (1, 1);
+INSERT INTO book_author(book_id, author_id) VALUES (1, 2);
+INSERT INTO book_author(book_id, author_id) VALUES (2, 2);
+INSERT INTO book_author(book_id, author_id) VALUES (3, 1);
+INSERT INTO author_redactor(author_id, redactor_id) VALUES (1, 1);
 `)
 	o.Assert().NoError(err)
-
 }
 
 func (o *ManyToManyRelationTS) TearDownSuite() {
-	_, err := o.pgDb.Exec(context.Background(),`
-DROP TABLE test_entity_1;
-DROP TABLE test_entity_2;
-DROP TABLE test_entity_3;
-DROP TABLE t1_t2;
-DROP TABLE t2_t3;
+	_, err := o.pgDb.Exec(context.Background(), `
+DROP TABLE book;
+DROP TABLE author;
+DROP TABLE redactor;
+DROP TABLE book_author;
+DROP TABLE author_redactor;
 `)
 	o.Assert().NoError(err)
 }
@@ -85,87 +84,87 @@ func TestManyToManyTestSuite(t *testing.T) {
 	suite.Run(t, new(ManyToManyRelationTS))
 }
 
-type testEntity1ManyToManyLL struct {
-	entity struct{}          `d3:"table_name:test_entity_1"`
-	Id     int32             `d3:"pk:auto"`
-	Rel    mapper.Collection `d3:"many_to_many:<target_entity:d3/test/integration/relation/testEntity2ManyToManyLL,join_on:t1_id,reference_on:t2_id,join_table:t1_t2>,type:lazy"`
-	Data   string
+type BookLL struct {
+	entity  struct{}          `d3:"table_name:book"`
+	ID      int32             `d3:"pk:auto"`
+	Authors mapper.Collection `d3:"many_to_many:<target_entity:d3/test/integration/relation/AuthorLL,join_on:book_id,reference_on:author_id,join_table:book_author>,type:lazy"`
+	Name    string
 }
 
-type testEntity2ManyToManyLL struct {
-	entity struct{} `d3:"table_name:test_entity_2"`
-	Id     int32    `d3:"pk:auto"`
-	Data   string
+type AuthorLL struct {
+	entity struct{} `d3:"table_name:author"`
+	ID     int32    `d3:"pk:auto"`
+	Name   string
 }
 
 func (o *ManyToManyRelationTS) TestLazyRelation() {
 	d3Orm := orm.NewOrm(adapter.NewGoPgXAdapter(o.pgDb, &adapter.SquirrelAdapter{}))
-	err := d3Orm.Register((*testEntity1ManyToManyLL)(nil), (*testEntity2ManyToManyLL)(nil), (*testEntity3ManyToMany)(nil))
+	err := d3Orm.Register((*BookLL)(nil), (*AuthorLL)(nil), (*Redactor)(nil))
 	o.Assert().NoError(err)
 
 	session := d3Orm.CreateSession()
-	repository, err := d3Orm.CreateRepository(session, (*testEntity1ManyToManyLL)(nil))
+	repository, err := d3Orm.CreateRepository(session, (*BookLL)(nil))
 	o.Assert().NoError(err)
 
-	entity, err := repository.FindOne(repository.CreateQuery().AndWhere("test_entity_1.id = ?", 1))
+	entity, err := repository.FindOne(repository.CreateQuery().AndWhere("book.id = ?", 1))
 	o.Assert().NoError(err)
 
-	o.Assert().IsType(&testEntity1ManyToManyLL{}, entity)
-	o.Assert().Equal(int32(1), entity.(*testEntity1ManyToManyLL).Id)
-	o.Assert().Equal("entity_1_data_1", entity.(*testEntity1ManyToManyLL).Data)
+	o.Assert().IsType(&BookLL{}, entity)
+	o.Assert().Equal(int32(1), entity.(*BookLL).ID)
+	o.Assert().Equal("Antic Hay", entity.(*BookLL).Name)
 
-	relatedEntities := entity.(*testEntity1ManyToManyLL).Rel
+	relatedEntities := entity.(*BookLL).Authors
 	o.Assert().Equal(relatedEntities.Count(), 2)
 	o.Assert().Subset(
-		[]string{"entity_2_data_1", "entity_2_data_2"},
-		[]string{relatedEntities.Get(0).(*testEntity2ManyToManyLL).Data, relatedEntities.Get(1).(*testEntity2ManyToManyLL).Data},
+		[]string{"Aldous Huxley", "Brian Keenan"},
+		[]string{relatedEntities.Get(0).(*AuthorLL).Name, relatedEntities.Get(1).(*AuthorLL).Name},
 	)
 }
 
-type testEntity1ManyToManyEL struct {
-	entity struct{}          `d3:"table_name:test_entity_1"`
+type BookEL struct {
+	entity struct{}          `d3:"table_name:book"`
 	Id     int32             `d3:"pk:auto"`
-	Rel    mapper.Collection `d3:"many_to_many:<target_entity:d3/test/integration/relation/testEntity2ManyToManyEL,join_on:t1_id,reference_on:t2_id,join_table:t1_t2>,type:eager"`
-	Data   string
+	Rel    mapper.Collection `d3:"many_to_many:<target_entity:d3/test/integration/relation/AuthorEL,join_on:book_id,reference_on:author_id,join_table:book_author>,type:eager"`
+	Name   string
 }
 
-type testEntity2ManyToManyEL struct {
-	entity struct{}          `d3:"table_name:test_entity_2"`
+type AuthorEL struct {
+	entity struct{}          `d3:"table_name:author"`
 	Id     int32             `d3:"pk:auto"`
-	Rel    mapper.Collection `d3:"many_to_many:<target_entity:d3/test/integration/relation/testEntity3ManyToMany,join_on:t2_id,reference_on:t3_id,join_table:t2_t3>,type:eager"`
-	Data   string
+	Rel    mapper.Collection `d3:"many_to_many:<target_entity:d3/test/integration/relation/Redactor,join_on:author_id,reference_on:redactor_id,join_table:author_redactor>,type:eager"`
+	Name   string
 }
 
-type testEntity3ManyToMany struct {
-	entity struct{} `d3:"table_name:test_entity_3"`
+type Redactor struct {
+	entity struct{} `d3:"table_name:redactor"`
 	Id     int32    `d3:"pk:auto"`
-	Data   string
+	Name   string
 }
 
 func (o *ManyToManyRelationTS) TestEagerRelation() {
 	d3Orm := orm.NewOrm(adapter.NewGoPgXAdapter(o.pgDb, &adapter.SquirrelAdapter{}))
-	err := d3Orm.Register((*testEntity1ManyToManyEL)(nil), (*testEntity2ManyToManyEL)(nil), (*testEntity3ManyToMany)(nil))
+	err := d3Orm.Register((*BookEL)(nil), (*AuthorEL)(nil), (*Redactor)(nil))
 	o.Assert().NoError(err)
 
 	session := d3Orm.CreateSession()
-	repository, err := d3Orm.CreateRepository(session, (*testEntity1ManyToManyEL)(nil))
+	repository, err := d3Orm.CreateRepository(session, (*BookEL)(nil))
 	o.Assert().NoError(err)
 
-	entity, err := repository.FindOne(repository.CreateQuery().AndWhere("test_entity_1.id = ?", 1))
+	entity, err := repository.FindOne(repository.CreateQuery().AndWhere("book.id = ?", 1))
 	o.Assert().NoError(err)
 
-	o.Assert().IsType(&testEntity1ManyToManyEL{}, entity)
-	o.Assert().Equal(int32(1), entity.(*testEntity1ManyToManyEL).Id)
-	o.Assert().Equal("entity_1_data_1", entity.(*testEntity1ManyToManyEL).Data)
+	o.Assert().IsType(&BookEL{}, entity)
+	o.Assert().Equal(int32(1), entity.(*BookEL).Id)
+	o.Assert().Equal("Antic Hay", entity.(*BookEL).Name)
 
-	relatedEntities := entity.(*testEntity1ManyToManyEL).Rel
+	relatedEntities := entity.(*BookEL).Rel
 	o.Assert().Equal(2, relatedEntities.Count())
 	o.Assert().Subset(
-		[]string{"entity_2_data_1", "entity_2_data_2"},
-		[]string{relatedEntities.Get(0).(*testEntity2ManyToManyEL).Data, relatedEntities.Get(1).(*testEntity2ManyToManyEL).Data},
+		[]string{"Aldous Huxley", "Brian Keenan"},
+		[]string{relatedEntities.Get(0).(*AuthorEL).Name, relatedEntities.Get(1).(*AuthorEL).Name},
 	)
 
-	if relatedEntities.Get(0).(*testEntity2ManyToManyEL).Rel.Count() != 1 &&  relatedEntities.Get(1).(*testEntity2ManyToManyEL).Rel.Count() != 1 {
+	if relatedEntities.Get(0).(*AuthorEL).Rel.Count() != 1 && relatedEntities.Get(1).(*AuthorEL).Rel.Count() != 1 {
 		o.Assert().Fail("testEntity3 not found")
 	}
 }

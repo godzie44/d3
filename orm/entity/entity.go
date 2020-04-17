@@ -23,11 +23,27 @@ func (b *baseEntity) Wrap(entity interface{}) {
 }
 
 type eagerEntity struct {
-	baseEntity
+	base *baseEntity
 }
 
-func NewEagerEntity(source interface{}) *eagerEntity {
-	return &eagerEntity{baseEntity{inner: source}}
+func (e *eagerEntity) IsNil() bool {
+	return e.base.IsNil()
+}
+
+func (e *eagerEntity) Unwrap() interface{} {
+	return e.base.Unwrap()
+}
+
+func (e *eagerEntity) Wrap(i interface{}) {
+	e.base.Wrap(i)
+}
+
+func (e *eagerEntity) DeepCopy() interface{} {
+	return &eagerEntity{base: &baseEntity{inner: e.base.inner}}
+}
+
+func NewWrapEntity(source interface{}) *eagerEntity {
+	return &eagerEntity{base: &baseEntity{inner: source}}
 }
 
 type lazyEntity struct {
@@ -35,8 +51,12 @@ type lazyEntity struct {
 	extractor func() interface{}
 }
 
-func NewLazyEntity(extractor func() interface{}) *lazyEntity {
+func NewLazyWrappedEntity(extractor func() interface{}) *lazyEntity {
 	return &lazyEntity{extractor: extractor}
+}
+
+func (l *lazyEntity) DeepCopy() interface{} {
+	return &lazyEntity{entity: &baseEntity{inner: l.entity.inner}}
 }
 
 func (l *lazyEntity) initIfNeeded() {

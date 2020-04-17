@@ -7,18 +7,18 @@ import (
 )
 
 type imTestEntity1 struct {
-	entity struct{}          `d3:"table_name:test_entity_t1"`
-	Id     int64             `d3:"pk:auto"`
+	entity struct{} `d3:"table_name:test_entity_t1"`
+	ID     int64    `d3:"pk:auto"`
 	Data   string
 }
 
 type imTestEntity2 struct {
-	entity struct{}          `d3:"table_name:test_entity_t2"`
-	Id     int64             `d3:"pk:auto"`
+	entity struct{} `d3:"table_name:test_entity_t2"`
+	ID     int64    `d3:"pk:auto"`
 	Data   string
 }
 
-func TestPutEntities(t *testing.T)  {
+func TestPutEntities(t *testing.T) {
 	im := newIdentityMap()
 
 	meta, err := entity.CreateMeta((*imTestEntity1)(nil))
@@ -26,11 +26,11 @@ func TestPutEntities(t *testing.T)  {
 
 	entities := []*imTestEntity1{
 		{
-			Id:   1,
+			ID:   1,
 			Data: "1",
 		},
 		{
-			Id:   2,
+			ID:   2,
 			Data: "1",
 		},
 	}
@@ -42,7 +42,7 @@ func TestPutEntities(t *testing.T)  {
 
 	entities2 := []*imTestEntity2{
 		{
-			Id:   1,
+			ID:   1,
 			Data: "1",
 		},
 	}

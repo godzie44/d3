@@ -1,7 +1,11 @@
 package reflect
 
 import (
+	"database/sql"
+	"database/sql/driver"
 	"errors"
+	"fmt"
+	"github.com/mohae/deepcopy"
 	"reflect"
 )
 
@@ -20,13 +24,13 @@ func GetFirstElementFromSlice(slice interface{}) (interface{}, error) {
 	return sliceVal.Index(0).Interface(), nil
 }
 
-func CreateEmptyEntity(entity interface{}) interface{} {
-	entityType := reflect.TypeOf(entity)
+func CreateEmptyEntity(strctPtr interface{}) interface{} {
+	entityType := reflect.TypeOf(strctPtr)
 	return reflect.New(entityType.Elem()).Interface()
 }
 
-func CreateSliceOfEntities(entityType reflect.Type, len int) interface{} {
-	sliceType := reflect.SliceOf(entityType)
+func CreateSliceOfStructPtrs(strctType reflect.Type, len int) interface{} {
+	sliceType := reflect.SliceOf(strctType)
 	sliceVal := reflect.MakeSlice(sliceType, len, len)
 
 	return sliceVal.Interface()
@@ -62,4 +66,87 @@ func FullName(t reflect.Type) string {
 	default:
 		return t.PkgPath() + "/" + t.Name()
 	}
+}
+
+func ExtractStructField(strctPtr interface{}, fieldName string) (interface{}, error) {
+	elPtr := reflect.ValueOf(strctPtr)
+	if elPtr.Kind() != reflect.Ptr {
+		return nil, fmt.Errorf("entity value must be pointer")
+	}
+
+	if elPtr.Elem().Kind() != reflect.Struct {
+		return nil, fmt.Errorf("entity pointer not link to struct")
+	}
+
+	field := elPtr.Elem().FieldByName(fieldName)
+	if !field.IsValid() {
+		return nil, fmt.Errorf("invalid field: %s", fieldName)
+	}
+
+	return field.Interface(), nil
+}
+
+var scannerType = reflect.TypeOf((*sql.Scanner)(nil)).Elem()
+
+func SetFields(strctPtr interface{}, fields map[string]interface{}) error {
+	reflectVal := reflect.ValueOf(strctPtr).Elem()
+
+	for name, val := range fields {
+		f := reflectVal.FieldByName(name)
+
+		if err := ValidateField(&f); err != nil {
+			return err
+		}
+
+		SetField(&f, val)
+	}
+
+	return nil
+}
+
+func ValidateField(field *reflect.Value) error {
+	if !field.IsValid() || !field.CanSet() {
+		return fmt.Errorf("unreacheble field")
+	}
+	return nil
+}
+
+func SetField(field *reflect.Value, val interface{}) {
+	if reflect.PtrTo(field.Type()).Implements(scannerType) {
+		if valuer, isValuer := val.(driver.Valuer); isValuer {
+			v, err := valuer.Value()
+			if err != nil {
+				_ = field.Addr().Interface().(sql.Scanner).Scan(nil)
+			} else {
+				_ = field.Addr().Interface().(sql.Scanner).Scan(v)
+			}
+		} else {
+			_ = field.Addr().Interface().(sql.Scanner).Scan(val)
+		}
+	} else {
+		field.Set(reflect.ValueOf(val))
+	}
+}
+
+func Copy(strctPtr interface{}) interface{} {
+	//val := reflect.ValueOf(strctPtr).Elem()
+	//pt := reflect.PtrTo(val.Type())
+	//pv := reflect.New(pt.Elem())
+	//
+	//pv.Elem().Set(val)
+	//
+	//return pv.Interface()
+
+	return deepcopy.Copy(strctPtr)
+}
+
+func IsFieldEquals(strctPtr1, strctPtr2 interface{}, field string) bool {
+	if strctPtr1 == nil || strctPtr2 == nil {
+		return false
+	}
+
+	reflectVal1 := reflect.ValueOf(strctPtr1).Elem()
+	reflectVal2 := reflect.ValueOf(strctPtr2).Elem()
+
+	return reflect.DeepEqual(reflectVal1.FieldByName(field).Interface(), reflectVal2.FieldByName(field).Interface())
 }
