@@ -1,7 +1,6 @@
 package persistence
 
 import (
-	"d3/mapper"
 	"d3/orm/entity"
 	"fmt"
 	"github.com/stretchr/testify/assert"
@@ -121,22 +120,22 @@ func TestExecuteComplexGraph(t *testing.T) {
 	books := []interface{}{
 		&Book{
 			ID:      1,
-			Authors: mapper.NewCollection([]interface{}{commonAuthor}),
+			Authors: entity.NewCollection([]interface{}{commonAuthor}),
 		},
 		&Book{
 			ID:      3,
-			Authors: mapper.NewCollection(authors),
+			Authors: entity.NewCollection(authors),
 		},
 	}
 
 	shop1 := &Shop{
 		ID:      1,
 		Profile: entity.NewWrapEntity(&ShopProfile{ID: 1}),
-		Books:   mapper.NewCollection(books)}
+		Books:   entity.NewCollection(books)}
 	shop2 := &Shop{
 		ID:      2,
 		Profile: entity.NewWrapEntity(&ShopProfile{ID: 2}),
-		Books: mapper.NewCollection([]interface{}{&Book{
+		Books: entity.NewCollection([]interface{}{&Book{
 			ID: 2,
 		}}),
 	}
@@ -177,7 +176,7 @@ func TestExecuteComplexGraph(t *testing.T) {
 type Order struct {
 	entity   struct{}             `d3:"table_name:order"`
 	Id       int                  `d3:"pk:auto"`
-	Items    mapper.Collection    `d3:"one_to_many:<target_entity:d3/orm/persistence/OrderItem,join_on:order_id>,type:lazy"`
+	Items    entity.Collection    `d3:"one_to_many:<target_entity:d3/orm/persistence/OrderItem,join_on:order_id>,type:lazy"`
 	BestItem entity.WrappedEntity `d3:"one_to_one:<target_entity:d3/orm/persistence/OrderItem,join_on:best_item_id>,type:lazy"`
 }
 
@@ -197,7 +196,7 @@ func TestExecuteWithCircularReference(t *testing.T) {
 
 	order := &Order{
 		Id:       1,
-		Items:    mapper.NewCollection(orderItems),
+		Items:    entity.NewCollection(orderItems),
 		BestItem: entity.NewWrapEntity(bestItem),
 	}
 

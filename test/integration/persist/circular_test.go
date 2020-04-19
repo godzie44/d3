@@ -3,7 +3,6 @@ package persist
 import (
 	"context"
 	"d3/adapter"
-	"d3/mapper"
 	"d3/orm"
 	"d3/orm/entity"
 	"d3/test/helpers"
@@ -87,8 +86,8 @@ type ShopCirc struct {
 	FriendShop entity.WrappedEntity `d3:"one_to_one:<target_entity:d3/test/integration/persist/ShopCirc,join_on:friend_id>,type:lazy"`
 
 	TopSeller    entity.WrappedEntity `d3:"one_to_one:<target_entity:d3/test/integration/persist/SellerCirc,join_on:top_seller_id>,type:lazy"`
-	Sellers      mapper.Collection    `d3:"one_to_many:<target_entity:d3/test/integration/persist/SellerCirc,join_on:shop_id>,type:lazy"`
-	KnownSellers mapper.Collection    `d3:"many_to_many:<target_entity:d3/test/integration/persist/SellerCirc,join_on:shop_id,reference_on:seller_id,join_table:known_shop_seller_c>,type:lazy"`
+	Sellers      entity.Collection    `d3:"one_to_many:<target_entity:d3/test/integration/persist/SellerCirc,join_on:shop_id>,type:lazy"`
+	KnownSellers entity.Collection    `d3:"many_to_many:<target_entity:d3/test/integration/persist/SellerCirc,join_on:shop_id,reference_on:seller_id,join_table:known_shop_seller_c>,type:lazy"`
 }
 
 type ShopProfileCirc struct {
@@ -104,7 +103,7 @@ type SellerCirc struct {
 	Name   string
 
 	CurrentShop entity.WrappedEntity `d3:"one_to_one:<target_entity:d3/test/integration/persist/ShopCirc,join_on:shop_id>,type:lazy"`
-	KnownShops  mapper.Collection    `d3:"many_to_many:<target_entity:d3/test/integration/persist/ShopCirc,join_on:seller_id,reference_on:shop_id,join_table:known_shop_seller_c>,type:lazy"`
+	KnownShops  entity.Collection    `d3:"many_to_many:<target_entity:d3/test/integration/persist/ShopCirc,join_on:seller_id,reference_on:shop_id,join_table:known_shop_seller_c>,type:lazy"`
 }
 
 func (o *PersistsCircularTS) TestInsertWithCircularRef() {
@@ -194,19 +193,19 @@ func (o *PersistsCircularTS) TestBigCircularReferenceGraph() {
 	seller2 := &SellerCirc{Name: "Sergej"}
 	seller3 := &SellerCirc{Name: "Nickolay"}
 
-	shop1.Sellers = mapper.NewCollection([]interface{}{seller1})
-	shop2.Sellers = mapper.NewCollection([]interface{}{seller2, seller3})
-	shop1.KnownSellers = mapper.NewCollection([]interface{}{seller1, seller2})
-	shop2.KnownSellers = mapper.NewCollection([]interface{}{seller2, seller3})
+	shop1.Sellers = entity.NewCollection([]interface{}{seller1})
+	shop2.Sellers = entity.NewCollection([]interface{}{seller2, seller3})
+	shop1.KnownSellers = entity.NewCollection([]interface{}{seller1, seller2})
+	shop2.KnownSellers = entity.NewCollection([]interface{}{seller2, seller3})
 	shop1.TopSeller = entity.NewWrapEntity(seller1)
 	shop2.TopSeller = entity.NewWrapEntity(seller2)
 
 	seller1.CurrentShop = entity.NewWrapEntity(shop1)
-	seller1.KnownShops = mapper.NewCollection([]interface{}{shop1})
+	seller1.KnownShops = entity.NewCollection([]interface{}{shop1})
 	seller2.CurrentShop = entity.NewWrapEntity(shop2)
-	seller2.KnownShops = mapper.NewCollection([]interface{}{shop1, shop2})
+	seller2.KnownShops = entity.NewCollection([]interface{}{shop1, shop2})
 	seller3.CurrentShop = entity.NewWrapEntity(shop2)
-	seller3.KnownShops = mapper.NewCollection([]interface{}{shop2})
+	seller3.KnownShops = entity.NewCollection([]interface{}{shop2})
 
 	o.Assert().NoError(repository.Persists(shop1))
 	o.Assert().NoError(repository.Persists(shop2))

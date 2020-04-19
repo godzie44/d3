@@ -1,7 +1,6 @@
 package entity
 
 import (
-	"d3/mapper"
 	"d3/reflect"
 	"errors"
 )
@@ -63,17 +62,17 @@ type OneToMany struct {
 	ReferenceColumn string
 }
 
-func (o *OneToMany) ExtractCollection(owner interface{}) (mapper.Collection, error) {
+func (o *OneToMany) ExtractCollection(owner interface{}) (Collection, error) {
 	val, err := reflect.ExtractStructField(owner, o.Field().Name)
 	if err != nil {
 		return nil, err
 	}
 
 	if val == nil {
-		return mapper.NewCollection(nil), nil
+		return NewCollection(nil), nil
 	}
 
-	collection, ok := val.(mapper.Collection)
+	collection, ok := val.(Collection)
 	if !ok {
 		return nil, errors.New("field type must be Collection")
 	}
@@ -117,17 +116,17 @@ type ManyToMany struct {
 	JoinTable       string
 }
 
-func (o *ManyToMany) ExtractCollection(owner interface{}) (mapper.Collection, error) {
+func (o *ManyToMany) ExtractCollection(owner interface{}) (Collection, error) {
 	val, err := reflect.ExtractStructField(owner, o.Field().Name)
 	if err != nil {
 		return nil, err
 	}
 
 	if val == nil {
-		return mapper.NewCollection(nil), nil
+		return NewCollection(nil), nil
 	}
 
-	collection, ok := val.(mapper.Collection)
+	collection, ok := val.(Collection)
 	if !ok {
 		return nil, errors.New("field type must be Collection")
 	}

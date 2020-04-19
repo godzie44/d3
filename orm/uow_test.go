@@ -1,7 +1,6 @@
 package orm
 
 import (
-	"d3/mapper"
 	"d3/orm/entity"
 	"github.com/stretchr/testify/assert"
 	"testing"
@@ -57,7 +56,7 @@ type uowTestEntity2 struct {
 	entity       struct{}             `d3:"table_name:t2"`
 	Id           int                  `d3:"pk:auto"`
 	OneToOneRel  entity.WrappedEntity `d3:"one_to_one:<target_entity:d3/orm/uowTestEntity3,join_on:t3_id>,type:lazy"`
-	OneToManyRel mapper.Collection    `d3:"one_to_many:<target_entity:d3/orm/uowTestEntity3,join_on:t2_id>,type:lazy"`
+	OneToManyRel entity.Collection    `d3:"one_to_many:<target_entity:d3/orm/uowTestEntity3,join_on:t2_id>,type:lazy"`
 }
 
 type uowTestEntity3 struct {

@@ -1,4 +1,4 @@
-package mapper
+package entity
 
 import (
 	"d3/reflect"
@@ -84,15 +84,15 @@ func TestLazyCollectionToSlice(t *testing.T) {
 	assert.Equal(t, []interface{}{1, 2, 3}, collection.ToSlice())
 }
 
-type testEntity struct {
+type copyEntity struct {
 	ID  int
 	Rel Collection
 }
 
 func TestCopy(t *testing.T) {
-	te := &testEntity{ID: 1, Rel: NewCollection([]interface{}{1, 2, 3})}
+	te := &copyEntity{ID: 1, Rel: NewCollection([]interface{}{1, 2, 3})}
 
-	copyTe := reflect.Copy(te).(*testEntity)
+	copyTe := reflect.Copy(te).(*copyEntity)
 	assert.Equal(t, te.Rel.ToSlice(), copyTe.Rel.ToSlice())
 
 	te.Rel.Remove(1)

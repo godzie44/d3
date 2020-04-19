@@ -1,7 +1,6 @@
 package persistence
 
 import (
-	"d3/mapper"
 	"d3/orm/entity"
 	"database/sql"
 	"github.com/stretchr/testify/assert"
@@ -12,7 +11,7 @@ import (
 type Shop struct {
 	entity  struct{}             `d3:"table_name:shop"`
 	ID      int                  `d3:"pk:manual"`
-	Books   mapper.Collection    `d3:"one_to_many:<target_entity:d3/orm/persistence/Book,join_on:shop_id>,type:lazy"`
+	Books   entity.Collection    `d3:"one_to_many:<target_entity:d3/orm/persistence/Book,join_on:shop_id>,type:lazy"`
 	Profile entity.WrappedEntity `d3:"one_to_one:<target_entity:d3/orm/persistence/ShopProfile,join_on:profile_id>,type:lazy"`
 }
 
@@ -24,7 +23,7 @@ type ShopProfile struct {
 type Book struct {
 	entity  struct{}          `d3:"table_name:book"`
 	ID      int               `d3:"pk:manual"`
-	Authors mapper.Collection `d3:"many_to_many:<target_entity:d3/orm/persistence/Author,join_on:book_id,reference_on:author_id,join_table:book_author>,type:lazy"`
+	Authors entity.Collection `d3:"many_to_many:<target_entity:d3/orm/persistence/Author,join_on:book_id,reference_on:author_id,join_table:book_author>,type:lazy"`
 }
 
 type Author struct {
@@ -95,7 +94,7 @@ func TestGenerationOneToManyEntity(t *testing.T) {
 			ID: 3,
 		},
 	}
-	shop := &Shop{ID: 1, Books: mapper.NewCollection(books)}
+	shop := &Shop{ID: 1, Books: entity.NewCollection(books)}
 
 	graph := createNewGraph()
 
@@ -126,7 +125,7 @@ func TestGenerationManyToMany(t *testing.T) {
 			ID: 2,
 		},
 	}
-	books := &Book{ID: 1, Authors: mapper.NewCollection(authors)}
+	books := &Book{ID: 1, Authors: entity.NewCollection(authors)}
 
 	graph := createNewGraph()
 
@@ -180,14 +179,14 @@ func TestGenerationBigGraph(t *testing.T) {
 		},
 		&Book{
 			ID:      3,
-			Authors: mapper.NewCollection(authors),
+			Authors: entity.NewCollection(authors),
 		},
 	}
 
 	shop1 := &Shop{ID: 1, Profile: entity.NewWrapEntity(&ShopProfile{ID: 1}),
-		Books: mapper.NewCollection(books)}
+		Books: entity.NewCollection(books)}
 	shop2 := &Shop{ID: 2, Profile: entity.NewWrapEntity(&ShopProfile{ID: 2}),
-		Books: mapper.NewCollection([]interface{}{&Book{
+		Books: entity.NewCollection([]interface{}{&Book{
 			ID: 2,
 		}}),
 	}
@@ -268,8 +267,8 @@ func TestGenerationManyToManyWithCommonEntity(t *testing.T) {
 			ID: 2,
 		},
 	}
-	book1 := &Book{ID: 1, Authors: mapper.NewCollection(e4s)}
-	book2 := &Book{ID: 2, Authors: mapper.NewCollection([]interface{}{commonAuthor})}
+	book1 := &Book{ID: 1, Authors: entity.NewCollection(e4s)}
+	book2 := &Book{ID: 2, Authors: entity.NewCollection([]interface{}{commonAuthor})}
 
 	graph := createNewGraph()
 
@@ -329,8 +328,8 @@ func TestDoublePersistNotAffectGraph(t *testing.T) {
 			ID: 3,
 		},
 	}
-	entity31 := &Book{ID: 1, Authors: mapper.NewCollection(e4s)}
-	entity32 := &Book{ID: 2, Authors: mapper.NewCollection([]interface{}{commonAuthor})}
+	entity31 := &Book{ID: 1, Authors: entity.NewCollection(e4s)}
+	entity32 := &Book{ID: 2, Authors: entity.NewCollection([]interface{}{commonAuthor})}
 
 	graph := createNewGraph()
 
@@ -346,8 +345,8 @@ type User struct {
 	entity       struct{}             `d3:"table_name:user"`
 	Id           int                  `d3:"pk:auto"`
 	Avatar       entity.WrappedEntity `d3:"one_to_one:<target_entity:d3/orm/persistence/Photo,join_on:avatar_id>,type:lazy"`
-	GoodPhotos   mapper.Collection    `d3:"one_to_many:<target_entity:d3/orm/persistence/Photo,join_on:user_good_id>,type:lazy"`
-	PrettyPhotos mapper.Collection    `d3:"one_to_many:<target_entity:d3/orm/persistence/Photo,join_on:user_pretty_id>,type:lazy"`
+	GoodPhotos   entity.Collection    `d3:"one_to_many:<target_entity:d3/orm/persistence/Photo,join_on:user_good_id>,type:lazy"`
+	PrettyPhotos entity.Collection    `d3:"one_to_many:<target_entity:d3/orm/persistence/Photo,join_on:user_pretty_id>,type:lazy"`
 }
 
 type Photo struct {
@@ -362,8 +361,8 @@ func TestGenerationTwoOneToManyOnOneEntity(t *testing.T) {
 	goodAndPrettyPhoto := &Photo{Id: 1}
 
 	user := &User{Id: 1,
-		GoodPhotos:   mapper.NewCollection([]interface{}{goodAndPrettyPhoto, &Photo{Id: 2}}),
-		PrettyPhotos: mapper.NewCollection([]interface{}{goodAndPrettyPhoto, &Photo{Id: 3}}),
+		GoodPhotos:   entity.NewCollection([]interface{}{goodAndPrettyPhoto, &Photo{Id: 2}}),
+		PrettyPhotos: entity.NewCollection([]interface{}{goodAndPrettyPhoto, &Photo{Id: 3}}),
 	}
 
 	graph := createNewGraph()
@@ -399,7 +398,7 @@ func TestNoCycleOneToOneToMany(t *testing.T) {
 	goodAndAvatarPhoto := &Photo{Id: 1}
 
 	user := &User{Id: 1,
-		GoodPhotos: mapper.NewCollection([]interface{}{goodAndAvatarPhoto}),
+		GoodPhotos: entity.NewCollection([]interface{}{goodAndAvatarPhoto}),
 		Avatar:     entity.NewWrapEntity(goodAndAvatarPhoto),
 	}
 
@@ -414,7 +413,7 @@ func TestNoCycleOneToOneToMany(t *testing.T) {
 type BookCirc struct {
 	entity     struct{}             `d3:"table_name:book2"`
 	Id         int                  `d3:"pk:auto"`
-	Authors    mapper.Collection    `d3:"many_to_many:<target_entity:d3/orm/persistence/Author,join_on:book_id,reference_on:author_id,join_table:book_author>,type:lazy"`
+	Authors    entity.Collection    `d3:"many_to_many:<target_entity:d3/orm/persistence/Author,join_on:book_id,reference_on:author_id,join_table:book_author>,type:lazy"`
 	MainAuthor entity.WrappedEntity `d3:"one_to_one:<target_entity:d3/orm/persistence/Author,join_on:m_author_id>,type:lazy"`
 }
 
@@ -425,7 +424,7 @@ func TestNoCycleManyToManyToOne(t *testing.T) {
 	mainAuthor := &Author{ID: 1}
 	book := &BookCirc{
 		Id: 1,
-		Authors: mapper.NewCollection([]interface{}{
+		Authors: entity.NewCollection([]interface{}{
 			mainAuthor, &Author{ID: 2},
 		}),
 		MainAuthor: entity.NewWrapEntity(mainAuthor),
@@ -445,7 +444,7 @@ type shopCirc struct {
 	entity  struct{}             `d3:"table_name:shop"`
 	Id      sql.NullInt32        `d3:"pk:auto"`
 	Profile entity.WrappedEntity `d3:"one_to_one:<target_entity:d3/orm/persistence/shopProfileCirc,join_on:profile_id>"`
-	Sellers mapper.Collection    `d3:"one_to_many:<target_entity:d3/orm/persistence/sellerCirc,join_on:shop_id>"`
+	Sellers entity.Collection    `d3:"one_to_many:<target_entity:d3/orm/persistence/sellerCirc,join_on:shop_id>"`
 	Name    string
 }
 
@@ -495,11 +494,11 @@ func TestNoCycleOneToMany(t *testing.T) {
 	seller3 := &sellerCirc{}
 	shop1 := &shopCirc{
 		Id:      sql.NullInt32{Int32: 1, Valid: true},
-		Sellers: mapper.NewCollection([]interface{}{seller1}),
+		Sellers: entity.NewCollection([]interface{}{seller1}),
 	}
 	shop2 := &shopCirc{
 		Id:      sql.NullInt32{Int32: 2, Valid: true},
-		Sellers: mapper.NewCollection([]interface{}{seller2, seller3}),
+		Sellers: entity.NewCollection([]interface{}{seller2, seller3}),
 	}
 	seller1.Shop = entity.NewWrapEntity(shop1)
 	seller2.Shop = entity.NewWrapEntity(shop2)

@@ -3,7 +3,6 @@ package persist
 import (
 	"context"
 	"d3/adapter"
-	"d3/mapper"
 	"d3/orm"
 	"d3/orm/entity"
 	"d3/test/helpers"
@@ -17,7 +16,7 @@ import (
 type Shop struct {
 	entity  struct{}             `d3:"table_name:shop_p"`
 	Id      sql.NullInt32        `d3:"pk:auto"`
-	Books   mapper.Collection    `d3:"one_to_many:<target_entity:d3/test/integration/persist/Book,join_on:shop_id>,type:lazy"`
+	Books   entity.Collection    `d3:"one_to_many:<target_entity:d3/test/integration/persist/Book,join_on:shop_id>,type:lazy"`
 	Profile entity.WrappedEntity `d3:"one_to_one:<target_entity:d3/test/integration/persist/ShopProfile,join_on:profile_id>,type:lazy"`
 	Name    string
 }
@@ -31,7 +30,7 @@ type ShopProfile struct {
 type Book struct {
 	entity  struct{}          `d3:"table_name:book_p"`
 	Id      sql.NullInt32     `d3:"pk:auto"`
-	Authors mapper.Collection `d3:"many_to_many:<target_entity:d3/test/integration/persist/Author,join_on:book_id,reference_on:author_id,join_table:book_author_p>,type:lazy"`
+	Authors entity.Collection `d3:"many_to_many:<target_entity:d3/test/integration/persist/Author,join_on:book_id,reference_on:author_id,join_table:book_author_p>,type:lazy"`
 	Name    string
 }
 
@@ -234,11 +233,11 @@ func createAndPersistsShop(orm *orm.Orm, s *orm.Session) (*Shop, error) {
 		Name: "author1",
 	}
 	shop := &Shop{
-		Books: mapper.NewCollection([]interface{}{&Book{
-			Authors: mapper.NewCollection([]interface{}{author1, &Author{Name: "author 2"}}),
+		Books: entity.NewCollection([]interface{}{&Book{
+			Authors: entity.NewCollection([]interface{}{author1, &Author{Name: "author 2"}}),
 			Name:    "book 1",
 		}, &Book{
-			Authors: mapper.NewCollection([]interface{}{author1, &Author{Name: "author 3"}}),
+			Authors: entity.NewCollection([]interface{}{author1, &Author{Name: "author 3"}}),
 			Name:    "book 2",
 		}}),
 		Profile: entity.NewWrapEntity(&ShopProfile{

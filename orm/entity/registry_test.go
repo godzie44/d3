@@ -7,7 +7,7 @@ import (
 )
 
 type testEntity struct {
-	Id   int `d3:"pk:auto"`
+	ID   int `d3:"pk:auto"`
 	data string
 }
 

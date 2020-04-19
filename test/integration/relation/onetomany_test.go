@@ -3,8 +3,8 @@ package relation
 import (
 	"context"
 	"d3/adapter"
-	"d3/mapper"
 	"d3/orm"
+	entity2 "d3/orm/entity"
 	"fmt"
 	"github.com/jackc/pgx/v4"
 	"github.com/stretchr/testify/suite"
@@ -64,9 +64,9 @@ DROP TABLE discount;
 }
 
 type ShopLR struct {
-	entity struct{}          `d3:"table_name:shop"`
-	Id     int32             `d3:"pk:auto"`
-	Books  mapper.Collection `d3:"one_to_many:<target_entity:d3/test/integration/relation/BookLR,join_on:t1_id>,type:lazy"`
+	entity struct{}           `d3:"table_name:shop"`
+	Id     int32              `d3:"pk:auto"`
+	Books  entity2.Collection `d3:"one_to_many:<target_entity:d3/test/integration/relation/BookLR,join_on:t1_id>,type:lazy"`
 	Name   string
 }
 
@@ -106,16 +106,16 @@ func (o *OneToManyRelationTS) TestLazyRelation() {
 }
 
 type ShopER struct {
-	entity struct{}          `d3:"table_name:shop"`
-	Id     int32             `d3:"pk:auto"`
-	Books  mapper.Collection `d3:"one_to_many:<target_entity:d3/test/integration/relation/BookER,join_on:t1_id,reference_on:id>,type:eager"`
+	entity struct{}           `d3:"table_name:shop"`
+	Id     int32              `d3:"pk:auto"`
+	Books  entity2.Collection `d3:"one_to_many:<target_entity:d3/test/integration/relation/BookER,join_on:t1_id,reference_on:id>,type:eager"`
 	Name   string
 }
 
 type BookER struct {
-	entity    struct{}          `d3:"table_name:book"`
-	Id        int32             `d3:"pk:auto"`
-	Discounts mapper.Collection `d3:"one_to_many:<target_entity:d3/test/integration/relation/DiscountER,join_on:t2_id,reference_on:id>,type:eager"`
+	entity    struct{}           `d3:"table_name:book"`
+	Id        int32              `d3:"pk:auto"`
+	Discounts entity2.Collection `d3:"one_to_many:<target_entity:d3/test/integration/relation/DiscountER,join_on:t2_id,reference_on:id>,type:eager"`
 	Name      string
 }
 

@@ -1,4 +1,4 @@
-package mapper
+package entity
 
 import "d3/reflect"
 

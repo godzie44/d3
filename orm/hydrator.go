@@ -1,7 +1,6 @@
 package orm
 
 import (
-	"d3/mapper"
 	d3entity "d3/orm/entity"
 	"d3/orm/query"
 	d3reflect "d3/reflect"
@@ -129,7 +128,7 @@ func (h *Hydrator) fetchRelation(relation d3entity.Relation, entityData []map[st
 			entities = append(entities, entity)
 		}
 
-		return mapper.NewCollection(entities), nil
+		return d3entity.NewCollection(entities), nil
 	}
 
 	return nil, nil
@@ -173,11 +172,11 @@ func (h *Hydrator) createRelation(relation d3entity.Relation, entityData map[str
 		}
 
 		if rel.IsLazy() {
-			return mapper.NewLazyCollection(extractor), nil
+			return d3entity.NewLazyCollection(extractor), nil
 		}
 
 		if rel.IsEager() {
-			return mapper.NewCollection(d3reflect.BreakUpSlice(extractor())), nil
+			return d3entity.NewCollection(d3reflect.BreakUpSlice(extractor())), nil
 		}
 	}
 
