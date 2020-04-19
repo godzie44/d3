@@ -11,7 +11,7 @@ type Extractor func() interface{}
 
 func (s *Session) createOneToOneExtractor(id interface{}, relatedMeta *d3entity.MetaInfo) Extractor {
 	return func() interface{} {
-		entities, err := s.Execute(
+		entities, err := s.execute(
 			query.NewQuery(relatedMeta).AndWhere(relatedMeta.Pk.FullDbAlias()+"=?", id),
 		)
 
@@ -30,7 +30,7 @@ func (s *Session) createOneToOneExtractor(id interface{}, relatedMeta *d3entity.
 
 func (s *Session) createOneToManyExtractor(joinId interface{}, relation *d3entity.OneToMany, relatedMeta *d3entity.MetaInfo) Extractor {
 	return func() interface{} {
-		entities, err := s.Execute(
+		entities, err := s.execute(
 			query.NewQuery(relatedMeta).AndWhere(relatedMeta.FullColumnAlias(relation.JoinColumn)+"=?", joinId),
 		)
 		if err != nil {
@@ -43,7 +43,7 @@ func (s *Session) createOneToManyExtractor(joinId interface{}, relation *d3entit
 
 func (s *Session) createManyToManyExtractor(id interface{}, rel *d3entity.ManyToMany, relatedMeta *d3entity.MetaInfo) Extractor {
 	return func() interface{} {
-		entities, err := s.Execute(
+		entities, err := s.execute(
 			query.
 				NewQuery(relatedMeta).
 				Join(query.JoinInner, rel.JoinTable, fmt.Sprintf("%s.%s=%s", rel.JoinTable, rel.ReferenceColumn, relatedMeta.Pk.FullDbAlias())).

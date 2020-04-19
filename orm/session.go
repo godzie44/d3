@@ -24,7 +24,7 @@ func NewSession(storage Storage, uow *UnitOfWork, metaRegistry *entity.MetaRegis
 	return &Session{storage: storage, uow: uow, MetaRegistry: metaRegistry}
 }
 
-func (s *Session) Execute(q *query.Query) (interface{}, error) {
+func (s *Session) execute(q *query.Query) (interface{}, error) {
 	fetchPlan := query.Preprocessor.CreateFetchPlan(q)
 
 	if s.uow.identityMap.canApply(fetchPlan) {
@@ -51,6 +51,7 @@ func (s *Session) Execute(q *query.Query) (interface{}, error) {
 	return result, nil
 }
 
+//Flush save all created, update changed and delete deleted entities within the session.
 func (s *Session) Flush() error {
 	return s.uow.Commit()
 }

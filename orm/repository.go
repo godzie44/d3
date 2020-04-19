@@ -13,7 +13,7 @@ type Repository struct {
 }
 
 func (r *Repository) FindOne(q *query.Query) (interface{}, error) {
-	entities, err := r.session.Execute(q)
+	entities, err := r.session.execute(q)
 	if err != nil {
 		return nil, err
 	}
@@ -27,7 +27,7 @@ func (r *Repository) FindOne(q *query.Query) (interface{}, error) {
 }
 
 func (r *Repository) FindAll(q *query.Query) (interface{}, error) {
-	return r.session.Execute(q)
+	return r.session.execute(q)
 }
 
 func (r *Repository) Persists(entity interface{}) error {
