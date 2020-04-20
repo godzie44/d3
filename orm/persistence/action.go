@@ -326,3 +326,12 @@ func (d *DeleteAction) equalTo(act CompositeAction) bool {
 
 	return false
 }
+
+func (d *DeleteAction) exec(storage Storage) error {
+	err := storage.Remove(d.TableName, d.deleteCondition)
+	if err != nil {
+		return err
+	}
+
+	return d.baseAction.exec(storage)
+}

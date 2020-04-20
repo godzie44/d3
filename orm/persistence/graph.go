@@ -361,8 +361,8 @@ func (p *PersistGraph) processManyToManyRel(box *persistBox, relation *d3entity.
 		}
 
 		delAction := NewDeleteAction(map[string]interface{}{
-			relatedMeta.Pk.Field.Name: relPk,
-			box.Meta.Pk.Field.Name:    pk,
+			relation.ReferenceColumn: relPk,
+			relation.JoinColumn:      pk,
 		})
 		delAction.setTableName(relation.JoinTable)
 

@@ -2,7 +2,6 @@ package adapter
 
 import (
 	"context"
-	"d3/orm/entity"
 	"d3/orm/persistence"
 	"d3/orm/query"
 	"fmt"
@@ -142,8 +141,27 @@ func (g *GoPgXAdapter) Update(table string, cols []string, values []interface{},
 	return nil
 }
 
-func (g *GoPgXAdapter) Remove(entities []interface{}, meta *entity.MetaInfo) {
-	//g.actionRegistry[ActionDelete] = entity
+func (g *GoPgXAdapter) Remove(table string, identityCond map[string]interface{}) error {
+	args := make([]interface{}, 0, len(identityCond))
+	where := make([]string, 0, len(identityCond))
+
+	for col, val := range identityCond {
+		args = append(args, val)
+		where = append(where, col+"=$"+strconv.Itoa(len(args)))
+	}
+
+	_, err := g.pgDb.Exec(
+		context.Background(),
+		fmt.Sprintf("DELETE FROM %s WHERE %s", table, strings.Join(where, " AND ")),
+		args...,
+	)
+
+	fmt.Println(
+		fmt.Sprintf("DELETE FROM %s WHERE %s", table, strings.Join(where, " AND ")),
+		args,
+	)
+
+	return err
 }
 
 func (g GoPgXAdapter) DoInTransaction(f func() error) error {

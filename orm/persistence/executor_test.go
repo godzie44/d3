@@ -57,7 +57,8 @@ func (s *storageStub) Update(table string, cols []string, values []interface{}, 
 	return nil
 }
 
-func (s *storageStub) Remove([]interface{}, *entity.MetaInfo) {
+func (s *storageStub) Remove(_ string, _ map[string]interface{}) error {
+	return nil
 }
 
 //assertQueryAfter check that query will be execute after queryBefore
