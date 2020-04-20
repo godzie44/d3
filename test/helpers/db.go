@@ -3,7 +3,6 @@ package helpers
 import (
 	"context"
 	"d3/orm"
-	"d3/orm/entity"
 	"d3/orm/persistence"
 	"d3/orm/query"
 	"fmt"
@@ -37,9 +36,9 @@ func (d *dbAdapterWithQueryCounter) Update(table string, cols []string, values [
 	return d.dbAdapter.Update(table, cols, values, identityCond)
 }
 
-func (d *dbAdapterWithQueryCounter) Remove(i []interface{}, e *entity.MetaInfo) {
+func (d *dbAdapterWithQueryCounter) Remove(table string, identityCond map[string]interface{}) error {
 	d.deleteCounter++
-	d.dbAdapter.Remove(i, e)
+	return d.dbAdapter.Remove(table, identityCond)
 }
 
 func (d *dbAdapterWithQueryCounter) ExecuteQuery(query *query.Query) ([]map[string]interface{}, error) {
@@ -64,6 +63,10 @@ func (d *dbAdapterWithQueryCounter) UpdateCounter() int {
 
 func (d *dbAdapterWithQueryCounter) InsertCounter() int {
 	return d.insertCounter
+}
+
+func (d *dbAdapterWithQueryCounter) DeleteCounter() int {
+	return d.deleteCounter
 }
 
 type pgTester struct {

@@ -203,7 +203,7 @@ func (o *PersistsTS) TestInsertThenUpdate() {
 	o.Assert().Equal(1, dbAdapter.UpdateCounter())
 }
 
-func (o *PersistsTS) TestInsertThenUpdateRelations() {
+func (o *PersistsTS) TestInsertThenUpdateOToMRelation() {
 	dbAdapter := helpers.NewDbAdapterWithQueryCounter(adapter.NewGoPgXAdapter(o.pgDb, &adapter.SquirrelAdapter{}))
 	d3Orm := orm.NewOrm(dbAdapter)
 	o.Assert().NoError(d3Orm.Register((*Book)(nil), (*Shop)(nil), (*ShopProfile)(nil), (*Author)(nil)))
@@ -224,6 +224,31 @@ func (o *PersistsTS) TestInsertThenUpdateRelations() {
 		SeeOne("SELECT * FROM book_p WHERE shop_id IS NULL")
 
 	o.Assert().Equal(1, dbAdapter.UpdateCounter())
+}
+
+func (o *PersistsTS) TestInsertThenUpdateMToMRelations() {
+	dbAdapter := helpers.NewDbAdapterWithQueryCounter(adapter.NewGoPgXAdapter(o.pgDb, &adapter.SquirrelAdapter{}))
+	d3Orm := orm.NewOrm(dbAdapter)
+	o.Assert().NoError(d3Orm.Register((*Book)(nil), (*Shop)(nil), (*ShopProfile)(nil), (*Author)(nil)))
+
+	session := d3Orm.CreateSession()
+
+	shop, err := createAndPersistsShop(d3Orm, session)
+	o.Assert().NoError(err)
+
+	o.Assert().NoError(session.Flush())
+
+	book := shop.Books.Get(0).(*Book)
+	author := book.Authors.Get(1).(*Author)
+
+	book.Authors.Remove(1)
+
+	o.Assert().NoError(session.Flush())
+
+	helpers.NewPgTester(o.T(), o.pgDb).
+		See(0, "SELECT * FROM book_author_p WHERE book_id = $1 and author_id = $2", book.Id, author.Id)
+
+	o.Assert().Equal(1, dbAdapter.DeleteCounter())
 }
 
 func createAndPersistsShop(orm *orm.Orm, s *orm.Session) (*Shop, error) {
