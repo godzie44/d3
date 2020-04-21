@@ -251,6 +251,45 @@ func (o *PersistsTS) TestInsertThenUpdateMToMRelations() {
 	o.Assert().Equal(1, dbAdapter.DeleteCounter())
 }
 
+func (o *PersistsTS) TestInsertThenFullUpdate() {
+	dbAdapter := helpers.NewDbAdapterWithQueryCounter(adapter.NewGoPgXAdapter(o.pgDb, &adapter.SquirrelAdapter{}))
+	d3Orm := orm.NewOrm(dbAdapter)
+	o.Assert().NoError(d3Orm.Register((*Book)(nil), (*Shop)(nil), (*ShopProfile)(nil), (*Author)(nil)))
+
+	session := d3Orm.CreateSession()
+
+	shop, err := createAndPersistsShop(d3Orm, session)
+	o.Assert().NoError(err)
+
+	o.Assert().NoError(session.Flush())
+
+	newProfile := &ShopProfile{Description: "new shop profile"}
+	shop.Profile = entity.NewWrapEntity(newProfile)
+	shop.Name = "new shop"
+
+	shop.Books.Remove(0)
+
+	newAuthor := &Author{Name: "new author"}
+	newBook := &Book{Name: "new book", Authors: entity.NewCollection([]interface{}{newAuthor})}
+	shop.Books.Add(newBook)
+
+	oldBook := shop.Books.Get(0).(*Book)
+	oldBook.Authors.Remove(1)
+
+	dbAdapter.ResetCounters()
+	o.Assert().NoError(session.Flush())
+
+	o.Assert().Equal(1, dbAdapter.DeleteCounter())
+	o.Assert().Equal(2, dbAdapter.UpdateCounter())
+	o.Assert().Equal(4, dbAdapter.InsertCounter())
+
+	helpers.NewPgTester(o.T(), o.pgDb).
+		SeeOne("SELECT * FROM shop_p WHERE name = $1 and profile_id = $2", "new shop", newProfile.Id).
+		SeeOne("SELECT * FROM book_p WHERE id = $1", newBook.Id).
+		SeeOne("SELECT * FROM author_p WHERE id = $1", newAuthor.Id).
+		SeeOne("SELECT * FROM book_author_p WHERE book_id = $1 and author_id = $2", newBook.Id, newAuthor.Id)
+}
+
 func createAndPersistsShop(orm *orm.Orm, s *orm.Session) (*Shop, error) {
 	repository, _ := orm.CreateRepository(s, (*Shop)(nil))
 

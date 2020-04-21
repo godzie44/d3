@@ -68,6 +68,11 @@ func (d *dbAdapterWithQueryCounter) InsertCounter() int {
 func (d *dbAdapterWithQueryCounter) DeleteCounter() int {
 	return d.deleteCounter
 }
+func (d *dbAdapterWithQueryCounter) ResetCounters() {
+	d.deleteCounter = 0
+	d.updateCounter = 0
+	d.insertCounter = 0
+}
 
 type pgTester struct {
 	t    *testing.T
