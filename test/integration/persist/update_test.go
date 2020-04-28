@@ -8,6 +8,7 @@ import (
 	"d3/test/helpers"
 	"fmt"
 	"github.com/jackc/pgx/v4"
+	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/suite"
 	"testing"
 )
@@ -165,4 +166,82 @@ func createAndPersistsShop(orm *orm.Orm, s *orm.Session) (*Shop, error) {
 	}
 
 	return shop, repository.Persists(shop)
+}
+
+func (u *UpdateTs) TestSelectThenFullUpdate() {
+	dbAdapter := helpers.NewDbAdapterWithQueryCounter(adapter.NewGoPgXAdapter(u.pgDb, &adapter.SquirrelAdapter{}))
+	d3Orm := orm.NewOrm(dbAdapter)
+	u.NoError(d3Orm.Register((*Book)(nil), (*Shop)(nil), (*ShopProfile)(nil), (*Author)(nil)))
+
+	fillDb(u.Assert(), dbAdapter)
+	session := d3Orm.CreateSession()
+
+	repo, err := d3Orm.CreateRepository(session, (*Shop)(nil))
+	u.NoError(err)
+
+	shop1i, err := repo.FindOne(repo.CreateQuery().AndWhere("shop_p.id = 1001"))
+	u.NoError(err)
+	shop2i, err := repo.FindOne(repo.CreateQuery().AndWhere("shop_p.id = 1002"))
+	u.NoError(err)
+
+	u.NotNil(shop2i)
+	u.NotNil(shop1i)
+	shop1 := shop1i.(*Shop)
+
+	newProfile := &ShopProfile{Description: "new shop profile"}
+	shop1.Profile = entity.NewWrapEntity(newProfile)
+	shop1.Name = "new shop"
+
+	shop1.Books.Remove(0)
+
+	newAuthor := &Author{Name: "new author"}
+	newBook := &Book{Name: "new book", Authors: entity.NewCollection([]interface{}{newAuthor})}
+	shop1.Books.Add(newBook)
+
+	oldBook := shop1.Books.Get(0).(*Book)
+	oldBook.Authors.Remove(0)
+
+	dbAdapter.ResetCounters()
+	u.NoError(session.Flush())
+
+	u.Equal(1, dbAdapter.DeleteCounter())
+	u.Equal(2, dbAdapter.UpdateCounter())
+	u.Equal(4, dbAdapter.InsertCounter())
+
+	helpers.NewPgTester(u.T(), u.pgDb).
+		SeeOne("SELECT * FROM shop_p WHERE name = $1 and profile_id = $2", "new shop", newProfile.Id).
+		SeeOne("SELECT * FROM book_p WHERE id = $1", newBook.Id).
+		SeeOne("SELECT * FROM author_p WHERE id = $1", newAuthor.Id).
+		SeeOne("SELECT * FROM book_author_p WHERE book_id = $1 and author_id = $2", newBook.Id, newAuthor.Id)
+}
+
+func fillDb(assert *assert.Assertions, s orm.Storage) {
+	err := s.Insert("shop_p", []string{"id", "name", "profile_id"}, nil, []interface{}{1001, "shop1", 1001}, false, nil)
+	assert.NoError(err)
+	err = s.Insert("shop_p", []string{"id", "name", "profile_id"}, nil, []interface{}{1002, "shop2", 1002}, false, nil)
+	assert.NoError(err)
+
+	err = s.Insert("profile_p", []string{"id", "description"}, nil, []interface{}{1001, "desc1"}, false, nil)
+	assert.NoError(err)
+	err = s.Insert("profile_p", []string{"id", "description"}, nil, []interface{}{1002, "desc2"}, false, nil)
+	assert.NoError(err)
+
+	err = s.Insert("book_p", []string{"id", "shop_id", "name"}, nil, []interface{}{1001, 1001, "book1"}, false, nil)
+	assert.NoError(err)
+	err = s.Insert("book_p", []string{"id", "shop_id", "name"}, nil, []interface{}{1002, 1001, "desc2"}, false, nil)
+	assert.NoError(err)
+	err = s.Insert("book_p", []string{"id", "shop_id", "name"}, nil, []interface{}{1003, 1002, "desc3"}, false, nil)
+	assert.NoError(err)
+
+	err = s.Insert("author_p", []string{"id", "name"}, nil, []interface{}{1001, "author1"}, false, nil)
+	assert.NoError(err)
+	err = s.Insert("author_p", []string{"id", "name"}, nil, []interface{}{1002, "author2"}, false, nil)
+	assert.NoError(err)
+
+	err = s.Insert("book_author_p", []string{"book_id", "author_id"}, nil, []interface{}{1001, 1001}, false, nil)
+	assert.NoError(err)
+	err = s.Insert("book_author_p", []string{"book_id", "author_id"}, nil, []interface{}{1002, 1001}, false, nil)
+	assert.NoError(err)
+	err = s.Insert("book_author_p", []string{"book_id", "author_id"}, nil, []interface{}{1002, 1002}, false, nil)
+	assert.NoError(err)
 }

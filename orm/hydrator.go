@@ -9,8 +9,9 @@ import (
 )
 
 type Hydrator struct {
-	session *Session
-	meta    *d3entity.MetaInfo
+	session            *Session
+	meta               *d3entity.MetaInfo
+	afterHydrateEntity func(b *d3entity.Box)
 }
 
 func (h *Hydrator) Hydrate(fetchedData []map[string]interface{}, plan *query.FetchPlan) (interface{}, error) {
@@ -35,6 +36,8 @@ func (h *Hydrator) Hydrate(fetchedData []map[string]interface{}, plan *query.Fet
 			return nil, err
 		}
 
+		h.afterHydrateEntity(d3entity.NewBox(newEntity.Interface(), h.meta))
+
 		sliceVal.Index(lastInsertedNum).Set(newEntity)
 		lastInsertedNum++
 	}
@@ -42,8 +45,8 @@ func (h *Hydrator) Hydrate(fetchedData []map[string]interface{}, plan *query.Fet
 	return modelSlice, nil
 }
 
-func (h *Hydrator) hydrateOne(model interface{}, entityData []map[string]interface{}, plan *query.FetchPlan) error {
-	modelReflectVal := reflect.ValueOf(model).Elem()
+func (h *Hydrator) hydrateOne(entity interface{}, entityData []map[string]interface{}, plan *query.FetchPlan) error {
+	modelReflectVal := reflect.ValueOf(entity).Elem()
 	modelType := modelReflectVal.Type()
 	for i := 0; i < modelReflectVal.NumField(); i++ {
 		f := modelReflectVal.Field(i)
@@ -67,7 +70,7 @@ func (h *Hydrator) hydrateOne(model interface{}, entityData []map[string]interfa
 					fieldValue, err = h.fetchRelation(relation, entityData, plan)
 				}
 			} else {
-				fieldValue, err = h.createRelation(relation, entityData[0])
+				fieldValue, err = h.createRelation(entity, relation, entityData[0])
 			}
 
 			if err != nil {
@@ -85,8 +88,9 @@ func (h *Hydrator) fetchRelation(relation d3entity.Relation, entityData []map[st
 	relationMeta := h.meta.RelatedMeta[relation.RelatedWith()]
 
 	relationHydrator := &Hydrator{
-		session: h.session,
-		meta:    relationMeta,
+		session:            h.session,
+		meta:               relationMeta,
+		afterHydrateEntity: h.afterHydrateEntity,
 	}
 
 	switch relation.(type) {
@@ -103,6 +107,8 @@ func (h *Hydrator) fetchRelation(relation d3entity.Relation, entityData []map[st
 		if err != nil {
 			return nil, fmt.Errorf("hydration: %w", err)
 		}
+
+		h.afterHydrateEntity(d3entity.NewBox(entity, relationMeta))
 
 		return d3entity.NewWrapEntity(entity), nil
 	case *d3entity.OneToMany, *d3entity.ManyToMany:
@@ -126,6 +132,8 @@ func (h *Hydrator) fetchRelation(relation d3entity.Relation, entityData []map[st
 				return nil, fmt.Errorf("hydration: %w", err)
 			}
 			entities = append(entities, entity)
+
+			h.afterHydrateEntity(d3entity.NewBox(entity, relationMeta))
 		}
 
 		return d3entity.NewCollection(entities), nil
@@ -134,7 +142,7 @@ func (h *Hydrator) fetchRelation(relation d3entity.Relation, entityData []map[st
 	return nil, nil
 }
 
-func (h *Hydrator) createRelation(relation d3entity.Relation, entityData map[string]interface{}) (interface{}, error) {
+func (h *Hydrator) createRelation(entity interface{}, relation d3entity.Relation, entityData map[string]interface{}) (interface{}, error) {
 	switch rel := relation.(type) {
 	case *d3entity.OneToOne:
 		relatedId, exists := entityData[h.meta.FullColumnAlias(rel.JoinColumn)]
@@ -149,7 +157,9 @@ func (h *Hydrator) createRelation(relation d3entity.Relation, entityData map[str
 		extractor := h.session.createOneToOneExtractor(relatedId, h.meta.RelatedMeta[rel.RelatedWith()])
 
 		if rel.IsLazy() {
-			return d3entity.NewLazyWrappedEntity(extractor), nil
+			return d3entity.NewLazyWrappedEntity(extractor, func(entity d3entity.WrappedEntity) {
+				h.session.uow.updateOriginalField(d3entity.NewBox(entity, h.meta), relation.Field().Name, entity)
+			}), nil
 		}
 
 		if rel.IsEager() {
@@ -172,7 +182,9 @@ func (h *Hydrator) createRelation(relation d3entity.Relation, entityData map[str
 		}
 
 		if rel.IsLazy() {
-			return d3entity.NewLazyCollection(extractor), nil
+			return d3entity.NewLazyCollection(extractor, func(c d3entity.Collection) {
+				h.session.uow.updateOriginalField(d3entity.NewBox(entity, h.meta), relation.Field().Name, c)
+			}), nil
 		}
 
 		if rel.IsEager() {

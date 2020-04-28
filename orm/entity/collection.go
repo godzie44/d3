@@ -82,10 +82,21 @@ func (e *EagerCollection) Remove(index int) {
 type lazyCollection struct {
 	collection *baseCollection
 	extractor  func() interface{}
+	afterInit  func(collection Collection)
 }
 
-func NewLazyCollection(extractor func() interface{}) *lazyCollection {
-	return &lazyCollection{extractor: extractor}
+func NewLazyCollection(extractor func() interface{}, afterInit func(collection Collection)) *lazyCollection {
+	return &lazyCollection{extractor: extractor, afterInit: afterInit}
+}
+
+func (l *lazyCollection) DeepCopy() interface{} {
+	if l.collection == nil {
+		return &lazyCollection{collection: nil}
+	}
+
+	dstData := make([]interface{}, len(l.collection.Data))
+	copy(dstData, l.collection.Data)
+	return &lazyCollection{collection: &baseCollection{Data: dstData}}
 }
 
 func (l *lazyCollection) ToSlice() []interface{} {
@@ -119,7 +130,12 @@ func (l *lazyCollection) Remove(index int) {
 }
 
 func (l *lazyCollection) initIfNeeded() {
-	if l.collection == nil {
+	if !l.IsInitialized() {
 		l.collection = &baseCollection{Data: reflect.BreakUpSlice(l.extractor())}
+		l.afterInit(l)
 	}
+}
+
+func (l *lazyCollection) IsInitialized() bool {
+	return l.collection != nil
 }

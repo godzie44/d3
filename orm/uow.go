@@ -14,7 +14,7 @@ type dirtyEl struct {
 
 type UnitOfWork struct {
 	newEntities     map[entity.Name][]*entity.Box
-	dirtyEntities   map[entity.Name]map[interface{}]dirtyEl
+	dirtyEntities   map[entity.Name]map[interface{}]*dirtyEl
 	deletedEntities map[entity.Name]map[interface{}]interface{}
 
 	storage     Storage
@@ -24,7 +24,7 @@ type UnitOfWork struct {
 func NewUOW(storage Storage) *UnitOfWork {
 	return &UnitOfWork{
 		newEntities:     make(map[entity.Name][]*entity.Box),
-		dirtyEntities:   make(map[entity.Name]map[interface{}]dirtyEl),
+		dirtyEntities:   make(map[entity.Name]map[interface{}]*dirtyEl),
 		deletedEntities: make(map[entity.Name]map[interface{}]interface{}),
 		storage:         storage,
 		identityMap:     newIdentityMap(),
@@ -57,15 +57,37 @@ func (uow *UnitOfWork) registerDirty(box *entity.Box) error {
 	}
 
 	if _, exists := uow.dirtyEntities[box.GetEName()]; !exists {
-		uow.dirtyEntities[box.GetEName()] = make(map[interface{}]dirtyEl, 0)
+		uow.dirtyEntities[box.GetEName()] = make(map[interface{}]*dirtyEl, 0)
 	}
 
-	uow.dirtyEntities[box.GetEName()][pkVal] = dirtyEl{
+	uow.dirtyEntities[box.GetEName()][pkVal] = &dirtyEl{
 		box:      box,
 		original: d3reflect.Copy(box.Entity),
 	}
 
 	return nil
+}
+
+func (uow *UnitOfWork) updateOriginalField(box *entity.Box, fieldName string, newVal interface{}) {
+	pkVal, err := box.ExtractPk()
+	if err != nil {
+		return
+	}
+
+	if _, exists := uow.dirtyEntities[box.GetEName()]; !exists {
+		return
+	}
+
+	if _, exists := uow.dirtyEntities[box.GetEName()][pkVal]; !exists {
+		return
+	}
+
+	cp := d3reflect.Copy(newVal)
+
+	_ = d3reflect.SetFields(
+		uow.dirtyEntities[box.GetEName()][pkVal].original,
+		map[string]interface{}{fieldName: cp},
+	)
 }
 
 //

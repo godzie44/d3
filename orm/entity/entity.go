@@ -6,6 +6,10 @@ type WrappedEntity interface {
 	Wrap(interface{})
 }
 
+type LazyContainer interface {
+	IsInitialized() bool
+}
+
 type baseEntity struct {
 	inner interface{}
 }
@@ -49,19 +53,24 @@ func NewWrapEntity(source interface{}) *eagerEntity {
 type lazyEntity struct {
 	entity    *baseEntity
 	extractor func() interface{}
+	afterInit func(entity WrappedEntity)
 }
 
-func NewLazyWrappedEntity(extractor func() interface{}) *lazyEntity {
-	return &lazyEntity{extractor: extractor}
+func NewLazyWrappedEntity(extractor func() interface{}, afterInit func(entity WrappedEntity)) *lazyEntity {
+	return &lazyEntity{extractor: extractor, afterInit: afterInit}
 }
 
 func (l *lazyEntity) DeepCopy() interface{} {
+	if l.entity == nil {
+		return &lazyEntity{entity: nil}
+	}
 	return &lazyEntity{entity: &baseEntity{inner: l.entity.inner}}
 }
 
 func (l *lazyEntity) initIfNeeded() {
-	if l.entity == nil {
+	if !l.IsInitialized() {
 		l.entity = &baseEntity{inner: l.extractor()}
+		l.afterInit(l)
 	}
 }
 
@@ -79,6 +88,10 @@ func (l *lazyEntity) Unwrap() interface{} {
 func (l *lazyEntity) Wrap(entity interface{}) {
 	l.initIfNeeded()
 	l.entity.Wrap(entity)
+}
+
+func (l *lazyEntity) IsInitialized() bool {
+	return l.entity != nil
 }
 
 type Name string

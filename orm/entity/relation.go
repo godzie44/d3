@@ -77,6 +77,10 @@ func (o *OneToMany) ExtractCollection(owner interface{}) (Collection, error) {
 		return nil, errors.New("field type must be Collection")
 	}
 
+	if lc, ok := collection.(LazyContainer); ok && !lc.IsInitialized() {
+		return NewCollection(nil), nil
+	}
+
 	return collection, nil
 }
 
@@ -99,6 +103,10 @@ func (o *OneToOne) Extract(owner interface{}) (WrappedEntity, error) {
 	wrappedEntity, ok := val.(WrappedEntity)
 	if !ok {
 		return nil, errors.New("field type must be WrappedEntity")
+	}
+
+	if lc, ok := wrappedEntity.(LazyContainer); ok && !lc.IsInitialized() {
+		return NewWrapEntity(nil), nil
 	}
 
 	return wrappedEntity, nil
@@ -129,6 +137,10 @@ func (o *ManyToMany) ExtractCollection(owner interface{}) (Collection, error) {
 	collection, ok := val.(Collection)
 	if !ok {
 		return nil, errors.New("field type must be Collection")
+	}
+
+	if lc, ok := collection.(LazyContainer); ok && !lc.IsInitialized() {
+		return NewCollection(nil), nil
 	}
 
 	return collection, nil

@@ -46,7 +46,6 @@ func createSchema(db *pgx.Conn) error {
 
 	_, err = db.Exec(context.Background(), `CREATE TABLE IF NOT EXISTS profile_p(
 		id SERIAL PRIMARY KEY,
-		shop_id integer, --for test circular ref
 		description character varying(1000) NOT NULL
 	)`)
 	if err != nil {

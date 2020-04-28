@@ -39,7 +39,9 @@ func (s *Session) execute(q *query.Query) (interface{}, error) {
 		return nil, err
 	}
 
-	hydrator := &Hydrator{session: s, meta: q.OwnerMeta()}
+	hydrator := &Hydrator{session: s, meta: q.OwnerMeta(), afterHydrateEntity: func(b *entity.Box) {
+		_ = s.uow.registerDirty(b)
+	}}
 
 	result, err := hydrator.Hydrate(data, fetchPlan)
 	if err != nil {

@@ -2,7 +2,6 @@ package persistence
 
 import (
 	"d3/orm/entity"
-	"fmt"
 	"github.com/stretchr/testify/assert"
 	"reflect"
 	"testing"
@@ -206,7 +205,7 @@ func TestExecuteWithCircularReference(t *testing.T) {
 	_ = graph.ProcessEntity(entity.NewBox(order, &meta))
 
 	r := hasCycle(graph)
-	fmt.Println(r)
+	assert.False(t, r)
 	//nodes := graph.filterRoots()
 	//testStorage := &storageStub{}
 	//err := NewExecutor(testStorage).exec(graph)
