@@ -249,7 +249,9 @@ func (p *PersistGraph) processOneToOneRel(box *persistBox, relation *d3entity.On
 				return err
 			}
 			relatedBox.action.addChild(box.action)
-			box.action.mergeFields(ActionField(relation.JoinColumn, createIDPromise(relatedBox)))
+			if !reflect.IsFieldEquals(relatedBox.original, relatedBox.Entity, relatedBox.Meta.Pk.Field.Name) {
+				box.action.mergeFields(ActionField(relation.JoinColumn, createIDPromise(relatedBox)))
+			}
 		}
 	}
 

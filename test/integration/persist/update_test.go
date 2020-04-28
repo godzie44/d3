@@ -168,7 +168,7 @@ func createAndPersistsShop(orm *orm.Orm, s *orm.Session) (*Shop, error) {
 	return shop, repository.Persists(shop)
 }
 
-func (u *UpdateTs) TestSelectThenFullUpdate() {
+func (u *UpdateTs) TestSelectThenSimpleUpdate() {
 	dbAdapter := helpers.NewDbAdapterWithQueryCounter(adapter.NewGoPgXAdapter(u.pgDb, &adapter.SquirrelAdapter{}))
 	d3Orm := orm.NewOrm(dbAdapter)
 	u.NoError(d3Orm.Register((*Book)(nil), (*Shop)(nil), (*ShopProfile)(nil), (*Author)(nil)))
@@ -184,8 +184,58 @@ func (u *UpdateTs) TestSelectThenFullUpdate() {
 	shop2i, err := repo.FindOne(repo.CreateQuery().AndWhere("shop_p.id = 1002"))
 	u.NoError(err)
 
-	u.NotNil(shop2i)
-	u.NotNil(shop1i)
+	shop1i.(*Shop).Name = "new shop 1001 name"
+	shop2i.(*Shop).Name = "new shop 1002 name"
+
+	dbAdapter.ResetCounters()
+	u.NoError(session.Flush())
+
+	u.Equal(2, dbAdapter.UpdateCounter())
+
+	helpers.NewPgTester(u.T(), u.pgDb).
+		SeeOne("SELECT * FROM shop_p WHERE name = $1", "new shop 1001 name").
+		SeeOne("SELECT * FROM shop_p WHERE name = $1", "new shop 1002 name")
+}
+
+func (u *UpdateTs) TestSelectThenUpdateOtoORelation() {
+	dbAdapter := helpers.NewDbAdapterWithQueryCounter(adapter.NewGoPgXAdapter(u.pgDb, &adapter.SquirrelAdapter{}))
+	d3Orm := orm.NewOrm(dbAdapter)
+	u.NoError(d3Orm.Register((*Book)(nil), (*Shop)(nil), (*ShopProfile)(nil), (*Author)(nil)))
+
+	fillDb(u.Assert(), dbAdapter)
+	session := d3Orm.CreateSession()
+
+	repo, err := d3Orm.CreateRepository(session, (*Shop)(nil))
+	u.NoError(err)
+
+	shop1i, err := repo.FindOne(repo.CreateQuery().AndWhere("shop_p.id = 1001"))
+	u.NoError(err)
+
+	shop1i.(*Shop).Profile.Unwrap().(*ShopProfile).Description = "new shop 1001 profile"
+
+	dbAdapter.ResetCounters()
+	u.NoError(session.Flush())
+
+	u.Equal(1, dbAdapter.UpdateCounter())
+
+	helpers.NewPgTester(u.T(), u.pgDb).
+		SeeOne("SELECT * FROM profile_p WHERE description = $1", "new shop 1001 profile")
+}
+
+func (u *UpdateTs) TestSelectThenFullUpdate() {
+	dbAdapter := helpers.NewDbAdapterWithQueryCounter(adapter.NewGoPgXAdapter(u.pgDb, &adapter.SquirrelAdapter{}))
+	d3Orm := orm.NewOrm(dbAdapter)
+	u.NoError(d3Orm.Register((*Book)(nil), (*Shop)(nil), (*ShopProfile)(nil), (*Author)(nil)))
+
+	fillDb(u.Assert(), dbAdapter)
+	session := d3Orm.CreateSession()
+
+	repo, err := d3Orm.CreateRepository(session, (*Shop)(nil))
+	u.NoError(err)
+
+	shop1i, err := repo.FindOne(repo.CreateQuery().AndWhere("shop_p.id = 1001"))
+	u.NoError(err)
+
 	shop1 := shop1i.(*Shop)
 
 	newProfile := &ShopProfile{Description: "new shop profile"}
