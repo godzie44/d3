@@ -222,6 +222,54 @@ func (u *UpdateTs) TestSelectThenUpdateOtoORelation() {
 		SeeOne("SELECT * FROM profile_p WHERE description = $1", "new shop 1001 profile")
 }
 
+func (u *UpdateTs) TestSelectThenDeleteOtoORelation() {
+	dbAdapter := helpers.NewDbAdapterWithQueryCounter(adapter.NewGoPgXAdapter(u.pgDb, &adapter.SquirrelAdapter{}))
+	d3Orm := orm.NewOrm(dbAdapter)
+	u.NoError(d3Orm.Register((*Book)(nil), (*Shop)(nil), (*ShopProfile)(nil), (*Author)(nil)))
+
+	fillDb(u.Assert(), dbAdapter)
+	session := d3Orm.CreateSession()
+
+	repo, err := d3Orm.CreateRepository(session, (*Shop)(nil))
+	u.NoError(err)
+
+	shop1i, err := repo.FindOne(repo.CreateQuery().AndWhere("shop_p.id = 1001"))
+	u.NoError(err)
+
+	shop1i.(*Shop).Profile = entity.NewWrapEntity(nil)
+
+	dbAdapter.ResetCounters()
+	u.NoError(session.Flush())
+
+	u.Equal(1, dbAdapter.UpdateCounter())
+
+	helpers.NewPgTester(u.T(), u.pgDb).
+		SeeOne("SELECT * FROM shop_p WHERE profile_id IS NULL")
+}
+
+func (u *UpdateTs) TestSelectThenViewButDontChangeOtoORelation() {
+	dbAdapter := helpers.NewDbAdapterWithQueryCounter(adapter.NewGoPgXAdapter(u.pgDb, &adapter.SquirrelAdapter{}))
+	d3Orm := orm.NewOrm(dbAdapter)
+	u.NoError(d3Orm.Register((*Book)(nil), (*Shop)(nil), (*ShopProfile)(nil), (*Author)(nil)))
+
+	fillDb(u.Assert(), dbAdapter)
+	session := d3Orm.CreateSession()
+
+	repo, err := d3Orm.CreateRepository(session, (*Shop)(nil))
+	u.NoError(err)
+
+	shop1i, err := repo.FindOne(repo.CreateQuery().AndWhere("shop_p.id = 1001"))
+	u.NoError(err)
+
+	// previous description and new are equal, we expect 0 updates
+	shop1i.(*Shop).Profile.Unwrap().(*ShopProfile).Description = "desc1"
+
+	dbAdapter.ResetCounters()
+	u.NoError(session.Flush())
+
+	u.Equal(0, dbAdapter.UpdateCounter())
+}
+
 func (u *UpdateTs) TestSelectThenFullUpdate() {
 	dbAdapter := helpers.NewDbAdapterWithQueryCounter(adapter.NewGoPgXAdapter(u.pgDb, &adapter.SquirrelAdapter{}))
 	d3Orm := orm.NewOrm(dbAdapter)
