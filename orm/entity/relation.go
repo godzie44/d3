@@ -105,10 +105,6 @@ func (o *OneToOne) Extract(owner interface{}) (WrappedEntity, error) {
 		return nil, errors.New("field type must be WrappedEntity")
 	}
 
-	if lc, ok := wrappedEntity.(LazyContainer); ok && !lc.IsInitialized() {
-		return NewWrapEntity(nil), nil
-	}
-
 	return wrappedEntity, nil
 }
 

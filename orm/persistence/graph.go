@@ -229,13 +229,20 @@ func (p *PersistGraph) processOneToOneRel(box *persistBox, relation *d3entity.On
 		}
 	}
 
-	if relatedEntity.Unwrap() == origRelatedEntity.Unwrap() {
-		return nil
-	}
+	_, relatedEntityIsLazy := relatedEntity.(d3entity.LazyContainer)
+	_, origEntityIsLazy := origRelatedEntity.(d3entity.LazyContainer)
 
-	if relatedEntity.IsNil() {
+	switch {
+	case relatedEntityIsLazy:
+		// if new relation is lazy entity then user dont change original
+		return nil
+	case !origEntityIsLazy && relatedEntity.Unwrap() == origRelatedEntity.Unwrap():
+		// if unwrap values of old and new relation equals than use dont change original
+		return nil
+	case relatedEntity.IsNil():
+		// if bew relation is nil then delete relation
 		box.action.mergeFields(ActionField(relation.JoinColumn, nil))
-	} else {
+	default:
 		relatedBox, err := p.knownBoxes.getRaw(relatedEntity.Unwrap(), box.GetRelatedMeta(relation.RelatedWith()))
 		if err != nil {
 			return err
