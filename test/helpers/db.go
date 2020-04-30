@@ -11,13 +11,13 @@ import (
 	"testing"
 )
 
-type dbAdapterWithQueryCounter struct {
+type DbAdapterWithQueryCounter struct {
 	queryCounter, insertCounter, updateCounter, deleteCounter int
 	dbAdapter                                                 orm.Storage
 }
 
-func NewDbAdapterWithQueryCounter(dbAdapter orm.Storage) *dbAdapterWithQueryCounter {
-	wrappedAdapter := &dbAdapterWithQueryCounter{dbAdapter: dbAdapter}
+func NewDbAdapterWithQueryCounter(dbAdapter orm.Storage) *DbAdapterWithQueryCounter {
+	wrappedAdapter := &DbAdapterWithQueryCounter{dbAdapter: dbAdapter}
 
 	dbAdapter.AfterQuery(func(_ string, _ ...interface{}) {
 		wrappedAdapter.queryCounter++
@@ -26,49 +26,49 @@ func NewDbAdapterWithQueryCounter(dbAdapter orm.Storage) *dbAdapterWithQueryCoun
 	return wrappedAdapter
 }
 
-func (d *dbAdapterWithQueryCounter) Insert(table string, cols, pkCols []string, values []interface{}, propagatePk bool, propagationFn func(scanner persistence.Scanner) error) error {
+func (d *DbAdapterWithQueryCounter) Insert(table string, cols, pkCols []string, values []interface{}, propagatePk bool, propagationFn func(scanner persistence.Scanner) error) error {
 	d.insertCounter++
 	return d.dbAdapter.Insert(table, cols, pkCols, values, propagatePk, propagationFn)
 }
 
-func (d *dbAdapterWithQueryCounter) Update(table string, cols []string, values []interface{}, identityCond map[string]interface{}) error {
+func (d *DbAdapterWithQueryCounter) Update(table string, cols []string, values []interface{}, identityCond map[string]interface{}) error {
 	d.updateCounter++
 	return d.dbAdapter.Update(table, cols, values, identityCond)
 }
 
-func (d *dbAdapterWithQueryCounter) Remove(table string, identityCond map[string]interface{}) error {
+func (d *DbAdapterWithQueryCounter) Remove(table string, identityCond map[string]interface{}) error {
 	d.deleteCounter++
 	return d.dbAdapter.Remove(table, identityCond)
 }
 
-func (d *dbAdapterWithQueryCounter) ExecuteQuery(query *query.Query) ([]map[string]interface{}, error) {
+func (d *DbAdapterWithQueryCounter) ExecuteQuery(query *query.Query) ([]map[string]interface{}, error) {
 	return d.dbAdapter.ExecuteQuery(query)
 }
 
-func (d *dbAdapterWithQueryCounter) BeforeQuery(fn func(query string, args ...interface{})) {
+func (d *DbAdapterWithQueryCounter) BeforeQuery(fn func(query string, args ...interface{})) {
 	d.dbAdapter.BeforeQuery(fn)
 }
 
-func (d *dbAdapterWithQueryCounter) AfterQuery(fn func(query string, args ...interface{})) {
+func (d *DbAdapterWithQueryCounter) AfterQuery(fn func(query string, args ...interface{})) {
 	d.dbAdapter.AfterQuery(fn)
 }
 
-func (d *dbAdapterWithQueryCounter) QueryCounter() int {
+func (d *DbAdapterWithQueryCounter) QueryCounter() int {
 	return d.queryCounter
 }
 
-func (d *dbAdapterWithQueryCounter) UpdateCounter() int {
+func (d *DbAdapterWithQueryCounter) UpdateCounter() int {
 	return d.updateCounter
 }
 
-func (d *dbAdapterWithQueryCounter) InsertCounter() int {
+func (d *DbAdapterWithQueryCounter) InsertCounter() int {
 	return d.insertCounter
 }
 
-func (d *dbAdapterWithQueryCounter) DeleteCounter() int {
+func (d *DbAdapterWithQueryCounter) DeleteCounter() int {
 	return d.deleteCounter
 }
-func (d *dbAdapterWithQueryCounter) ResetCounters() {
+func (d *DbAdapterWithQueryCounter) ResetCounters() {
 	d.deleteCounter = 0
 	d.updateCounter = 0
 	d.insertCounter = 0

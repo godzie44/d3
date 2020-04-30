@@ -14,7 +14,10 @@ import (
 
 type PersistsTS struct {
 	suite.Suite
-	pgDb *pgx.Conn
+	pgDb      *pgx.Conn
+	dbAdapter *helpers.DbAdapterWithQueryCounter
+	d3Orm     *orm.Orm
+	session   *orm.Session
 }
 
 func (o *PersistsTS) SetupSuite() {
@@ -22,7 +25,16 @@ func (o *PersistsTS) SetupSuite() {
 	o.pgDb, _ = pgx.Connect(context.Background(), dsn)
 
 	err := createSchema(o.pgDb)
+
+	o.dbAdapter = helpers.NewDbAdapterWithQueryCounter(adapter.NewGoPgXAdapter(o.pgDb, &adapter.SquirrelAdapter{}))
+	o.d3Orm = orm.NewOrm(o.dbAdapter)
+	o.NoError(o.d3Orm.Register((*Book)(nil), (*Shop)(nil), (*ShopProfile)(nil), (*Author)(nil)))
+
 	o.NoError(err)
+}
+
+func (o *PersistsTS) SetupTest() {
+	o.session = o.d3Orm.CreateSession()
 }
 
 func (o *PersistsTS) TearDownSuite() {
@@ -38,11 +50,7 @@ func TestPersistsSuite(t *testing.T) {
 }
 
 func (o *PersistsTS) TestSimpleInsert() {
-	d3Orm := orm.NewOrm(adapter.NewGoPgXAdapter(o.pgDb, &adapter.SquirrelAdapter{}))
-	o.NoError(d3Orm.Register((*Book)(nil), (*Shop)(nil), (*ShopProfile)(nil), (*Author)(nil)))
-
-	session := d3Orm.CreateSession()
-	repository, err := d3Orm.CreateRepository(session, (*Shop)(nil))
+	repository, err := o.d3Orm.CreateRepository(o.session, (*Shop)(nil))
 	o.NoError(err)
 
 	shop := &Shop{
@@ -54,7 +62,7 @@ func (o *PersistsTS) TestSimpleInsert() {
 	}
 
 	o.NoError(repository.Persists(shop))
-	o.NoError(session.Flush())
+	o.NoError(o.session.Flush())
 
 	o.NotEqual(0, shop.Id.Int32)
 	o.NotEqual(0, shop.Profile.Unwrap().(*ShopProfile).Id.Int32)
@@ -65,14 +73,10 @@ func (o *PersistsTS) TestSimpleInsert() {
 }
 
 func (o *PersistsTS) TestBigInsert() {
-	d3Orm := orm.NewOrm(adapter.NewGoPgXAdapter(o.pgDb, &adapter.SquirrelAdapter{}))
-	o.NoError(d3Orm.Register((*Book)(nil), (*Shop)(nil), (*ShopProfile)(nil), (*Author)(nil)))
-
-	session := d3Orm.CreateSession()
-	shop, err := createAndPersistsShop(d3Orm, session)
+	shop, err := createAndPersistsShop(o.d3Orm, o.session)
 	o.NoError(err)
 
-	o.NoError(session.Flush())
+	o.NoError(o.session.Flush())
 
 	o.NotEqual(0, shop.Id.Int32)
 	o.NotEqual(0, shop.Profile.Unwrap().(*ShopProfile).Id.Int32)
@@ -90,20 +94,16 @@ func (o *PersistsTS) TestBigInsert() {
 }
 
 func (o *PersistsTS) TestNoNewQueriesIfDoubleFlush() {
-	dbAdapter := helpers.NewDbAdapterWithQueryCounter(adapter.NewGoPgXAdapter(o.pgDb, &adapter.SquirrelAdapter{}))
-	d3Orm := orm.NewOrm(dbAdapter)
-	o.NoError(d3Orm.Register((*Book)(nil), (*Shop)(nil), (*ShopProfile)(nil), (*Author)(nil)))
+	session := o.d3Orm.CreateSession()
 
-	session := d3Orm.CreateSession()
-
-	_, err := createAndPersistsShop(d3Orm, session)
+	_, err := createAndPersistsShop(o.d3Orm, session)
 	o.NoError(err)
 
 	o.NoError(session.Flush())
-	insertCounter, updCounter := dbAdapter.InsertCounter(), dbAdapter.UpdateCounter()
+	insertCounter, updCounter := o.dbAdapter.InsertCounter(), o.dbAdapter.UpdateCounter()
 
 	o.NoError(session.Flush())
 
-	o.Equal(insertCounter, dbAdapter.InsertCounter())
-	o.Equal(updCounter, dbAdapter.UpdateCounter())
+	o.Equal(insertCounter, o.dbAdapter.InsertCounter())
+	o.Equal(updCounter, o.dbAdapter.UpdateCounter())
 }
