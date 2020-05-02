@@ -323,6 +323,94 @@ func (u *UpdateTs) TestSelectThenViewButDontChangeOtoMRelation() {
 	u.Equal(0, u.dbAdapter.UpdateCounter())
 }
 
+func (u *UpdateTs) TestSelectThenUpdateMtoMRelation() {
+	fillDb(u.Assert(), u.dbAdapter)
+
+	repo, err := u.d3Orm.CreateRepository(u.session, (*Book)(nil))
+	u.NoError(err)
+
+	book1, err := repo.FindOne(repo.CreateQuery().AndWhere("book_p.id = 1002"))
+	u.NoError(err)
+
+	book1.(*Book).Authors.Get(0).(*Author).Name = "new author 1"
+	book1.(*Book).Authors.Get(1).(*Author).Name = "new author 2"
+
+	u.dbAdapter.ResetCounters()
+	u.NoError(u.session.Flush())
+
+	u.Equal(2, u.dbAdapter.UpdateCounter())
+
+	helpers.NewPgTester(u.T(), u.pgDb).
+		SeeOne("SELECT * FROM author_p WHERE name = $1", "new author 1").
+		SeeOne("SELECT * FROM author_p WHERE name = $1", "new author 2")
+}
+
+func (u *UpdateTs) TestSelectThenDeleteMtoMRelation() {
+	fillDb(u.Assert(), u.dbAdapter)
+
+	repo, err := u.d3Orm.CreateRepository(u.session, (*Book)(nil))
+	u.NoError(err)
+
+	book1, err := repo.FindOne(repo.CreateQuery().AndWhere("book_p.id = 1002"))
+	u.NoError(err)
+
+	oldAuthorCount := book1.(*Book).Authors.Count()
+	book1.(*Book).Authors.Remove(1)
+
+	u.dbAdapter.ResetCounters()
+	u.NoError(u.session.Flush())
+
+	u.Equal(1, u.dbAdapter.DeleteCounter())
+
+	helpers.NewPgTester(u.T(), u.pgDb).
+		See(oldAuthorCount-1, "SELECT * FROM book_author_p WHERE book_id = 1002")
+}
+
+func (u *UpdateTs) TestSelectThenAddMtoMRelation() {
+	fillDb(u.Assert(), u.dbAdapter)
+
+	repo, err := u.d3Orm.CreateRepository(u.session, (*Book)(nil))
+	u.NoError(err)
+
+	book1, err := repo.FindOne(repo.CreateQuery().AndWhere("book_p.id = 1001"))
+	u.NoError(err)
+	book2, err := repo.FindOne(repo.CreateQuery().AndWhere("book_p.id = 1002"))
+	u.NoError(err)
+
+	newAuthor := &Author{
+		Name: "new author",
+	}
+	book1.(*Book).Authors.Add(newAuthor)
+	book2.(*Book).Authors.Add(newAuthor)
+
+	u.dbAdapter.ResetCounters()
+	u.NoError(u.session.Flush())
+
+	u.Equal(3, u.dbAdapter.InsertCounter())
+
+	helpers.NewPgTester(u.T(), u.pgDb).
+		SeeOne("SELECT * FROM author_p WHERE name = 'new author'").
+		SeeOne("SELECT * FROM book_author_p WHERE book_id = 1001 AND author_id = $1", newAuthor.Id).
+		SeeOne("SELECT * FROM book_author_p WHERE book_id = 1002 AND author_id = $1", newAuthor.Id)
+}
+
+func (u *UpdateTs) TestSelectThenViewButDontChangeMtoMRelation() {
+	fillDb(u.Assert(), u.dbAdapter)
+
+	repo, err := u.d3Orm.CreateRepository(u.session, (*Book)(nil))
+	u.NoError(err)
+
+	book1, err := repo.FindOne(repo.CreateQuery().AndWhere("book_p.id = 1002"))
+	u.NoError(err)
+
+	book1.(*Book).Authors.Get(0).(*Author).Name = book1.(*Book).Authors.Get(0).(*Author).Name
+
+	u.dbAdapter.ResetCounters()
+	u.NoError(u.session.Flush())
+
+	u.Equal(0, u.dbAdapter.UpdateCounter())
+}
+
 func (u *UpdateTs) TestSelectThenFullUpdate() {
 	fillDb(u.Assert(), u.dbAdapter)
 
