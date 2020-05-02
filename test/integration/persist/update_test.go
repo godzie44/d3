@@ -239,6 +239,90 @@ func (u *UpdateTs) TestSelectThenViewButDontChangeOtoORelation() {
 	u.Equal(0, u.dbAdapter.UpdateCounter())
 }
 
+func (u *UpdateTs) TestSelectThenUpdateOtoMRelation() {
+	fillDb(u.Assert(), u.dbAdapter)
+
+	repo, err := u.d3Orm.CreateRepository(u.session, (*Shop)(nil))
+	u.NoError(err)
+
+	shop1, err := repo.FindOne(repo.CreateQuery().AndWhere("shop_p.id = 1001"))
+	u.NoError(err)
+
+	shop1.(*Shop).Books.Get(0).(*Book).Name = "new book 0"
+	shop1.(*Shop).Books.Get(1).(*Book).Name = "new book 1"
+
+	u.dbAdapter.ResetCounters()
+	u.NoError(u.session.Flush())
+
+	u.Equal(2, u.dbAdapter.UpdateCounter())
+
+	helpers.NewPgTester(u.T(), u.pgDb).
+		SeeOne("SELECT * FROM book_p WHERE name = $1", "new book 0").
+		SeeOne("SELECT * FROM book_p WHERE name = $1", "new book 1")
+}
+
+func (u *UpdateTs) TestSelectThenDeleteOtoMRelation() {
+	fillDb(u.Assert(), u.dbAdapter)
+
+	repo, err := u.d3Orm.CreateRepository(u.session, (*Shop)(nil))
+	u.NoError(err)
+
+	shop1, err := repo.FindOne(repo.CreateQuery().AndWhere("shop_p.id = 1001"))
+	u.NoError(err)
+
+	oldBookCount := shop1.(*Shop).Books.Count()
+	shop1.(*Shop).Books.Remove(0)
+
+	u.dbAdapter.ResetCounters()
+	u.NoError(u.session.Flush())
+
+	u.Equal(1, u.dbAdapter.UpdateCounter())
+
+	helpers.NewPgTester(u.T(), u.pgDb).
+		See(oldBookCount-1, "SELECT * FROM book_p WHERE shop_id = 1001")
+}
+
+func (u *UpdateTs) TestSelectThenAddOtoMRelation() {
+	fillDb(u.Assert(), u.dbAdapter)
+
+	repo, err := u.d3Orm.CreateRepository(u.session, (*Shop)(nil))
+	u.NoError(err)
+
+	shop1, err := repo.FindOne(repo.CreateQuery().AndWhere("shop_p.id = 1001"))
+	u.NoError(err)
+
+	newBook := &Book{
+		Authors: nil,
+		Name:    "new book",
+	}
+	shop1.(*Shop).Books.Add(newBook)
+
+	u.dbAdapter.ResetCounters()
+	u.NoError(u.session.Flush())
+
+	u.Equal(1, u.dbAdapter.InsertCounter())
+
+	helpers.NewPgTester(u.T(), u.pgDb).
+		SeeOne("SELECT * FROM book_p WHERE shop_id = 1001 AND name = 'new book'")
+}
+
+func (u *UpdateTs) TestSelectThenViewButDontChangeOtoMRelation() {
+	fillDb(u.Assert(), u.dbAdapter)
+
+	repo, err := u.d3Orm.CreateRepository(u.session, (*Shop)(nil))
+	u.NoError(err)
+
+	shop1, err := repo.FindOne(repo.CreateQuery().AndWhere("shop_p.id = 1001"))
+	u.NoError(err)
+
+	shop1.(*Shop).Books.Get(0).(*Book).Name = shop1.(*Shop).Books.Get(0).(*Book).Name
+
+	u.dbAdapter.ResetCounters()
+	u.NoError(u.session.Flush())
+
+	u.Equal(0, u.dbAdapter.UpdateCounter())
+}
+
 func (u *UpdateTs) TestSelectThenFullUpdate() {
 	fillDb(u.Assert(), u.dbAdapter)
 
@@ -290,9 +374,9 @@ func fillDb(assert *assert.Assertions, s orm.Storage) {
 
 	err = s.Insert("book_p", []string{"id", "shop_id", "name"}, nil, []interface{}{1001, 1001, "book1"}, false, nil)
 	assert.NoError(err)
-	err = s.Insert("book_p", []string{"id", "shop_id", "name"}, nil, []interface{}{1002, 1001, "desc2"}, false, nil)
+	err = s.Insert("book_p", []string{"id", "shop_id", "name"}, nil, []interface{}{1002, 1001, "book2"}, false, nil)
 	assert.NoError(err)
-	err = s.Insert("book_p", []string{"id", "shop_id", "name"}, nil, []interface{}{1003, 1002, "desc3"}, false, nil)
+	err = s.Insert("book_p", []string{"id", "shop_id", "name"}, nil, []interface{}{1003, 1002, "book3"}, false, nil)
 	assert.NoError(err)
 
 	err = s.Insert("author_p", []string{"id", "name"}, nil, []interface{}{1001, "author1"}, false, nil)
