@@ -37,12 +37,12 @@ func (uow *UnitOfWork) registerNew(box *entity.Box) error {
 		return fmt.Errorf("while adding entity to new: %w", err)
 	}
 
-	if _, exists := uow.newEntities[box.GetEName()]; !exists {
-		uow.newEntities[box.Meta.EntityName] = make([]*entity.Box, 0)
-	}
-
 	if _, exists := uow.dirtyEntities[box.GetEName()][pkVal]; exists {
 		return nil
+	}
+
+	if _, exists := uow.newEntities[box.GetEName()]; !exists {
+		uow.newEntities[box.Meta.EntityName] = make([]*entity.Box, 0)
 	}
 
 	uow.newEntities[box.GetEName()] = append(uow.newEntities[box.GetEName()], box)

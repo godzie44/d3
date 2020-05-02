@@ -42,6 +42,7 @@ func (o *PersistsTS) TearDownSuite() {
 }
 
 func (o *PersistsTS) TearDownTest() {
+	o.dbAdapter.ResetCounters()
 	o.NoError(clearSchema(o.pgDb))
 }
 
@@ -106,4 +107,21 @@ func (o *PersistsTS) TestNoNewQueriesIfDoubleFlush() {
 
 	o.Equal(insertCounter, o.dbAdapter.InsertCounter())
 	o.Equal(updCounter, o.dbAdapter.UpdateCounter())
+}
+
+func (o *PersistsTS) TestOneNewEntityIfDoublePersist() {
+	session := o.d3Orm.CreateSession()
+
+	repository, _ := o.d3Orm.CreateRepository(session, (*Shop)(nil))
+
+	shop := &Shop{
+		Name: "shop",
+	}
+
+	o.NoError(repository.Persists(shop))
+	o.NoError(repository.Persists(shop))
+
+	o.NoError(session.Flush())
+
+	o.Equal(1, o.dbAdapter.InsertCounter())
 }
