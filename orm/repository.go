@@ -37,3 +37,12 @@ func (r *Repository) Persists(entity interface{}) error {
 func (r *Repository) CreateQuery() *query.Query {
 	return query.NewQuery(&r.entityMeta)
 }
+
+func (r *Repository) Delete(entities ...interface{}) error {
+	for _, e := range entities {
+		if err := r.session.uow.registerRemove(d3entity.NewBox(e, &r.entityMeta)); err != nil {
+			return err
+		}
+	}
+	return nil
+}

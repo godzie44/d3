@@ -38,18 +38,15 @@ func TestRegisterNewEntityIfEntityInDirty(t *testing.T) {
 	uow := NewUOW(nil)
 
 	te1 := &uowTestEntity{Id: 1}
-	te2 := &uowTestEntity{Id: 2}
-	err := uow.registerNew(entity.NewBox(te1, testEntityMeta))
-	assert.NoError(t, err)
-	err = uow.registerNew(entity.NewBox(te2, testEntityMeta))
+
+	box := entity.NewBox(te1, testEntityMeta)
+	err := uow.registerDirty(box)
 	assert.NoError(t, err)
 
-	assert.Equal(t, map[entity.Name][]*entity.Box{
-		testEntityMeta.EntityName: {
-			entity.NewBox(te1, testEntityMeta),
-			entity.NewBox(te2, testEntityMeta),
-		},
-	}, uow.newEntities)
+	err = uow.registerNew(box)
+	assert.NoError(t, err)
+
+	assert.Empty(t, uow.newEntities[box.GetEName()])
 }
 
 type uowTestEntity2 struct {

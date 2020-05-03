@@ -8,7 +8,6 @@ import (
 	"d3/test/helpers"
 	"fmt"
 	"github.com/jackc/pgx/v4"
-	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/suite"
 	"testing"
 )
@@ -447,35 +446,4 @@ func (u *UpdateTs) TestSelectThenFullUpdate() {
 		SeeOne("SELECT * FROM book_p WHERE id = $1", newBook.Id).
 		SeeOne("SELECT * FROM author_p WHERE id = $1", newAuthor.Id).
 		SeeOne("SELECT * FROM book_author_p WHERE book_id = $1 and author_id = $2", newBook.Id, newAuthor.Id)
-}
-
-func fillDb(assert *assert.Assertions, s orm.Storage) {
-	err := s.Insert("shop_p", []string{"id", "name", "profile_id"}, nil, []interface{}{1001, "shop1", 1001}, false, nil)
-	assert.NoError(err)
-	err = s.Insert("shop_p", []string{"id", "name", "profile_id"}, nil, []interface{}{1002, "shop2", 1002}, false, nil)
-	assert.NoError(err)
-
-	err = s.Insert("profile_p", []string{"id", "description"}, nil, []interface{}{1001, "desc1"}, false, nil)
-	assert.NoError(err)
-	err = s.Insert("profile_p", []string{"id", "description"}, nil, []interface{}{1002, "desc2"}, false, nil)
-	assert.NoError(err)
-
-	err = s.Insert("book_p", []string{"id", "shop_id", "name"}, nil, []interface{}{1001, 1001, "book1"}, false, nil)
-	assert.NoError(err)
-	err = s.Insert("book_p", []string{"id", "shop_id", "name"}, nil, []interface{}{1002, 1001, "book2"}, false, nil)
-	assert.NoError(err)
-	err = s.Insert("book_p", []string{"id", "shop_id", "name"}, nil, []interface{}{1003, 1002, "book3"}, false, nil)
-	assert.NoError(err)
-
-	err = s.Insert("author_p", []string{"id", "name"}, nil, []interface{}{1001, "author1"}, false, nil)
-	assert.NoError(err)
-	err = s.Insert("author_p", []string{"id", "name"}, nil, []interface{}{1002, "author2"}, false, nil)
-	assert.NoError(err)
-
-	err = s.Insert("book_author_p", []string{"book_id", "author_id"}, nil, []interface{}{1001, 1001}, false, nil)
-	assert.NoError(err)
-	err = s.Insert("book_author_p", []string{"book_id", "author_id"}, nil, []interface{}{1002, 1001}, false, nil)
-	assert.NoError(err)
-	err = s.Insert("book_author_p", []string{"book_id", "author_id"}, nil, []interface{}{1002, 1002}, false, nil)
-	assert.NoError(err)
 }

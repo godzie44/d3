@@ -430,6 +430,20 @@ func (p *PersistGraph) filterRoots() []CompositeAction {
 	return result
 }
 
+func (p *PersistGraph) ProcessDeletedEntity(box *d3entity.Box) error {
+	pb, err := p.knownBoxes.get(box)
+	if err != nil {
+		return err
+	}
+
+	pb.action = NewDeleteAction(map[string]interface{}{
+		pb.Meta.Pk.FullDbAlias(): pb.entityPk,
+	})
+	pb.action.setTableName(pb.Meta.TableName)
+
+	return nil
+}
+
 //promise using for return some fields of entity that have not initialized yet, but will be in future.
 type promise struct {
 	executable func() (interface{}, error)

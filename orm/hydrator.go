@@ -158,7 +158,7 @@ func (h *Hydrator) createRelation(entity interface{}, relation d3entity.Relation
 
 		if rel.IsLazy() {
 			return d3entity.NewLazyWrappedEntity(extractor, func(entity d3entity.WrappedEntity) {
-				h.session.uow.updateOriginalField(d3entity.NewBox(entity, h.meta), relation.Field().Name, entity)
+				h.session.uow.updateFieldOfOriginal(d3entity.NewBox(entity, h.meta), relation.Field().Name, entity)
 			}), nil
 		}
 
@@ -183,7 +183,7 @@ func (h *Hydrator) createRelation(entity interface{}, relation d3entity.Relation
 
 		if rel.IsLazy() {
 			return d3entity.NewLazyCollection(extractor, func(c d3entity.Collection) {
-				h.session.uow.updateOriginalField(d3entity.NewBox(entity, h.meta), relation.Field().Name, c)
+				h.session.uow.updateFieldOfOriginal(d3entity.NewBox(entity, h.meta), relation.Field().Name, c)
 			}), nil
 		}
 

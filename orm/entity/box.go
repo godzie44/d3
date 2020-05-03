@@ -20,7 +20,3 @@ func (b *Box) GetEName() Name {
 func (b *Box) GetRelatedMeta(relEntityName Name) *MetaInfo {
 	return b.Meta.RelatedMeta[relEntityName]
 }
-
-func (b *Box) CreateEntityCopy() interface{} {
-	return nil
-}

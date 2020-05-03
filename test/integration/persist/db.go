@@ -2,9 +2,11 @@ package persist
 
 import (
 	"context"
+	"d3/orm"
 	"d3/orm/entity"
 	"database/sql"
 	"github.com/jackc/pgx/v4"
+	"github.com/stretchr/testify/assert"
 )
 
 type Shop struct {
@@ -96,4 +98,35 @@ delete from shop_p;
 delete from profile_p;
 `)
 	return err
+}
+
+func fillDb(assert *assert.Assertions, s orm.Storage) {
+	err := s.Insert("shop_p", []string{"id", "name", "profile_id"}, nil, []interface{}{1001, "shop1", 1001}, false, nil)
+	assert.NoError(err)
+	err = s.Insert("shop_p", []string{"id", "name", "profile_id"}, nil, []interface{}{1002, "shop2", 1002}, false, nil)
+	assert.NoError(err)
+
+	err = s.Insert("profile_p", []string{"id", "description"}, nil, []interface{}{1001, "desc1"}, false, nil)
+	assert.NoError(err)
+	err = s.Insert("profile_p", []string{"id", "description"}, nil, []interface{}{1002, "desc2"}, false, nil)
+	assert.NoError(err)
+
+	err = s.Insert("book_p", []string{"id", "shop_id", "name"}, nil, []interface{}{1001, 1001, "book1"}, false, nil)
+	assert.NoError(err)
+	err = s.Insert("book_p", []string{"id", "shop_id", "name"}, nil, []interface{}{1002, 1001, "book2"}, false, nil)
+	assert.NoError(err)
+	err = s.Insert("book_p", []string{"id", "shop_id", "name"}, nil, []interface{}{1003, 1002, "book3"}, false, nil)
+	assert.NoError(err)
+
+	err = s.Insert("author_p", []string{"id", "name"}, nil, []interface{}{1001, "author1"}, false, nil)
+	assert.NoError(err)
+	err = s.Insert("author_p", []string{"id", "name"}, nil, []interface{}{1002, "author2"}, false, nil)
+	assert.NoError(err)
+
+	err = s.Insert("book_author_p", []string{"book_id", "author_id"}, nil, []interface{}{1001, 1001}, false, nil)
+	assert.NoError(err)
+	err = s.Insert("book_author_p", []string{"book_id", "author_id"}, nil, []interface{}{1002, 1001}, false, nil)
+	assert.NoError(err)
+	err = s.Insert("book_author_p", []string{"book_id", "author_id"}, nil, []interface{}{1002, 1002}, false, nil)
+	assert.NoError(err)
 }

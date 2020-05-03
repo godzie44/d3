@@ -15,7 +15,7 @@ type dirtyEl struct {
 type UnitOfWork struct {
 	newEntities     map[entity.Name][]*entity.Box
 	dirtyEntities   map[entity.Name]map[interface{}]*dirtyEl
-	deletedEntities map[entity.Name]map[interface{}]interface{}
+	deletedEntities map[entity.Name]map[interface{}]*entity.Box
 
 	storage     Storage
 	identityMap *identityMap
@@ -25,7 +25,7 @@ func NewUOW(storage Storage) *UnitOfWork {
 	return &UnitOfWork{
 		newEntities:     make(map[entity.Name][]*entity.Box),
 		dirtyEntities:   make(map[entity.Name]map[interface{}]*dirtyEl),
-		deletedEntities: make(map[entity.Name]map[interface{}]interface{}),
+		deletedEntities: make(map[entity.Name]map[interface{}]*entity.Box),
 		storage:         storage,
 		identityMap:     newIdentityMap(),
 	}
@@ -68,7 +68,7 @@ func (uow *UnitOfWork) registerDirty(box *entity.Box) error {
 	return nil
 }
 
-func (uow *UnitOfWork) updateOriginalField(box *entity.Box, fieldName string, newVal interface{}) {
+func (uow *UnitOfWork) updateFieldOfOriginal(box *entity.Box, fieldName string, newVal interface{}) {
 	pkVal, err := box.ExtractPk()
 	if err != nil {
 		return
@@ -90,32 +90,60 @@ func (uow *UnitOfWork) updateOriginalField(box *entity.Box, fieldName string, ne
 	)
 }
 
-//
-//func (uow *UnitOfWork) registerRemove(entity DomainEntity) {
-//	uow.registerClean(entity)
-//	uow.deletedEntities[entity.GetId()] = entity
-//}
-//
-//func (uow *UnitOfWork) registerClean(entity DomainEntity) {
-//	delete(uow.newEntities, entity.GetId())
-//	delete(uow.dirtyEntities, entity.GetId())
-//}
-
-func (uow *UnitOfWork) Commit() error {
-	graph := persistence.NewPersistGraph(uow.checkInDirty, uow.getOriginal)
-
-	err := uow.processGraphByNew(graph)
+func (uow *UnitOfWork) registerRemove(box *entity.Box) error {
+	pkVal, err := box.ExtractPk()
 	if err != nil {
 		return err
 	}
 
-	err = uow.processGraphByDirty(graph)
+	uow.clean(box, pkVal)
+
+	if _, exists := uow.deletedEntities[box.GetEName()]; !exists {
+		uow.deletedEntities[box.GetEName()] = make(map[interface{}]*entity.Box)
+	}
+	uow.deletedEntities[box.GetEName()][pkVal] = box
+
+	return nil
+}
+
+func (uow *UnitOfWork) clean(box *entity.Box, pk interface{}) {
+	var i int
+	for _, b := range uow.newEntities[box.GetEName()] {
+		if b != box {
+			uow.newEntities[box.GetEName()][i] = b
+			i++
+		}
+	}
+
+	for j := i; j < len(uow.newEntities); j++ {
+		uow.newEntities[box.GetEName()][j] = nil
+	}
+	uow.newEntities[box.GetEName()] = uow.newEntities[box.GetEName()][:i]
+
+	delete(uow.dirtyEntities[box.GetEName()], pk)
+}
+
+func (uow *UnitOfWork) Commit() error {
+	graph := persistence.NewPersistGraph(uow.checkInDirty, uow.getOriginal)
+
+	err := uow.processNew(graph)
+	if err != nil {
+		return err
+	}
+
+	err = uow.processDirty(graph)
+	if err != nil {
+		return err
+	}
+
+	err = uow.processDelete(graph)
 	if err != nil {
 		return err
 	}
 
 	defer func() {
 		uow.newEntities = make(map[entity.Name][]*entity.Box)
+		uow.deletedEntities = make(map[entity.Name]map[interface{}]*entity.Box)
 	}()
 
 	return persistence.NewExecutor(uow.storage, uow.moveInsertedBoxToDirty).Exec(graph)
@@ -129,7 +157,7 @@ func (uow *UnitOfWork) moveInsertedBoxToDirty(act persistence.CompositeAction) {
 	}
 }
 
-func (uow *UnitOfWork) processGraphByNew(graph *persistence.PersistGraph) error {
+func (uow *UnitOfWork) processNew(graph *persistence.PersistGraph) error {
 	for _, newEntities := range uow.newEntities {
 		for _, b := range newEntities {
 			if err := graph.ProcessEntity(b); err != nil {
@@ -141,11 +169,23 @@ func (uow *UnitOfWork) processGraphByNew(graph *persistence.PersistGraph) error 
 	return nil
 }
 
-func (uow *UnitOfWork) processGraphByDirty(graph *persistence.PersistGraph) error {
+func (uow *UnitOfWork) processDirty(graph *persistence.PersistGraph) error {
 	for _, dirtyEntities := range uow.dirtyEntities {
 		for _, dirtyEntity := range dirtyEntities {
 			err := graph.ProcessEntity(dirtyEntity.box)
 			if err != nil {
+				return err
+			}
+		}
+	}
+
+	return nil
+}
+
+func (uow *UnitOfWork) processDelete(graph *persistence.PersistGraph) error {
+	for _, deletedEntities := range uow.deletedEntities {
+		for _, b := range deletedEntities {
+			if err := graph.ProcessDeletedEntity(b); err != nil {
 				return err
 			}
 		}
