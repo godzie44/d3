@@ -34,20 +34,6 @@ func (p *parsedTag) getProperty(name string) (property, bool) {
 	return property, exists
 }
 
-func (p *parsedTag) hasRelation() bool {
-	if _, has := p.getProperty("one_to_one"); has {
-		return true
-	}
-	if _, has := p.getProperty("one_to_many"); has {
-		return true
-	}
-	if _, has := p.getProperty("many_to_many"); has {
-		return true
-	}
-
-	return false
-}
-
 // one_to_one:"target_entity:Address, join_column:address_id, reference:id"
 func parseTag(tag reflect.StructTag) *parsedTag {
 	result := &parsedTag{

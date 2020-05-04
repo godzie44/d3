@@ -67,17 +67,27 @@ func CreateMeta(e interface{}) (*MetaInfo, error) {
 		field := &FieldInfo{
 			Name:           fieldReflection.Name,
 			associatedType: fieldReflection.Type,
+			DbAlias:        extractDbFieldAlias(tag, fieldReflection.Name),
 		}
 
-		if tag.hasRelation() {
-			relation := extractRelation(tag, field)
+		var relation Relation
+		switch {
+		case tag.hasProperty("one_to_one"):
+			relation = &OneToOne{}
+		case tag.hasProperty("one_to_many"):
+			relation = &OneToMany{}
+		case tag.hasProperty("many_to_many"):
+			relation = &ManyToMany{}
+		}
+
+		if relation != nil {
+			relation.fillFromTag(tag)
+			relation.setField(field)
 			meta.Relations[fieldReflection.Name] = relation
 		} else {
-			field.DbAlias = extractDbFieldAlias(tag, fieldReflection.Name)
+			field.FullDbAlias = meta.FullColumnAlias(field.DbAlias)
 			meta.Fields[fieldReflection.Name] = field
 		}
-
-		field.FullDbAlias = meta.FullColumnAlias(field.DbAlias)
 
 		if tag.hasProperty("pk") {
 			meta.Pk = &pk{field, extractPkStrategy(tag)}
@@ -107,43 +117,6 @@ func parseEntityTableName(eType reflect.Type) (string, error) {
 	}
 
 	return "", errors.New("field entity not found")
-}
-
-func extractRelation(tag *parsedTag, field *FieldInfo) Relation {
-	var relTypeAlias string
-	relType, exists := tag.getProperty("type")
-	if !exists {
-		relTypeAlias = "lazy"
-	} else {
-		relTypeAlias = relType.val
-	}
-
-	if prop, exists := tag.getProperty("one_to_one"); exists {
-		return &OneToOne{
-			baseRelation:    baseRelation{relType: relTypeAlias, targetEntity: Name(prop.getSubPropVal("target_entity")), field: field},
-			JoinColumn:      prop.getSubPropVal("join_on"),
-			ReferenceColumn: prop.getSubPropVal("reference_on"),
-		}
-	}
-
-	if prop, exists := tag.getProperty("one_to_many"); exists {
-		return &OneToMany{
-			baseRelation:    baseRelation{relType: relTypeAlias, targetEntity: Name(prop.getSubPropVal("target_entity")), field: field},
-			JoinColumn:      prop.getSubPropVal("join_on"),
-			ReferenceColumn: prop.getSubPropVal("reference_on"),
-		}
-	}
-
-	if prop, exists := tag.getProperty("many_to_many"); exists {
-		return &ManyToMany{
-			baseRelation:    baseRelation{relType: relTypeAlias, targetEntity: Name(prop.getSubPropVal("target_entity")), field: field},
-			JoinColumn:      prop.getSubPropVal("join_on"),
-			ReferenceColumn: prop.getSubPropVal("reference_on"),
-			JoinTable:       prop.getSubPropVal("join_table"),
-		}
-	}
-
-	return nil
 }
 
 var matchFirstCap = regexp.MustCompile("(.)([A-Z][a-z]+)")

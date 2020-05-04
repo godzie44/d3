@@ -5,32 +5,65 @@ import (
 	"errors"
 )
 
-type Relation interface {
-	IsLazy() bool
-	IsEager() bool
-	IsSmartLazy() bool
+type DeleteStrategy int
 
+const (
+	_ DeleteStrategy = iota
+	None
+	Cascade
+	Nullable
+)
+
+func deleteStrategyFromAlias(alias string) DeleteStrategy {
+	switch alias {
+	case "cascade":
+		return Cascade
+	case "nullable":
+		return Nullable
+	default:
+		return None
+	}
+}
+
+type RelationType int
+
+const (
+	_ RelationType = iota
+	Lazy
+	Eager
+	SmartLazy
+)
+
+func relationTypeFromAlias(alias string) RelationType {
+	switch alias {
+	case "lazy":
+		return Lazy
+	case "eager":
+		return Eager
+	default:
+		return Lazy
+	}
+}
+
+type Relation interface {
+	Type() RelationType
 	RelatedWith() Name
 
 	Field() *FieldInfo
+
+	setField(f *FieldInfo)
+	fillFromTag(tag *parsedTag)
 }
 
 type baseRelation struct {
-	relType      string
+	relType      RelationType
+	onDelete     DeleteStrategy
 	targetEntity Name
 	field        *FieldInfo
 }
 
-func (b *baseRelation) IsLazy() bool {
-	return b.relType == "lazy"
-}
-
-func (b *baseRelation) IsEager() bool {
-	return b.relType == "eager"
-}
-
-func (b *baseRelation) IsSmartLazy() bool {
-	return b.relType == "smart_lazy"
+func (b *baseRelation) Type() RelationType {
+	return b.relType
 }
 
 func (b *baseRelation) RelatedWith() Name {
@@ -39,6 +72,10 @@ func (b *baseRelation) RelatedWith() Name {
 
 func (b *baseRelation) Field() *FieldInfo {
 	return b.field
+}
+
+func (b *baseRelation) setField(f *FieldInfo) {
+	b.field = f
 }
 
 type ManyToOne struct {
@@ -56,6 +93,19 @@ type OneToMany struct {
 	baseRelation
 	JoinColumn      string
 	ReferenceColumn string
+}
+
+func (o *OneToMany) fillFromTag(tag *parsedTag) {
+	prop, _ := tag.getProperty("one_to_many")
+
+	relType, _ := tag.getProperty("type")
+	o.baseRelation = baseRelation{
+		relType:      relationTypeFromAlias(relType.val),
+		targetEntity: Name(prop.getSubPropVal("target_entity")),
+		onDelete:     deleteStrategyFromAlias(prop.getSubPropVal("on_delete")),
+	}
+	o.JoinColumn = prop.getSubPropVal("join_on")
+	o.ReferenceColumn = prop.getSubPropVal("reference_on")
 }
 
 func (o *OneToMany) ExtractCollection(owner interface{}) (Collection, error) {
@@ -84,6 +134,19 @@ type OneToOne struct {
 	baseRelation
 	JoinColumn      string
 	ReferenceColumn string
+}
+
+func (o *OneToOne) fillFromTag(tag *parsedTag) {
+	prop, _ := tag.getProperty("one_to_one")
+	relType, _ := tag.getProperty("type")
+
+	o.baseRelation = baseRelation{
+		relType:      relationTypeFromAlias(relType.val),
+		targetEntity: Name(prop.getSubPropVal("target_entity")),
+		onDelete:     deleteStrategyFromAlias(prop.getSubPropVal("on_delete")),
+	}
+	o.JoinColumn = prop.getSubPropVal("join_on")
+	o.ReferenceColumn = prop.getSubPropVal("reference_on")
 }
 
 func (o *OneToOne) Extract(owner interface{}) (WrappedEntity, error) {
@@ -116,8 +179,22 @@ type ManyToMany struct {
 	JoinTable       string
 }
 
-func (o *ManyToMany) ExtractCollection(owner interface{}) (Collection, error) {
-	val, err := reflect.ExtractStructField(owner, o.Field().Name)
+func (m *ManyToMany) fillFromTag(tag *parsedTag) {
+	prop, _ := tag.getProperty("many_to_many")
+	relType, _ := tag.getProperty("type")
+
+	m.baseRelation = baseRelation{
+		relType:      relationTypeFromAlias(relType.val),
+		targetEntity: Name(prop.getSubPropVal("target_entity")),
+		onDelete:     deleteStrategyFromAlias(prop.getSubPropVal("on_delete")),
+	}
+	m.JoinColumn = prop.getSubPropVal("join_on")
+	m.ReferenceColumn = prop.getSubPropVal("reference_on")
+	m.JoinTable = prop.getSubPropVal("join_table")
+}
+
+func (m *ManyToMany) ExtractCollection(owner interface{}) (Collection, error) {
+	val, err := reflect.ExtractStructField(owner, m.Field().Name)
 	if err != nil {
 		return nil, err
 	}

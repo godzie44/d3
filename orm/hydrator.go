@@ -156,13 +156,12 @@ func (h *Hydrator) createRelation(entity interface{}, relation d3entity.Relation
 
 		extractor := h.session.createOneToOneExtractor(relatedId, h.meta.RelatedMeta[rel.RelatedWith()])
 
-		if rel.IsLazy() {
+		switch rel.Type() {
+		case d3entity.Lazy:
 			return d3entity.NewLazyWrappedEntity(extractor, func(entity d3entity.WrappedEntity) {
 				h.session.uow.updateFieldOfOriginal(d3entity.NewBox(entity, h.meta), relation.Field().Name, entity)
 			}), nil
-		}
-
-		if rel.IsEager() {
+		case d3entity.Eager:
 			return d3entity.NewWrapEntity(extractor()), nil
 		}
 	case *d3entity.OneToMany, *d3entity.ManyToMany:
@@ -181,13 +180,12 @@ func (h *Hydrator) createRelation(entity interface{}, relation d3entity.Relation
 			panic("unreachable statement")
 		}
 
-		if rel.IsLazy() {
+		switch rel.Type() {
+		case d3entity.Lazy:
 			return d3entity.NewLazyCollection(extractor, func(c d3entity.Collection) {
 				h.session.uow.updateFieldOfOriginal(d3entity.NewBox(entity, h.meta), relation.Field().Name, c)
 			}), nil
-		}
-
-		if rel.IsEager() {
+		case d3entity.Eager:
 			return d3entity.NewCollection(d3reflect.BreakUpSlice(extractor())), nil
 		}
 	}
