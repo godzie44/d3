@@ -100,7 +100,7 @@ func (q *Query) addEntityFieldsToSelect(meta *entity.MetaInfo) {
 	}
 
 	for _, rel := range meta.OneToOneRelations() {
-		q.columns = append(q.columns, rel.Field().FullDbAlias)
+		q.columns = append(q.columns, meta.FullColumnAlias(rel.JoinColumn))
 	}
 }
 

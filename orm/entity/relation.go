@@ -15,10 +15,6 @@ type Relation interface {
 	Field() *FieldInfo
 }
 
-//type QueryExecutor interface {
-//	Execute(query *query.Query) interface{}
-//}
-
 type baseRelation struct {
 	relType      string
 	targetEntity Name

@@ -71,11 +71,6 @@ func CreateMeta(e interface{}) (*MetaInfo, error) {
 
 		if tag.hasRelation() {
 			relation := extractRelation(tag, field)
-			switch rel := relation.(type) {
-			case *OneToOne:
-				field.DbAlias = rel.JoinColumn
-			case *OneToMany:
-			}
 			meta.Relations[fieldReflection.Name] = relation
 		} else {
 			field.DbAlias = extractDbFieldAlias(tag, fieldReflection.Name)
