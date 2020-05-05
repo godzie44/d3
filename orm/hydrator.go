@@ -154,7 +154,7 @@ func (h *Hydrator) createRelation(entity interface{}, relation d3entity.Relation
 			return d3entity.NewWrapEntity(nil), nil
 		}
 
-		extractor := h.session.createOneToOneExtractor(relatedId, h.meta.RelatedMeta[rel.RelatedWith()])
+		extractor := h.session.makeOneToOneExtractor(relatedId, h.meta.RelatedMeta[rel.RelatedWith()])
 
 		switch rel.Type() {
 		case d3entity.Lazy:
@@ -173,9 +173,9 @@ func (h *Hydrator) createRelation(entity interface{}, relation d3entity.Relation
 		var extractor func() interface{}
 		switch rel := rel.(type) {
 		case *d3entity.OneToMany:
-			extractor = h.session.createOneToManyExtractor(relatedId, rel, h.meta.RelatedMeta[rel.RelatedWith()])
+			extractor = h.session.makeOneToManyExtractor(relatedId, rel, h.meta.RelatedMeta[rel.RelatedWith()])
 		case *d3entity.ManyToMany:
-			extractor = h.session.createManyToManyExtractor(relatedId, rel, h.meta.RelatedMeta[rel.RelatedWith()])
+			extractor = h.session.makeManyToManyExtractor(relatedId, rel, h.meta.RelatedMeta[rel.RelatedWith()])
 		default:
 			panic("unreachable statement")
 		}

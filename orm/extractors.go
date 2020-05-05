@@ -9,7 +9,7 @@ import (
 
 type Extractor func() interface{}
 
-func (s *Session) createOneToOneExtractor(id interface{}, relatedMeta *d3entity.MetaInfo) Extractor {
+func (s *Session) makeOneToOneExtractor(id interface{}, relatedMeta *d3entity.MetaInfo) Extractor {
 	return func() interface{} {
 		entities, err := s.execute(
 			query.NewQuery(relatedMeta).AndWhere(relatedMeta.Pk.FullDbAlias()+"=?", id),
@@ -28,7 +28,7 @@ func (s *Session) createOneToOneExtractor(id interface{}, relatedMeta *d3entity.
 	}
 }
 
-func (s *Session) createOneToManyExtractor(joinId interface{}, relation *d3entity.OneToMany, relatedMeta *d3entity.MetaInfo) Extractor {
+func (s *Session) makeOneToManyExtractor(joinId interface{}, relation *d3entity.OneToMany, relatedMeta *d3entity.MetaInfo) Extractor {
 	return func() interface{} {
 		entities, err := s.execute(
 			query.NewQuery(relatedMeta).AndWhere(relatedMeta.FullColumnAlias(relation.JoinColumn)+"=?", joinId),
@@ -41,7 +41,7 @@ func (s *Session) createOneToManyExtractor(joinId interface{}, relation *d3entit
 	}
 }
 
-func (s *Session) createManyToManyExtractor(id interface{}, rel *d3entity.ManyToMany, relatedMeta *d3entity.MetaInfo) Extractor {
+func (s *Session) makeManyToManyExtractor(id interface{}, rel *d3entity.ManyToMany, relatedMeta *d3entity.MetaInfo) Extractor {
 	return func() interface{} {
 		entities, err := s.execute(
 			query.
