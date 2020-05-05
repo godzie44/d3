@@ -47,6 +47,7 @@ func relationTypeFromAlias(alias string) RelationType {
 
 type Relation interface {
 	Type() RelationType
+	DeleteStrategy() DeleteStrategy
 	RelatedWith() Name
 
 	Field() *FieldInfo
@@ -56,14 +57,18 @@ type Relation interface {
 }
 
 type baseRelation struct {
-	relType      RelationType
-	onDelete     DeleteStrategy
-	targetEntity Name
-	field        *FieldInfo
+	relType        RelationType
+	deleteStrategy DeleteStrategy
+	targetEntity   Name
+	field          *FieldInfo
 }
 
 func (b *baseRelation) Type() RelationType {
 	return b.relType
+}
+
+func (b *baseRelation) DeleteStrategy() DeleteStrategy {
+	return b.deleteStrategy
 }
 
 func (b *baseRelation) RelatedWith() Name {
@@ -100,9 +105,9 @@ func (o *OneToMany) fillFromTag(tag *parsedTag) {
 
 	relType, _ := tag.getProperty("type")
 	o.baseRelation = baseRelation{
-		relType:      relationTypeFromAlias(relType.val),
-		targetEntity: Name(prop.getSubPropVal("target_entity")),
-		onDelete:     deleteStrategyFromAlias(prop.getSubPropVal("on_delete")),
+		relType:        relationTypeFromAlias(relType.val),
+		targetEntity:   Name(prop.getSubPropVal("target_entity")),
+		deleteStrategy: deleteStrategyFromAlias(prop.getSubPropVal("delete")),
 	}
 	o.JoinColumn = prop.getSubPropVal("join_on")
 	o.ReferenceColumn = prop.getSubPropVal("reference_on")
@@ -141,9 +146,9 @@ func (o *OneToOne) fillFromTag(tag *parsedTag) {
 	relType, _ := tag.getProperty("type")
 
 	o.baseRelation = baseRelation{
-		relType:      relationTypeFromAlias(relType.val),
-		targetEntity: Name(prop.getSubPropVal("target_entity")),
-		onDelete:     deleteStrategyFromAlias(prop.getSubPropVal("on_delete")),
+		relType:        relationTypeFromAlias(relType.val),
+		targetEntity:   Name(prop.getSubPropVal("target_entity")),
+		deleteStrategy: deleteStrategyFromAlias(prop.getSubPropVal("delete")),
 	}
 	o.JoinColumn = prop.getSubPropVal("join_on")
 	o.ReferenceColumn = prop.getSubPropVal("reference_on")
@@ -184,9 +189,9 @@ func (m *ManyToMany) fillFromTag(tag *parsedTag) {
 	relType, _ := tag.getProperty("type")
 
 	m.baseRelation = baseRelation{
-		relType:      relationTypeFromAlias(relType.val),
-		targetEntity: Name(prop.getSubPropVal("target_entity")),
-		onDelete:     deleteStrategyFromAlias(prop.getSubPropVal("on_delete")),
+		relType:        relationTypeFromAlias(relType.val),
+		targetEntity:   Name(prop.getSubPropVal("target_entity")),
+		deleteStrategy: deleteStrategyFromAlias(prop.getSubPropVal("delete")),
 	}
 	m.JoinColumn = prop.getSubPropVal("join_on")
 	m.ReferenceColumn = prop.getSubPropVal("reference_on")

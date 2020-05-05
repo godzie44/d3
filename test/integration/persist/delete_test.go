@@ -48,6 +48,21 @@ func (d *DeleteTS) TearDownTest() {
 func (d *DeleteTS) TestDeleteEntity() {
 	fillDb(d.Assert(), d.dbAdapter)
 
+	rep, err := d.d3Orm.CreateRepository(d.session, (*ShopProfile)(nil))
+	d.NoError(err)
+
+	profile, err := rep.FindOne(rep.CreateQuery().AndWhere("profile_p.id = 1001"))
+
+	d.NoError(rep.Delete(profile))
+
+	d.NoError(d.session.Flush())
+
+	d.Equal(1, d.dbAdapter.DeleteCounter())
+}
+
+func (d *DeleteTS) TestDeleteWithRelations() {
+	fillDb(d.Assert(), d.dbAdapter)
+
 	rep, err := d.d3Orm.CreateRepository(d.session, (*Shop)(nil))
 	d.NoError(err)
 
@@ -55,9 +70,31 @@ func (d *DeleteTS) TestDeleteEntity() {
 
 	d.NoError(rep.Delete(shop))
 
+	d.dbAdapter.ResetCounters()
 	d.NoError(d.session.Flush())
 
-	d.Equal(1, d.dbAdapter.DeleteCounter())
+	// delete shop and profile (cause cascade)
+	d.Equal(2, d.dbAdapter.DeleteCounter())
+
+	// set books shop_id attribute to null where book_id = shop.ID (cause nullable)
+	d.Equal(1, d.dbAdapter.UpdateCounter())
+}
+
+func (d *DeleteTS) TestDeleteWithManyToMany() {
+	fillDb(d.Assert(), d.dbAdapter)
+
+	rep, err := d.d3Orm.CreateRepository(d.session, (*Book)(nil))
+	d.NoError(err)
+
+	book, err := rep.FindOne(rep.CreateQuery().AndWhere("book_p.id = 1001"))
+
+	d.NoError(rep.Delete(book))
+
+	d.dbAdapter.ResetCounters()
+	d.NoError(d.session.Flush())
+
+	// delete from book_p table and book_author_p table
+	d.Equal(2, d.dbAdapter.DeleteCounter())
 }
 
 func TestDeleteTestSuite(t *testing.T) {

@@ -195,19 +195,19 @@ func (p *PersistGraph) processBox(box *persistBox) error {
 	box.action.setFields(extractedFields...)
 
 	for _, rel := range box.Meta.OneToOneRelations() {
-		if err := p.processOneToOneRel(box, rel); err != nil {
+		if err := p.persistOneToOneRel(box, rel); err != nil {
 			return err
 		}
 	}
 
 	for _, rel := range box.Meta.OneToManyRelations() {
-		if err := p.processOneToManyRel(box, rel); err != nil {
+		if err := p.persistOneToManyRel(box, rel); err != nil {
 			return err
 		}
 	}
 
 	for _, rel := range box.Meta.ManyToManyRelations() {
-		if err := p.processManyToManyRel(box, rel); err != nil {
+		if err := p.persistManyToManyRel(box, rel); err != nil {
 			return err
 		}
 	}
@@ -215,15 +215,15 @@ func (p *PersistGraph) processBox(box *persistBox) error {
 	return nil
 }
 
-func (p *PersistGraph) processOneToOneRel(box *persistBox, relation *d3entity.OneToOne) error {
-	relatedEntity, err := relation.Extract(box.Entity)
+func (p *PersistGraph) persistOneToOneRel(ownerBox *persistBox, relation *d3entity.OneToOne) error {
+	relatedEntity, err := relation.Extract(ownerBox.Entity)
 	if err != nil {
 		return err
 	}
 
 	var origRelatedEntity d3entity.WrappedEntity = d3entity.NewWrapEntity(nil)
-	if box.original != nil {
-		origRelatedEntity, err = relation.Extract(box.original)
+	if ownerBox.original != nil {
+		origRelatedEntity, err = relation.Extract(ownerBox.original)
 		if err != nil {
 			return err
 		}
@@ -241,23 +241,23 @@ func (p *PersistGraph) processOneToOneRel(box *persistBox, relation *d3entity.On
 		return nil
 	case relatedEntity.IsNil():
 		// if bew relation is nil then delete relation
-		box.action.mergeFields(ActionField(relation.JoinColumn, nil))
+		ownerBox.action.mergeFields(ActionField(relation.JoinColumn, nil))
 	default:
-		relatedBox, err := p.knownBoxes.getRaw(relatedEntity.Unwrap(), box.GetRelatedMeta(relation.RelatedWith()))
+		relatedBox, err := p.knownBoxes.getRaw(relatedEntity.Unwrap(), ownerBox.GetRelatedMeta(relation.RelatedWith()))
 		if err != nil {
 			return err
 		}
 
 		//split here, cycle detected
 		if relatedBox.currState.isProcessed() || relatedBox.currState.isInProcess() {
-			doSplit(box.action, relatedBox.action, box, relation.JoinColumn, createIDPromise(relatedBox))
+			doSplit(ownerBox.action, relatedBox.action, ownerBox, relation.JoinColumn, createIDPromise(relatedBox))
 		} else {
 			if err := p.processBox(relatedBox); err != nil {
 				return err
 			}
-			relatedBox.action.addChild(box.action)
+			relatedBox.action.addChild(ownerBox.action)
 			if !reflect.IsFieldEquals(relatedBox.original, relatedBox.Entity, relatedBox.Meta.Pk.Field.Name) {
-				box.action.mergeFields(ActionField(relation.JoinColumn, createIDPromise(relatedBox)))
+				ownerBox.action.mergeFields(ActionField(relation.JoinColumn, createIDPromise(relatedBox)))
 			}
 		}
 	}
@@ -265,23 +265,23 @@ func (p *PersistGraph) processOneToOneRel(box *persistBox, relation *d3entity.On
 	return nil
 }
 
-func (p *PersistGraph) processOneToManyRel(box *persistBox, relation *d3entity.OneToMany) error {
-	newCollection, err := relation.ExtractCollection(box.Entity)
+func (p *PersistGraph) persistOneToManyRel(ownerBox *persistBox, relation *d3entity.OneToMany) error {
+	newCollection, err := relation.ExtractCollection(ownerBox.Entity)
 	if err != nil {
 		return err
 	}
 	relatedEntities := revertIntoMap(newCollection.ToSlice())
 
 	origRelatedEntities := make(map[interface{}]struct{})
-	if box.original != nil {
-		origCollection, err := relation.ExtractCollection(box.original)
+	if ownerBox.original != nil {
+		origCollection, err := relation.ExtractCollection(ownerBox.original)
 		if err != nil {
 			return err
 		}
 		origRelatedEntities = revertIntoMap(origCollection.ToSlice())
 	}
 
-	relatedMeta := box.GetRelatedMeta(relation.RelatedWith())
+	relatedMeta := ownerBox.GetRelatedMeta(relation.RelatedWith())
 	for _, relatedEntity := range mapKeyDiff(relatedEntities, origRelatedEntities) {
 		relatedBox, err := p.knownBoxes.getRaw(relatedEntity, relatedMeta)
 		if err != nil {
@@ -290,13 +290,13 @@ func (p *PersistGraph) processOneToManyRel(box *persistBox, relation *d3entity.O
 
 		//split here, cycle detected
 		if relatedBox.currState.isProcessed() || relatedBox.currState.isInProcess() {
-			doSplit(relatedBox.action, box.action, relatedBox, relation.JoinColumn, createIDPromise(box))
+			doSplit(relatedBox.action, ownerBox.action, relatedBox, relation.JoinColumn, createIDPromise(ownerBox))
 		} else {
 			if err := p.processBox(relatedBox); err != nil {
 				return err
 			}
-			box.action.addChild(relatedBox.action)
-			relatedBox.action.mergeFields(ActionField(relation.JoinColumn, createIDPromise(box)))
+			ownerBox.action.addChild(relatedBox.action)
+			relatedBox.action.mergeFields(ActionField(relation.JoinColumn, createIDPromise(ownerBox)))
 		}
 	}
 
@@ -312,29 +312,29 @@ func (p *PersistGraph) processOneToManyRel(box *persistBox, relation *d3entity.O
 		updAction.setFields(ActionField(relation.JoinColumn, nil))
 		updAction.setTableName(relatedMeta.TableName)
 
-		box.action.addChild(updAction)
+		ownerBox.action.addChild(updAction)
 	}
 
 	return nil
 }
 
-func (p *PersistGraph) processManyToManyRel(box *persistBox, relation *d3entity.ManyToMany) error {
-	newCollection, err := relation.ExtractCollection(box.Entity)
+func (p *PersistGraph) persistManyToManyRel(ownerBox *persistBox, relation *d3entity.ManyToMany) error {
+	newCollection, err := relation.ExtractCollection(ownerBox.Entity)
 	if err != nil {
 		return err
 	}
 	relatedEntities := revertIntoMap(newCollection.ToSlice())
 
 	origRelatedEntities := make(map[interface{}]struct{})
-	if box.original != nil {
-		origCollection, err := relation.ExtractCollection(box.original)
+	if ownerBox.original != nil {
+		origCollection, err := relation.ExtractCollection(ownerBox.original)
 		if err != nil {
 			return err
 		}
 		origRelatedEntities = revertIntoMap(origCollection.ToSlice())
 	}
 
-	relatedMeta := box.GetRelatedMeta(relation.RelatedWith())
+	relatedMeta := ownerBox.GetRelatedMeta(relation.RelatedWith())
 	for _, relatedEntity := range mapKeyDiff(relatedEntities, origRelatedEntities) {
 		relatedBox, err := p.knownBoxes.getRaw(relatedEntity, relatedMeta)
 		if err != nil {
@@ -348,17 +348,17 @@ func (p *PersistGraph) processManyToManyRel(box *persistBox, relation *d3entity.
 		linkTableInsertAction := NewInsertAction(nil, nil)
 		linkTableInsertAction.setTableName(relation.JoinTable)
 		linkTableInsertAction.setFields(
-			ActionField(relation.JoinColumn, createIDPromise(box)),
+			ActionField(relation.JoinColumn, createIDPromise(ownerBox)),
 			ActionField(relation.ReferenceColumn, createIDPromise(relatedBox)),
 		)
 
-		if !relatedBox.action.hasChild(linkTableInsertAction) && !box.action.hasChild(linkTableInsertAction) {
+		if !relatedBox.action.hasChild(linkTableInsertAction) && !ownerBox.action.hasChild(linkTableInsertAction) {
 			relatedBox.action.addChild(linkTableInsertAction)
-			box.action.addChild(linkTableInsertAction)
+			ownerBox.action.addChild(linkTableInsertAction)
 		}
 	}
 
-	pk, err := box.ExtractPk()
+	pk, err := ownerBox.ExtractPk()
 	if err != nil {
 		return err
 	}
@@ -375,7 +375,7 @@ func (p *PersistGraph) processManyToManyRel(box *persistBox, relation *d3entity.
 		})
 		delAction.setTableName(relation.JoinTable)
 
-		box.action.addChild(delAction)
+		ownerBox.action.addChild(delAction)
 	}
 
 	return nil
@@ -440,6 +440,101 @@ func (p *PersistGraph) ProcessDeletedEntity(box *d3entity.Box) error {
 		pb.Meta.Pk.FullDbAlias(): pb.entityPk,
 	})
 	pb.action.setTableName(pb.Meta.TableName)
+
+	for _, rel := range pb.Meta.OneToOneRelations() {
+		if err := p.deleteOneToOneRel(pb, rel); err != nil {
+			return err
+		}
+	}
+
+	for _, rel := range pb.Meta.OneToManyRelations() {
+		if err := p.deleteOneToManyRel(pb, rel); err != nil {
+			return err
+		}
+	}
+
+	for _, rel := range pb.Meta.ManyToManyRelations() {
+		if err := p.deleteManyToManyRel(pb, rel); err != nil {
+			return err
+		}
+	}
+
+	return nil
+}
+
+func (p *PersistGraph) deleteOneToOneRel(ownerBox *persistBox, relation *d3entity.OneToOne) error {
+	switch relation.DeleteStrategy() {
+	case d3entity.None, d3entity.Nullable:
+		return nil
+	case d3entity.Cascade:
+		relatedEntity, err := relation.Extract(ownerBox.Entity)
+		if err != nil {
+			return err
+		}
+
+		if relatedEntity.IsNil() {
+			return nil
+		}
+
+		return p.ProcessDeletedEntity(d3entity.NewBox(relatedEntity.Unwrap(), ownerBox.GetRelatedMeta(relation.RelatedWith())))
+	default:
+		return nil
+	}
+}
+
+func (p *PersistGraph) deleteOneToManyRel(ownerBox *persistBox, relation *d3entity.OneToMany) error {
+	switch relation.DeleteStrategy() {
+	case d3entity.None:
+		return nil
+	case d3entity.Nullable:
+		relatedMeta := ownerBox.GetRelatedMeta(relation.RelatedWith())
+
+		updAction := NewUpdateAction(map[string]interface{}{
+			relation.JoinColumn: ownerBox.entityPk,
+		})
+		updAction.setFields(ActionField(relation.JoinColumn, nil))
+		updAction.setTableName(relatedMeta.TableName)
+		ownerBox.action.addChild(updAction)
+	case d3entity.Cascade:
+		relatedMeta := ownerBox.GetRelatedMeta(relation.RelatedWith())
+		relatedCollection, err := relation.ExtractCollection(ownerBox.Entity)
+		if err != nil {
+			return err
+		}
+
+		for _, e := range relatedCollection.ToSlice() {
+			if err := p.ProcessDeletedEntity(d3entity.NewBox(e, relatedMeta)); err != nil {
+				return err
+			}
+		}
+	}
+
+	return nil
+}
+
+func (p *PersistGraph) deleteManyToManyRel(ownerBox *persistBox, relation *d3entity.ManyToMany) error {
+	act := NewDeleteAction(map[string]interface{}{
+		relation.JoinColumn: ownerBox.entityPk,
+	})
+	act.setTableName(relation.JoinTable)
+	ownerBox.action.addChild(act)
+
+	switch relation.DeleteStrategy() {
+	case d3entity.None, d3entity.Nullable:
+		return nil
+	case d3entity.Cascade:
+		relatedMeta := ownerBox.GetRelatedMeta(relation.RelatedWith())
+		relatedCollection, err := relation.ExtractCollection(ownerBox.Entity)
+		if err != nil {
+			return err
+		}
+
+		for _, e := range relatedCollection.ToSlice() {
+			if err := p.ProcessDeletedEntity(d3entity.NewBox(e, relatedMeta)); err != nil {
+				return err
+			}
+		}
+	}
 
 	return nil
 }

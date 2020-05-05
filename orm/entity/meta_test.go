@@ -31,7 +31,7 @@ type shop struct {
 	entity  struct{}      `d3:"table_name:shop"`
 	ID      sql.NullInt32 `d3:"pk:auto"`
 	Books   Collection    `d3:"one_to_many:<target_entity:book,join_on:shop_id>,type:lazy"`
-	Profile WrappedEntity `d3:"one_to_one:<target_entity:shopProfile,join_on:profile_id,on_delete:cascade>"`
+	Profile WrappedEntity `d3:"one_to_one:<target_entity:shopProfile,join_on:profile_id,delete:cascade>"`
 	Name    string
 }
 
@@ -48,20 +48,20 @@ func TestCreateMeta(t *testing.T) {
 	}, *meta.Pk.Field)
 	assert.Equal(t, OneToOne{
 		baseRelation: baseRelation{
-			relType:      Lazy,
-			onDelete:     Cascade,
-			targetEntity: Name("shopProfile"),
-			field:        meta.Relations["Profile"].(*OneToOne).field,
+			relType:        Lazy,
+			deleteStrategy: Cascade,
+			targetEntity:   Name("shopProfile"),
+			field:          meta.Relations["Profile"].(*OneToOne).field,
 		},
 		JoinColumn:      "profile_id",
 		ReferenceColumn: "",
 	}, *meta.Relations["Profile"].(*OneToOne))
 	assert.Equal(t, OneToMany{
 		baseRelation: baseRelation{
-			relType:      Lazy,
-			onDelete:     None,
-			targetEntity: Name("book"),
-			field:        meta.Relations["Books"].(*OneToMany).field,
+			relType:        Lazy,
+			deleteStrategy: None,
+			targetEntity:   Name("book"),
+			field:          meta.Relations["Books"].(*OneToMany).field,
 		},
 		JoinColumn:      "shop_id",
 		ReferenceColumn: "",
