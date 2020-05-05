@@ -101,32 +101,32 @@ delete from profile_p;
 }
 
 func fillDb(assert *assert.Assertions, s orm.Storage) {
-	err := s.Insert("shop_p", []string{"id", "name", "profile_id"}, nil, []interface{}{1001, "shop1", 1001}, false, nil)
+	err := s.Insert("shop_p", []string{"id", "name", "profile_id"}, []interface{}{1001, "shop1", 1001})
 	assert.NoError(err)
-	err = s.Insert("shop_p", []string{"id", "name", "profile_id"}, nil, []interface{}{1002, "shop2", 1002}, false, nil)
-	assert.NoError(err)
-
-	err = s.Insert("profile_p", []string{"id", "description"}, nil, []interface{}{1001, "desc1"}, false, nil)
-	assert.NoError(err)
-	err = s.Insert("profile_p", []string{"id", "description"}, nil, []interface{}{1002, "desc2"}, false, nil)
+	err = s.Insert("shop_p", []string{"id", "name", "profile_id"}, []interface{}{1002, "shop2", 1002})
 	assert.NoError(err)
 
-	err = s.Insert("book_p", []string{"id", "shop_id", "name"}, nil, []interface{}{1001, 1001, "book1"}, false, nil)
+	err = s.Insert("profile_p", []string{"id", "description"}, []interface{}{1001, "desc1"})
 	assert.NoError(err)
-	err = s.Insert("book_p", []string{"id", "shop_id", "name"}, nil, []interface{}{1002, 1001, "book2"}, false, nil)
-	assert.NoError(err)
-	err = s.Insert("book_p", []string{"id", "shop_id", "name"}, nil, []interface{}{1003, 1002, "book3"}, false, nil)
+	err = s.Insert("profile_p", []string{"id", "description"}, []interface{}{1002, "desc2"})
 	assert.NoError(err)
 
-	err = s.Insert("author_p", []string{"id", "name"}, nil, []interface{}{1001, "author1"}, false, nil)
+	err = s.Insert("book_p", []string{"id", "shop_id", "name"}, []interface{}{1001, 1001, "book1"})
 	assert.NoError(err)
-	err = s.Insert("author_p", []string{"id", "name"}, nil, []interface{}{1002, "author2"}, false, nil)
+	err = s.Insert("book_p", []string{"id", "shop_id", "name"}, []interface{}{1002, 1001, "book2"})
+	assert.NoError(err)
+	err = s.Insert("book_p", []string{"id", "shop_id", "name"}, []interface{}{1003, 1002, "book3"})
 	assert.NoError(err)
 
-	err = s.Insert("book_author_p", []string{"book_id", "author_id"}, nil, []interface{}{1001, 1001}, false, nil)
+	err = s.Insert("author_p", []string{"id", "name"}, []interface{}{1001, "author1"})
 	assert.NoError(err)
-	err = s.Insert("book_author_p", []string{"book_id", "author_id"}, nil, []interface{}{1002, 1001}, false, nil)
+	err = s.Insert("author_p", []string{"id", "name"}, []interface{}{1002, "author2"})
 	assert.NoError(err)
-	err = s.Insert("book_author_p", []string{"book_id", "author_id"}, nil, []interface{}{1002, 1002}, false, nil)
+
+	err = s.Insert("book_author_p", []string{"book_id", "author_id"}, []interface{}{1001, 1001})
+	assert.NoError(err)
+	err = s.Insert("book_author_p", []string{"book_id", "author_id"}, []interface{}{1002, 1001})
+	assert.NoError(err)
+	err = s.Insert("book_author_p", []string{"book_id", "author_id"}, []interface{}{1002, 1002})
 	assert.NoError(err)
 }

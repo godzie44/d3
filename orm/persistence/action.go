@@ -228,7 +228,7 @@ func (i *InsertAction) exec(storage Storage) error {
 
 	if i.pkHydrateFn != nil && i.pkGenStrategy == entity.Auto {
 		tpl := i.box.Meta.CreateKeyTpl()
-		err := storage.Insert(i.TableName, columns, i.pkCols, values, true, func(scanner Scanner) error {
+		err := storage.InsertWithReturn(i.TableName, columns, values, i.pkCols, func(scanner Scanner) error {
 			return scanner.Scan(tpl.Projection()...)
 		})
 		if err != nil {
@@ -239,7 +239,7 @@ func (i *InsertAction) exec(storage Storage) error {
 			return err
 		}
 	} else {
-		err := storage.Insert(i.TableName, columns, i.pkCols, values, false, nil)
+		err := storage.Insert(i.TableName, columns, values)
 		if err != nil {
 			return err
 		}

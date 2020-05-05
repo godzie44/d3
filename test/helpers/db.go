@@ -26,9 +26,14 @@ func NewDbAdapterWithQueryCounter(dbAdapter orm.Storage) *DbAdapterWithQueryCoun
 	return wrappedAdapter
 }
 
-func (d *DbAdapterWithQueryCounter) Insert(table string, cols, pkCols []string, values []interface{}, propagatePk bool, propagationFn func(scanner persistence.Scanner) error) error {
+func (d *DbAdapterWithQueryCounter) Insert(table string, cols []string, values []interface{}) error {
 	d.insertCounter++
-	return d.dbAdapter.Insert(table, cols, pkCols, values, propagatePk, propagationFn)
+	return d.dbAdapter.Insert(table, cols, values)
+}
+
+func (d *DbAdapterWithQueryCounter) InsertWithReturn(table string, cols []string, values []interface{}, returnCols []string, withReturn func(scanner persistence.Scanner) error) error {
+	d.insertCounter++
+	return d.dbAdapter.InsertWithReturn(table, cols, values, returnCols, withReturn)
 }
 
 func (d *DbAdapterWithQueryCounter) Update(table string, cols []string, values []interface{}, identityCond map[string]interface{}) error {

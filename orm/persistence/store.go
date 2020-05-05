@@ -5,7 +5,8 @@ type Scanner interface {
 }
 
 type Storage interface {
-	Insert(table string, cols, pkCols []string, values []interface{}, propagatePk bool, propagationFn func(scanner Scanner) error) error
+	Insert(table string, cols []string, values []interface{}) error
+	InsertWithReturn(table string, cols []string, values []interface{}, returnCols []string, withReturned func(scanner Scanner) error) error
 	Update(table string, cols []string, values []interface{}, identityCond map[string]interface{}) error
 	Remove(table string, identityCond map[string]interface{}) error
 }

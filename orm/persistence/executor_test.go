@@ -29,7 +29,7 @@ type queryStub struct {
 	values    map[string]interface{}
 }
 
-func (s *storageStub) Insert(table string, cols, pkCols []string, values []interface{}, propagatePk bool, propagationFn func(scanner Scanner) error) error {
+func (s *storageStub) Insert(table string, cols []string, values []interface{}) error {
 	qValues := map[string]interface{}{}
 	for i, val := range values {
 		if fn, ok := val.(func() (interface{}, error)); ok {
@@ -45,11 +45,26 @@ func (s *storageStub) Insert(table string, cols, pkCols []string, values []inter
 		values:    qValues,
 	})
 
-	if propagatePk {
-		return propagationFn(&scannerStub{ret: []interface{}{values[0]}})
+	return nil
+}
+
+func (s *storageStub) InsertWithReturn(table string, cols []string, values []interface{}, returnCols []string, withReturned func(scanner Scanner) error) error {
+	qValues := map[string]interface{}{}
+	for i, val := range values {
+		if fn, ok := val.(func() (interface{}, error)); ok {
+			fnVal, _ := fn()
+			qValues[cols[i]] = fnVal
+		} else {
+			qValues[cols[i]] = val
+		}
 	}
 
-	return nil
+	s.insertRequests = append(s.insertRequests, queryStub{
+		tableName: table,
+		values:    qValues,
+	})
+
+	return withReturned(&scannerStub{ret: []interface{}{values[0]}})
 }
 
 func (s *storageStub) Update(table string, cols []string, values []interface{}, identityCond map[string]interface{}) error {

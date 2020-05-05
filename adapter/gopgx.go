@@ -69,40 +69,47 @@ func (g *GoPgXAdapter) ExecuteQuery(query *query.Query) ([]map[string]interface{
 	return result, nil
 }
 
-func (g *GoPgXAdapter) Insert(table string, cols, pkCols []string, values []interface{}, propagatePk bool, propagationFn func(scanner persistence.Scanner) error) error {
+func (g *GoPgXAdapter) Insert(table string, cols []string, values []interface{}) error {
 	argsPlaceHolders := make([]string, len(values))
 	for i := 0; i < len(values); i++ {
 		argsPlaceHolders[i] = "$" + strconv.Itoa(i+1)
 	}
 
-	if propagatePk {
-		row := g.pgDb.QueryRow(
-			context.Background(),
-			fmt.Sprintf("insert into %s(%s) values(%s) returning %s", table, strings.Join(cols, ","), strings.Join(argsPlaceHolders, ","), strings.Join(pkCols, ",")),
-			values...,
-		)
-		fmt.Println(
-			fmt.Sprintf("insert into %s(%s) values(%s) returning %s", table, strings.Join(cols, ","), strings.Join(argsPlaceHolders, ","), strings.Join(pkCols, ",")),
-			values,
-		)
+	_, err := g.pgDb.Exec(
+		context.Background(),
+		fmt.Sprintf("INSERT INTO %s(%s) VALUES(%s)", table, strings.Join(cols, ","), strings.Join(argsPlaceHolders, ",")),
+		values...,
+	)
+	fmt.Println(
+		fmt.Sprintf("INSERT INTO %s(%s) VALUES(%s)", table, strings.Join(cols, ","), strings.Join(argsPlaceHolders, ",")),
+		values,
+	)
 
-		if err := propagationFn(row); err != nil {
-			return fmt.Errorf("insert pgx driver: %w", err)
-		}
-	} else {
-		_, err := g.pgDb.Exec(
-			context.Background(),
-			fmt.Sprintf("insert into %s(%s) values(%s)", table, strings.Join(cols, ","), strings.Join(argsPlaceHolders, ",")),
-			values...,
-		)
-		fmt.Println(
-			fmt.Sprintf("insert into %s(%s) values(%s)", table, strings.Join(cols, ","), strings.Join(argsPlaceHolders, ",")),
-			values,
-		)
+	if err != nil {
+		return fmt.Errorf("insert pgx driver: %w", err)
+	}
 
-		if err != nil {
-			return fmt.Errorf("insert pgx driver: %w", err)
-		}
+	return nil
+}
+
+func (g *GoPgXAdapter) InsertWithReturn(table string, cols []string, values []interface{}, returnCols []string, withReturned func(scanner persistence.Scanner) error) error {
+	argsPlaceHolders := make([]string, len(values))
+	for i := 0; i < len(values); i++ {
+		argsPlaceHolders[i] = "$" + strconv.Itoa(i+1)
+	}
+
+	row := g.pgDb.QueryRow(
+		context.Background(),
+		fmt.Sprintf("INSERT INTO %s(%s) VALUES(%s) RETURNING %s", table, strings.Join(cols, ","), strings.Join(argsPlaceHolders, ","), strings.Join(returnCols, ",")),
+		values...,
+	)
+	fmt.Println(
+		fmt.Sprintf("INSERT INTO %s(%s) VALUES(%s) RETURNING %s", table, strings.Join(cols, ","), strings.Join(argsPlaceHolders, ","), strings.Join(returnCols, ",")),
+		values,
+	)
+
+	if err := withReturned(row); err != nil {
+		return fmt.Errorf("insert pgx driver: %w", err)
 	}
 
 	return nil
@@ -126,12 +133,12 @@ func (g *GoPgXAdapter) Update(table string, cols []string, values []interface{},
 
 	_, err := g.pgDb.Exec(
 		context.Background(),
-		fmt.Sprintf("Update %s SET %s WHERE %s", table, strings.Join(setCommands, ","), whereStr),
+		fmt.Sprintf("UPDATE %s SET %s WHERE %s", table, strings.Join(setCommands, ","), whereStr),
 		queryValues...,
 	)
 
 	fmt.Println(
-		fmt.Sprintf("Update %s SET %s WHERE %s", table, strings.Join(setCommands, ","), whereStr),
+		fmt.Sprintf("UPDATE %s SET %s WHERE %s", table, strings.Join(setCommands, ","), whereStr),
 		queryValues,
 	)
 
