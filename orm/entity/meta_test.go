@@ -35,7 +35,7 @@ type shop struct {
 	Name    string
 }
 
-func TestCreateMeta(t *testing.T) {
+func TestCreateMetaWithRelations(t *testing.T) {
 	meta, _ := CreateMeta((*shop)(nil))
 
 	assert.Equal(t, Name("d3/orm/entity/shop"), meta.EntityName)
@@ -50,7 +50,7 @@ func TestCreateMeta(t *testing.T) {
 		baseRelation: baseRelation{
 			relType:        Lazy,
 			deleteStrategy: Cascade,
-			targetEntity:   Name("shopProfile"),
+			targetEntity:   "shopProfile",
 			field:          meta.Relations["Profile"].(*OneToOne).field,
 		},
 		JoinColumn:      "profile_id",
@@ -60,7 +60,7 @@ func TestCreateMeta(t *testing.T) {
 		baseRelation: baseRelation{
 			relType:        Lazy,
 			deleteStrategy: None,
-			targetEntity:   Name("book"),
+			targetEntity:   "book",
 			field:          meta.Relations["Books"].(*OneToMany).field,
 		},
 		JoinColumn:      "shop_id",
@@ -72,5 +72,22 @@ func TestCreateMeta(t *testing.T) {
 		associatedType: reflect.TypeOf(""),
 		DbAlias:        "name",
 		FullDbAlias:    "shop.name",
+	}, *meta.Fields["Name"])
+}
+
+type author struct {
+	entity struct{}      `d3:"table_name:author"`
+	ID     sql.NullInt32 `d3:"pk:manual"`
+	Name   string        `d3:"column:author_name"`
+}
+
+func TestCreateMetaWithFieldAlias(t *testing.T) {
+	meta, _ := CreateMeta((*author)(nil))
+
+	assert.Equal(t, FieldInfo{
+		Name:           "Name",
+		associatedType: reflect.TypeOf(""),
+		DbAlias:        "author_name",
+		FullDbAlias:    "author.author_name",
 	}, *meta.Fields["Name"])
 }

@@ -134,7 +134,7 @@ func extractDbFieldAlias(tag *parsedTag, fieldName string) string {
 		return toSnakeCase(fieldName)
 	}
 
-	prop, exists := tag.getProperty("alias")
+	prop, exists := tag.getProperty("column")
 	if !exists {
 		return toSnakeCase(fieldName)
 	}
