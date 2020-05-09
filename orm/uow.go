@@ -19,6 +19,8 @@ type UnitOfWork struct {
 
 	storage     Storage
 	identityMap *identityMap
+
+	currentTx Transaction
 }
 
 func NewUOW(storage Storage) *UnitOfWork {
@@ -146,7 +148,22 @@ func (uow *UnitOfWork) Commit() error {
 		uow.deletedEntities = make(map[entity.Name]map[interface{}]*entity.Box)
 	}()
 
-	return persistence.NewExecutor(uow.storage, uow.moveInsertedBoxToDirty).Exec(graph)
+	if uow.currentTx == nil {
+		tx, err := uow.storage.BeginTx()
+		if err != nil {
+			return err
+		}
+
+		err = persistence.NewExecutor(uow.storage.MakePusher(tx), uow.moveInsertedBoxToDirty).Exec(graph)
+		if err != nil {
+			_ = tx.Rollback()
+			return err
+		}
+
+		return tx.Commit()
+	}
+
+	return persistence.NewExecutor(uow.storage.MakePusher(uow.currentTx), uow.moveInsertedBoxToDirty).Exec(graph)
 }
 
 func (uow *UnitOfWork) moveInsertedBoxToDirty(act persistence.CompositeAction) {
@@ -212,4 +229,34 @@ func (uow *UnitOfWork) checkInDirty(box *entity.Box) (bool, error) {
 	} else {
 		return false, err
 	}
+}
+
+func (uow *UnitOfWork) beginTx() error {
+	tx, err := uow.storage.BeginTx()
+	if err != nil {
+		return err
+	}
+
+	uow.currentTx = tx
+	return nil
+}
+
+func (uow *UnitOfWork) commitTx() error {
+	if uow.currentTx == nil {
+		return fmt.Errorf("begin transaction before commit")
+	}
+	defer func() {
+		uow.currentTx = nil
+	}()
+	return uow.currentTx.Commit()
+}
+
+func (uow *UnitOfWork) rollbackTx() error {
+	if uow.currentTx == nil {
+		return fmt.Errorf("begin transaction before rollback")
+	}
+	defer func() {
+		uow.currentTx = nil
+	}()
+	return uow.currentTx.Rollback()
 }

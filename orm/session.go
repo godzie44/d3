@@ -7,11 +7,13 @@ import (
 )
 
 type Storage interface {
-	persistence.Storage
+	MakePusher(tx Transaction) persistence.Pusher
 
 	ExecuteQuery(query *query.Query) ([]map[string]interface{}, error)
 	BeforeQuery(fn func(query string, args ...interface{}))
 	AfterQuery(fn func(query string, args ...interface{}))
+
+	BeginTx() (Transaction, error)
 }
 
 type Session struct {
@@ -56,4 +58,21 @@ func (s *Session) execute(q *query.Query) (interface{}, error) {
 //Flush save all created, update changed and delete deleted entities within the session.
 func (s *Session) Flush() error {
 	return s.uow.Commit()
+}
+
+type Transaction interface {
+	Commit() error
+	Rollback() error
+}
+
+func (s *Session) BeginTx() error {
+	return s.uow.beginTx()
+}
+
+func (s *Session) CommitTx() error {
+	return s.uow.commitTx()
+}
+
+func (s *Session) RollbackTx() error {
+	return s.uow.rollbackTx()
 }

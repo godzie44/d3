@@ -20,7 +20,7 @@ func (s *scannerStub) Scan(dst ...interface{}) error {
 	return nil
 }
 
-type storageStub struct {
+type pusherStub struct {
 	insertRequests []queryStub
 }
 
@@ -29,7 +29,7 @@ type queryStub struct {
 	values    map[string]interface{}
 }
 
-func (s *storageStub) Insert(table string, cols []string, values []interface{}) error {
+func (s *pusherStub) Insert(table string, cols []string, values []interface{}) error {
 	qValues := map[string]interface{}{}
 	for i, val := range values {
 		if fn, ok := val.(func() (interface{}, error)); ok {
@@ -48,7 +48,7 @@ func (s *storageStub) Insert(table string, cols []string, values []interface{}) 
 	return nil
 }
 
-func (s *storageStub) InsertWithReturn(table string, cols []string, values []interface{}, returnCols []string, withReturned func(scanner Scanner) error) error {
+func (s *pusherStub) InsertWithReturn(table string, cols []string, values []interface{}, returnCols []string, withReturned func(scanner Scanner) error) error {
 	qValues := map[string]interface{}{}
 	for i, val := range values {
 		if fn, ok := val.(func() (interface{}, error)); ok {
@@ -67,16 +67,16 @@ func (s *storageStub) InsertWithReturn(table string, cols []string, values []int
 	return withReturned(&scannerStub{ret: []interface{}{values[0]}})
 }
 
-func (s *storageStub) Update(table string, cols []string, values []interface{}, identityCond map[string]interface{}) error {
+func (s *pusherStub) Update(table string, cols []string, values []interface{}, identityCond map[string]interface{}) error {
 	return nil
 }
 
-func (s *storageStub) Remove(_ string, _ map[string]interface{}) error {
+func (s *pusherStub) Remove(_ string, _ map[string]interface{}) error {
 	return nil
 }
 
 //assertQueryAfter check that query will be execute after queryBefore
-func (s *storageStub) assertQueryAfter(t *testing.T, query, queryBefore queryStub) {
+func (s *pusherStub) assertQueryAfter(t *testing.T, query, queryBefore queryStub) {
 	var queryIndex, queryBeforeIndex int = -1, -1
 	for i := range s.insertRequests {
 		if reflect.DeepEqual(s.insertRequests[i], query) {
@@ -97,8 +97,8 @@ func (s *storageStub) assertQueryAfter(t *testing.T, query, queryBefore queryStu
 }
 
 func TestExecuteSimpleGraph(t *testing.T) {
-	testStorage := &storageStub{}
-	executor := NewExecutor(testStorage, func(act CompositeAction) {})
+	testPusher := &pusherStub{}
+	executor := NewExecutor(testPusher, func(act CompositeAction) {})
 
 	meta, _ := metaRegistry.GetMeta((*Shop)(nil))
 	shop := &Shop{ID: 1, Profile: entity.NewWrapEntity(&ShopProfile{ID: 1})}
@@ -110,7 +110,7 @@ func TestExecuteSimpleGraph(t *testing.T) {
 	err := executor.Exec(graph)
 	assert.NoError(t, err)
 
-	testStorage.assertQueryAfter(t, queryStub{
+	testPusher.assertQueryAfter(t, queryStub{
 		tableName: "shop",
 		values:    map[string]interface{}{"id": 1, "profile_id": 1},
 	}, queryStub{
@@ -159,7 +159,7 @@ func TestExecuteComplexGraph(t *testing.T) {
 	_ = graph.ProcessEntity(entity.NewBox(shop1, &meta))
 	_ = graph.ProcessEntity(entity.NewBox(shop2, &meta))
 
-	testStorage := &storageStub{}
+	testStorage := &pusherStub{}
 	executor := NewExecutor(testStorage, func(act CompositeAction) {})
 	err := executor.Exec(graph)
 	assert.NoError(t, err)
@@ -222,7 +222,7 @@ func TestExecuteWithCircularReference(t *testing.T) {
 	r := hasCycle(graph)
 	assert.False(t, r)
 	//nodes := graph.filterRoots()
-	//testStorage := &storageStub{}
+	//testStorage := &pusherStub{}
 	//err := NewExecutor(testStorage).exec(graph)
 	//assert.NoError(t, err)
 }

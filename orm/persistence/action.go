@@ -23,7 +23,7 @@ type (
 
 	executableAction interface {
 		wasExecuted() bool
-		exec(storage Storage) error
+		exec(pusher Pusher) error
 	}
 
 	waiter interface {
@@ -62,7 +62,7 @@ type baseAction struct {
 	childrenActions []CompositeAction
 }
 
-func (b *baseAction) exec(_ Storage) error {
+func (b *baseAction) exec(_ Pusher) error {
 	b.executed = true
 	return nil
 }
@@ -213,7 +213,7 @@ func (i *InsertAction) Box() *entity.Box {
 	return i.box.Box
 }
 
-func (i *InsertAction) exec(storage Storage) error {
+func (i *InsertAction) exec(pusher Pusher) error {
 	if i.pkGenStrategy == entity.Auto {
 		for _, pkCol := range i.pkCols {
 			delete(i.Values, pkCol)
@@ -228,7 +228,7 @@ func (i *InsertAction) exec(storage Storage) error {
 
 	if i.pkHydrateFn != nil && i.pkGenStrategy == entity.Auto {
 		tpl := i.box.Meta.CreateKeyTpl()
-		err := storage.InsertWithReturn(i.TableName, columns, values, i.pkCols, func(scanner Scanner) error {
+		err := pusher.InsertWithReturn(i.TableName, columns, values, i.pkCols, func(scanner Scanner) error {
 			return scanner.Scan(tpl.Projection()...)
 		})
 		if err != nil {
@@ -239,13 +239,13 @@ func (i *InsertAction) exec(storage Storage) error {
 			return err
 		}
 	} else {
-		err := storage.Insert(i.TableName, columns, values)
+		err := pusher.Insert(i.TableName, columns, values)
 		if err != nil {
 			return err
 		}
 	}
 
-	return i.baseAction.exec(storage)
+	return i.baseAction.exec(pusher)
 }
 
 func (i *InsertAction) equalTo(agr CompositeAction) bool {
@@ -271,9 +271,9 @@ func NewUpdateAction(identityCondition map[string]interface{}) *UpdateAction {
 	return &UpdateAction{identityCondition: identityCondition, baseAction: baseAction{Values: make(map[string]interface{})}}
 }
 
-func (u *UpdateAction) exec(storage Storage) error {
+func (u *UpdateAction) exec(pusher Pusher) error {
 	if len(u.Values) == 0 {
-		return u.baseAction.exec(storage)
+		return u.baseAction.exec(pusher)
 	}
 
 	if err := u.prepareValues(); err != nil {
@@ -291,11 +291,11 @@ func (u *UpdateAction) exec(storage Storage) error {
 		}
 	}
 
-	if err := storage.Update(u.TableName, columns, values, u.identityCondition); err != nil {
+	if err := pusher.Update(u.TableName, columns, values, u.identityCondition); err != nil {
 		return err
 	}
 
-	return u.baseAction.exec(storage)
+	return u.baseAction.exec(pusher)
 }
 
 func (u *UpdateAction) equalTo(act CompositeAction) bool {
@@ -327,11 +327,11 @@ func (d *DeleteAction) equalTo(act CompositeAction) bool {
 	return false
 }
 
-func (d *DeleteAction) exec(storage Storage) error {
-	err := storage.Remove(d.TableName, d.deleteCondition)
+func (d *DeleteAction) exec(pusher Pusher) error {
+	err := pusher.Remove(d.TableName, d.deleteCondition)
 	if err != nil {
 		return err
 	}
 
-	return d.baseAction.exec(storage)
+	return d.baseAction.exec(pusher)
 }

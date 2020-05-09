@@ -1,11 +1,11 @@
 package persistence
 
 type executor struct {
-	storage     Storage
+	storage     Pusher
 	afterExecFn func(act CompositeAction)
 }
 
-func NewExecutor(storage Storage, afterExec func(act CompositeAction)) *executor {
+func NewExecutor(storage Pusher, afterExec func(act CompositeAction)) *executor {
 	return &executor{storage, afterExec}
 }
 

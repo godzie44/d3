@@ -16,6 +16,26 @@ type DbAdapterWithQueryCounter struct {
 	dbAdapter                                                 orm.Storage
 }
 
+func (d *DbAdapterWithQueryCounter) MakePusher(tx orm.Transaction) persistence.Pusher {
+	ps := d.dbAdapter.MakePusher(tx)
+	return &persistStoreWithCounters{
+		ps: ps,
+		onInsert: func() {
+			d.insertCounter++
+		},
+		onUpdate: func() {
+			d.updateCounter++
+		},
+		onDelete: func() {
+			d.deleteCounter++
+		},
+	}
+}
+
+func (d *DbAdapterWithQueryCounter) BeginTx() (orm.Transaction, error) {
+	return d.dbAdapter.BeginTx()
+}
+
 func NewDbAdapterWithQueryCounter(dbAdapter orm.Storage) *DbAdapterWithQueryCounter {
 	wrappedAdapter := &DbAdapterWithQueryCounter{dbAdapter: dbAdapter}
 
@@ -24,26 +44,6 @@ func NewDbAdapterWithQueryCounter(dbAdapter orm.Storage) *DbAdapterWithQueryCoun
 	})
 
 	return wrappedAdapter
-}
-
-func (d *DbAdapterWithQueryCounter) Insert(table string, cols []string, values []interface{}) error {
-	d.insertCounter++
-	return d.dbAdapter.Insert(table, cols, values)
-}
-
-func (d *DbAdapterWithQueryCounter) InsertWithReturn(table string, cols []string, values []interface{}, returnCols []string, withReturn func(scanner persistence.Scanner) error) error {
-	d.insertCounter++
-	return d.dbAdapter.InsertWithReturn(table, cols, values, returnCols, withReturn)
-}
-
-func (d *DbAdapterWithQueryCounter) Update(table string, cols []string, values []interface{}, identityCond map[string]interface{}) error {
-	d.updateCounter++
-	return d.dbAdapter.Update(table, cols, values, identityCond)
-}
-
-func (d *DbAdapterWithQueryCounter) Remove(table string, identityCond map[string]interface{}) error {
-	d.deleteCounter++
-	return d.dbAdapter.Remove(table, identityCond)
 }
 
 func (d *DbAdapterWithQueryCounter) ExecuteQuery(query *query.Query) ([]map[string]interface{}, error) {
@@ -79,6 +79,31 @@ func (d *DbAdapterWithQueryCounter) ResetCounters() {
 	d.insertCounter = 0
 }
 
+type persistStoreWithCounters struct {
+	ps                           persistence.Pusher
+	onInsert, onUpdate, onDelete func()
+}
+
+func (p *persistStoreWithCounters) Insert(table string, cols []string, values []interface{}) error {
+	p.onInsert()
+	return p.ps.Insert(table, cols, values)
+}
+
+func (p *persistStoreWithCounters) InsertWithReturn(table string, cols []string, values []interface{}, returnCols []string, withReturned func(scanner persistence.Scanner) error) error {
+	p.onInsert()
+	return p.ps.InsertWithReturn(table, cols, values, returnCols, withReturned)
+}
+
+func (p *persistStoreWithCounters) Update(table string, cols []string, values []interface{}, identityCond map[string]interface{}) error {
+	p.onUpdate()
+	return p.ps.Update(table, cols, values, identityCond)
+}
+
+func (p *persistStoreWithCounters) Remove(table string, identityCond map[string]interface{}) error {
+	p.onDelete()
+	return p.ps.Remove(table, identityCond)
+}
+
 type pgTester struct {
 	t    *testing.T
 	conn *pgx.Conn
@@ -110,6 +135,5 @@ func (p *pgTester) See(count int, sql string, args ...interface{}) *pgTester {
 	assert.NoError(p.t, err)
 
 	assert.Equal(p.t, count, cnt)
-
 	return p
 }

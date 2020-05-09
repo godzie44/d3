@@ -30,8 +30,13 @@ func (r *Repository) FindAll(q *query.Query) (interface{}, error) {
 	return r.session.execute(q)
 }
 
-func (r *Repository) Persists(entity interface{}) error {
-	return r.session.uow.registerNew(d3entity.NewBox(entity, &r.entityMeta))
+func (r *Repository) Persists(entities ...interface{}) error {
+	for _, entity := range entities {
+		if err := r.session.uow.registerNew(d3entity.NewBox(entity, &r.entityMeta)); err != nil {
+			return err
+		}
+	}
+	return nil
 }
 
 func (r *Repository) CreateQuery() *query.Query {

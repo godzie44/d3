@@ -2,8 +2,10 @@ package adapter
 
 import (
 	"context"
+	"d3/orm"
 	"d3/orm/persistence"
 	"d3/orm/query"
+	"errors"
 	"fmt"
 	"github.com/jackc/pgx/v4"
 	"strconv"
@@ -69,20 +71,29 @@ func (g *GoPgXAdapter) ExecuteQuery(query *query.Query) ([]map[string]interface{
 	return result, nil
 }
 
-func (g *GoPgXAdapter) Insert(table string, cols []string, values []interface{}) error {
+func (g *GoPgXAdapter) MakePusher(tx orm.Transaction) persistence.Pusher {
+	pgxTx, ok := tx.(*pgxTransaction)
+	if !ok {
+		panic(errors.New("transaction type must be pgxTransaction"))
+	}
+
+	return &pgxPusher{tx: pgxTx}
+}
+
+type pgxPusher struct {
+	tx *pgxTransaction
+}
+
+func (p *pgxPusher) Insert(table string, cols []string, values []interface{}) error {
 	argsPlaceHolders := make([]string, len(values))
 	for i := 0; i < len(values); i++ {
 		argsPlaceHolders[i] = "$" + strconv.Itoa(i+1)
 	}
 
-	_, err := g.pgDb.Exec(
+	_, err := p.tx.tx.Exec(
 		context.Background(),
 		fmt.Sprintf("INSERT INTO %s(%s) VALUES(%s)", table, strings.Join(cols, ","), strings.Join(argsPlaceHolders, ",")),
 		values...,
-	)
-	fmt.Println(
-		fmt.Sprintf("INSERT INTO %s(%s) VALUES(%s)", table, strings.Join(cols, ","), strings.Join(argsPlaceHolders, ",")),
-		values,
 	)
 
 	if err != nil {
@@ -92,20 +103,16 @@ func (g *GoPgXAdapter) Insert(table string, cols []string, values []interface{})
 	return nil
 }
 
-func (g *GoPgXAdapter) InsertWithReturn(table string, cols []string, values []interface{}, returnCols []string, withReturned func(scanner persistence.Scanner) error) error {
+func (p *pgxPusher) InsertWithReturn(table string, cols []string, values []interface{}, returnCols []string, withReturned func(scanner persistence.Scanner) error) error {
 	argsPlaceHolders := make([]string, len(values))
 	for i := 0; i < len(values); i++ {
 		argsPlaceHolders[i] = "$" + strconv.Itoa(i+1)
 	}
 
-	row := g.pgDb.QueryRow(
+	row := p.tx.tx.QueryRow(
 		context.Background(),
 		fmt.Sprintf("INSERT INTO %s(%s) VALUES(%s) RETURNING %s", table, strings.Join(cols, ","), strings.Join(argsPlaceHolders, ","), strings.Join(returnCols, ",")),
 		values...,
-	)
-	fmt.Println(
-		fmt.Sprintf("INSERT INTO %s(%s) VALUES(%s) RETURNING %s", table, strings.Join(cols, ","), strings.Join(argsPlaceHolders, ","), strings.Join(returnCols, ",")),
-		values,
 	)
 
 	if err := withReturned(row); err != nil {
@@ -115,7 +122,7 @@ func (g *GoPgXAdapter) InsertWithReturn(table string, cols []string, values []in
 	return nil
 }
 
-func (g *GoPgXAdapter) Update(table string, cols []string, values []interface{}, identityCond map[string]interface{}) error {
+func (p *pgxPusher) Update(table string, cols []string, values []interface{}, identityCond map[string]interface{}) error {
 	queryValues := values
 
 	setCommands := make([]string, len(values))
@@ -131,24 +138,18 @@ func (g *GoPgXAdapter) Update(table string, cols []string, values []interface{},
 		placeholderNum++
 	}
 
-	_, err := g.pgDb.Exec(
+	_, err := p.tx.tx.Exec(
 		context.Background(),
 		fmt.Sprintf("UPDATE %s SET %s WHERE %s", table, strings.Join(setCommands, ","), whereStr),
 		queryValues...,
 	)
-
-	fmt.Println(
-		fmt.Sprintf("UPDATE %s SET %s WHERE %s", table, strings.Join(setCommands, ","), whereStr),
-		queryValues,
-	)
-
 	if err != nil {
 		return fmt.Errorf("insert pgx driver: %w", err)
 	}
 	return nil
 }
 
-func (g *GoPgXAdapter) Remove(table string, identityCond map[string]interface{}) error {
+func (p *pgxPusher) Remove(table string, identityCond map[string]interface{}) error {
 	args := make([]interface{}, 0, len(identityCond))
 	where := make([]string, 0, len(identityCond))
 
@@ -157,50 +158,32 @@ func (g *GoPgXAdapter) Remove(table string, identityCond map[string]interface{})
 		where = append(where, col+"=$"+strconv.Itoa(len(args)))
 	}
 
-	_, err := g.pgDb.Exec(
+	_, err := p.tx.tx.Exec(
 		context.Background(),
 		fmt.Sprintf("DELETE FROM %s WHERE %s", table, strings.Join(where, " AND ")),
 		args...,
 	)
 
-	fmt.Println(
-		fmt.Sprintf("DELETE FROM %s WHERE %s", table, strings.Join(where, " AND ")),
-		args,
-	)
-
 	return err
 }
 
-func (g GoPgXAdapter) DoInTransaction(f func() error) error {
-	f()
+type pgxTransaction struct {
+	tx pgx.Tx
+}
 
-	tx, err := g.pgDb.BeginTx(context.Background(), pgx.TxOptions{})
+func (p *pgxTransaction) Commit() error {
+	return p.tx.Commit(context.Background())
+}
+
+func (p *pgxTransaction) Rollback() error {
+	return p.tx.Rollback(context.Background())
+}
+
+func (g *GoPgXAdapter) BeginTx() (orm.Transaction, error) {
+	tx, err := g.pgDb.Begin(context.Background())
 	if err != nil {
-		return err
+		return nil, err
 	}
 
-	batch := &pgx.Batch{}
-	//for _, action := range g.insertActions {
-	//	for i := range action.Values {
-	//		argsPlaceHolders := make([]string, len(action.Columns))
-	//		for i := range action.Columns {
-	//			argsPlaceHolders[i] = "$" + strconv.Itoa(i+1)
-	//		}
-	//
-	//		batch.Queue(
-	//			fmt.Sprintf("insert into %s(%s) Values(%s)", action.TableName, strings.Join(action.Columns, ","), strings.Join(argsPlaceHolders, ",")),
-	//			action.Values[i]...
-	//		)
-	//	}
-	//}
-
-	br := tx.SendBatch(context.Background(), batch)
-
-	defer br.Close()
-
-	if _, err = br.Exec(); err != nil {
-		return err
-	}
-
-	return tx.Commit(context.Background())
+	return &pgxTransaction{tx: tx}, nil
 }
