@@ -7,9 +7,9 @@ import (
 	"d3/orm/entity"
 	"d3/test/helpers"
 	"database/sql"
-	"fmt"
 	"github.com/jackc/pgx/v4"
 	"github.com/stretchr/testify/suite"
+	"os"
 	"testing"
 )
 
@@ -19,8 +19,7 @@ type PersistsCircularTS struct {
 }
 
 func (o *PersistsCircularTS) SetupSuite() {
-	dsn := fmt.Sprintf("postgres://%s:%s@%s/%s?sslmode=disable", "postgres", "postgres", "0.0.0.0:5432", "d3db")
-	o.pgDb, _ = pgx.Connect(context.Background(), dsn)
+	o.pgDb, _ = pgx.Connect(context.Background(), os.Getenv("D3_PG_TEST_DB"))
 
 	_, err := o.pgDb.Exec(context.Background(), `CREATE TABLE IF NOT EXISTS shop_c(
 		id SERIAL PRIMARY KEY,

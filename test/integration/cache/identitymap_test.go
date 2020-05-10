@@ -6,9 +6,9 @@ import (
 	"d3/orm"
 	entity3 "d3/orm/entity"
 	"d3/test/helpers"
-	"fmt"
 	"github.com/jackc/pgx/v4"
 	"github.com/stretchr/testify/suite"
+	"os"
 	"testing"
 )
 
@@ -18,8 +18,7 @@ type IMCacheTS struct {
 }
 
 func (o *IMCacheTS) SetupSuite() {
-	dsn := fmt.Sprintf("postgres://%s:%s@%s/%s?sslmode=disable", "postgres", "postgres", "0.0.0.0:5432", "d3db")
-	o.pgDb, _ = pgx.Connect(context.Background(), dsn)
+	o.pgDb, _ = pgx.Connect(context.Background(), os.Getenv("D3_PG_TEST_DB"))
 
 	_, err := o.pgDb.Exec(context.Background(), `CREATE TABLE IF NOT EXISTS im_test_entity_1(
 		id integer NOT NULL,

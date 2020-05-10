@@ -5,9 +5,9 @@ import (
 	"d3/adapter"
 	"d3/orm"
 	"d3/test/helpers"
-	"fmt"
 	"github.com/jackc/pgx/v4"
 	"github.com/stretchr/testify/suite"
+	"os"
 	"testing"
 )
 
@@ -20,8 +20,7 @@ type TransactionalTs struct {
 }
 
 func (t *TransactionalTs) SetupSuite() {
-	dsn := fmt.Sprintf("postgres://%s:%s@%s/%s?sslmode=disable", "postgres", "postgres", "0.0.0.0:5432", "d3db")
-	t.pgDb, _ = pgx.Connect(context.Background(), dsn)
+	t.pgDb, _ = pgx.Connect(context.Background(), os.Getenv("D3_PG_TEST_DB"))
 
 	err := createSchema(t.pgDb)
 
@@ -65,8 +64,8 @@ func (t *TransactionalTs) TestAutoCommit() {
 }
 
 func newConn() *pgx.Conn {
-	dsn := fmt.Sprintf("postgres://%s:%s@%s/%s?sslmode=disable", "postgres", "postgres", "0.0.0.0:5432", "d3db")
-	newConn, _ := pgx.Connect(context.Background(), dsn)
+	newConn, _ := pgx.Connect(context.Background(), os.Getenv("D3_PG_TEST_DB"))
+
 	return newConn
 }
 
