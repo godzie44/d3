@@ -1,0 +1,1 @@
+![golangci-lint](https://github.com/godzie44/d3orm/workflows/golangci-lint/badge.svg)
