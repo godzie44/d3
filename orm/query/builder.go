@@ -161,11 +161,6 @@ func (q *Query) Offset(o int) *Query {
 	return q
 }
 
-func (q *Query) inJoinedEntities(entityName entity.Name) bool {
-	_, exists := q.withList[entityName]
-	return exists
-}
-
 func (q *Query) With(entityName entity.Name) error {
 	defer func() {
 		q.withList[entityName] = struct{}{}

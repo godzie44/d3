@@ -12,7 +12,7 @@ import (
 )
 
 type uowTestEntity struct {
-	entity struct{} `d3:"table_name:t"`
+	entity struct{} `d3:"table_name:t"` //nolint:unused,structcheck
 	Id     int      `d3:"pk:auto"`
 	Field1 int
 	Field2 string
@@ -101,11 +101,9 @@ func (s *storageMock) ExecuteQuery(_ *query.Query) ([]map[string]interface{}, er
 }
 
 func (s *storageMock) BeforeQuery(_ func(query string, args ...interface{})) {
-	return
 }
 
 func (s *storageMock) AfterQuery(_ func(query string, args ...interface{})) {
-	return
 }
 
 func (s *storageMock) BeginTx() (Transaction, error) {

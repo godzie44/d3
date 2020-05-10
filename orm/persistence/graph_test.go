@@ -9,31 +9,31 @@ import (
 )
 
 type Shop struct {
-	entity  struct{}             `d3:"table_name:shop"`
+	entity  struct{}             `d3:"table_name:shop"` //nolint:unused,structcheck
 	ID      int                  `d3:"pk:manual"`
 	Books   entity.Collection    `d3:"one_to_many:<target_entity:d3/orm/persistence/Book,join_on:shop_id>,type:lazy"`
 	Profile entity.WrappedEntity `d3:"one_to_one:<target_entity:d3/orm/persistence/ShopProfile,join_on:profile_id>,type:lazy"`
 }
 
 type ShopProfile struct {
-	entity struct{} `d3:"table_name:profile"`
+	entity struct{} `d3:"table_name:profile"` //nolint:unused,structcheck
 	ID     int      `d3:"pk:manual"`
 }
 
 type Book struct {
-	entity  struct{}          `d3:"table_name:book"`
+	entity  struct{}          `d3:"table_name:book"` //nolint:unused,structcheck
 	ID      int               `d3:"pk:manual"`
 	Authors entity.Collection `d3:"many_to_many:<target_entity:d3/orm/persistence/Author,join_on:book_id,reference_on:author_id,join_table:book_author>,type:lazy"`
 }
 
 type Author struct {
-	entity struct{} `d3:"table_name:author"`
+	entity struct{} `d3:"table_name:author"` //nolint:unused,structcheck
 	ID     int      `d3:"pk:manual"`
 }
 
 func initMetaRegistry() *entity.MetaRegistry {
 	metaRegistry := entity.NewMetaRegistry()
-	metaRegistry.Add((*ShopProfile)(nil), (*Shop)(nil), (*Book)(nil), (*Author)(nil))
+	_ = metaRegistry.Add((*ShopProfile)(nil), (*Shop)(nil), (*Book)(nil), (*Author)(nil))
 	return metaRegistry
 }
 
@@ -342,7 +342,7 @@ func TestDoublePersistNotAffectGraph(t *testing.T) {
 }
 
 type User struct {
-	entity       struct{}             `d3:"table_name:user"`
+	entity       struct{}             `d3:"table_name:user"` //nolint:unused,structcheck
 	Id           int                  `d3:"pk:auto"`
 	Avatar       entity.WrappedEntity `d3:"one_to_one:<target_entity:d3/orm/persistence/Photo,join_on:avatar_id>,type:lazy"`
 	GoodPhotos   entity.Collection    `d3:"one_to_many:<target_entity:d3/orm/persistence/Photo,join_on:user_good_id>,type:lazy"`
@@ -350,7 +350,7 @@ type User struct {
 }
 
 type Photo struct {
-	entity struct{} `d3:"table_name:photo"`
+	entity struct{} `d3:"table_name:photo"` //nolint:unused,structcheck
 	Id     int      `d3:"pk:auto"`
 }
 
@@ -411,7 +411,7 @@ func TestNoCycleOneToOneToMany(t *testing.T) {
 }
 
 type BookCirc struct {
-	entity     struct{}             `d3:"table_name:book2"`
+	entity     struct{}             `d3:"table_name:book2"` //nolint:unused,structcheck
 	Id         int                  `d3:"pk:auto"`
 	Authors    entity.Collection    `d3:"many_to_many:<target_entity:d3/orm/persistence/Author,join_on:book_id,reference_on:author_id,join_table:book_author>,type:lazy"`
 	MainAuthor entity.WrappedEntity `d3:"one_to_one:<target_entity:d3/orm/persistence/Author,join_on:m_author_id>,type:lazy"`
@@ -441,7 +441,7 @@ func TestNoCycleManyToManyToOne(t *testing.T) {
 }
 
 type shopCirc struct {
-	entity  struct{}             `d3:"table_name:shop"`
+	entity  struct{}             `d3:"table_name:shop"` //nolint:unused,structcheck
 	Id      sql.NullInt32        `d3:"pk:auto"`
 	Profile entity.WrappedEntity `d3:"one_to_one:<target_entity:d3/orm/persistence/shopProfileCirc,join_on:profile_id>"`
 	Sellers entity.Collection    `d3:"one_to_many:<target_entity:d3/orm/persistence/sellerCirc,join_on:shop_id>"`
@@ -449,13 +449,13 @@ type shopCirc struct {
 }
 
 type shopProfileCirc struct {
-	entity struct{}             `d3:"table_name:profile"`
+	entity struct{}             `d3:"table_name:profile"` //nolint:unused,structcheck
 	Id     sql.NullInt32        `d3:"pk:auto"`
 	Shop   entity.WrappedEntity `d3:"one_to_one:<target_entity:d3/orm/persistence/shopCirc,join_on:shop_id>"`
 }
 
 type sellerCirc struct {
-	entity struct{}             `d3:"table_name:seller"`
+	entity struct{}             `d3:"table_name:seller"` //nolint:unused,structcheck
 	Id     sql.NullInt32        `d3:"pk:auto"`
 	Shop   entity.WrappedEntity `d3:"one_to_one:<target_entity:d3/orm/persistence/shopCirc,join_on:shop_id>"`
 }

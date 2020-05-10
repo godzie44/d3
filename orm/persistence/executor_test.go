@@ -189,19 +189,19 @@ func TestExecuteComplexGraph(t *testing.T) {
 }
 
 type Order struct {
-	entity   struct{}             `d3:"table_name:order"`
+	entity   struct{}             `d3:"table_name:order"` //nolint:unused,structcheck
 	Id       int                  `d3:"pk:auto"`
 	Items    entity.Collection    `d3:"one_to_many:<target_entity:d3/orm/persistence/OrderItem,join_on:order_id>,type:lazy"`
 	BestItem entity.WrappedEntity `d3:"one_to_one:<target_entity:d3/orm/persistence/OrderItem,join_on:best_item_id>,type:lazy"`
 }
 
 type OrderItem struct {
-	entity struct{} `d3:"table_name:order_item"`
+	entity struct{} `d3:"table_name:order_item"` //nolint:unused,structcheck
 	Id     int      `d3:"pk:auto"`
 }
 
 func TestExecuteWithCircularReference(t *testing.T) {
-	metaRegistry.Add((*Order)(nil), (*OrderItem)(nil))
+	_ = metaRegistry.Add((*Order)(nil), (*OrderItem)(nil))
 
 	bestItem := &OrderItem{Id: 1}
 	orderItems := []interface{}{

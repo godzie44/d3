@@ -68,21 +68,21 @@ func TestOneToOneRunTestSuite(t *testing.T) {
 }
 
 type ShopLL struct {
-	entity  struct{}             `d3:"table_name:shop"`
+	entity  struct{}             `d3:"table_name:shop"` //nolint:unused,structcheck
 	ID      sql.NullInt32        `d3:"pk:auto"`
 	Profile entity.WrappedEntity `d3:"one_to_one:<target_entity:d3/test/integration/relation/ProfileLL,join_on:t2_id>,type:lazy"`
 	Data    string
 }
 
 type ProfileLL struct {
-	entity struct{}             `d3:"table_name:profile"`
+	entity struct{}             `d3:"table_name:profile"` //nolint:unused,structcheck
 	ID     int32                `d3:"pk:auto"`
 	Photo  entity.WrappedEntity `d3:"one_to_one:<target_entity:d3/test/integration/relation/PhotoLL,join_on:t3_id,reference_on:id>,type:eager"`
 	Data   string
 }
 
 type PhotoLL struct {
-	entity struct{} `d3:"table_name:photo"`
+	entity struct{} `d3:"table_name:photo"` //nolint:unused,structcheck
 	ID     int32    `d3:"pk:auto"`
 	Data   string
 }
@@ -97,21 +97,21 @@ func (o *OneToOneRelationTS) TestLazyRelation() {
 	repository, err := session.MakeRepository((*ShopLL)(nil))
 	o.Assert().NoError(err)
 
-	entity, err := repository.FindOne(repository.CreateQuery().AndWhere("id = ?", 1))
+	shop, err := repository.FindOne(repository.CreateQuery().AndWhere("id = ?", 1))
 	o.Assert().NoError(err)
 
-	o.Assert().IsType(&ShopLL{}, entity)
-	o.Assert().Equal(int32(1), entity.(*ShopLL).ID.Int32)
-	o.Assert().Equal("entity_1_data", entity.(*ShopLL).Data)
+	o.Assert().IsType(&ShopLL{}, shop)
+	o.Assert().Equal(int32(1), shop.(*ShopLL).ID.Int32)
+	o.Assert().Equal("entity_1_data", shop.(*ShopLL).Data)
 
-	relatedEntity := entity.(*ShopLL).Profile.Unwrap().(*ProfileLL)
+	relatedEntity := shop.(*ShopLL).Profile.Unwrap().(*ProfileLL)
 	o.Assert().IsType(&ProfileLL{}, relatedEntity)
 	o.Assert().Equal(int32(1), relatedEntity.ID)
 	o.Assert().Equal("entity_2_data", relatedEntity.Data)
 }
 
 type ShopEL struct {
-	entity  struct{}             `d3:"table_name:shop"`
+	entity  struct{}             `d3:"table_name:shop"` //nolint:unused,structcheck
 	Id      int32                `d3:"pk:auto"`
 	Profile entity.WrappedEntity `d3:"one_to_one:<target_entity:d3/test/integration/relation/ProfileLL,join_on:t2_id,reference_on:id>,type:eager"`
 	Data    string

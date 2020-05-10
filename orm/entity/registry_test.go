@@ -7,8 +7,7 @@ import (
 )
 
 type testEntity struct {
-	ID   int `d3:"pk:auto"`
-	data string
+	ID int `d3:"pk:auto"`
 }
 
 func TestRegistryAdd(t *testing.T) {
@@ -31,8 +30,7 @@ func TestRegistryGet(t *testing.T) {
 }
 
 type testEntity2 struct {
-	Id   int `d3:"pk:auto"`
-	data string
+	Id int `d3:"pk:auto"`
 }
 
 func TestRegistryGetMetaParallel(t *testing.T) {

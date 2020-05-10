@@ -65,14 +65,14 @@ DROP TABLE im_test_entity_3;
 }
 
 type entity1 struct {
-	entity struct{}           `d3:"table_name:im_test_entity_1"`
+	entity struct{}           `d3:"table_name:im_test_entity_1"` //nolint:unused,structcheck
 	Id     int32              `d3:"pk:auto"`
 	Rel    entity3.Collection `d3:"one_to_many:<target_entity:d3/test/integration/cache/entity2,join_on:t1_id>,type:eager"`
 	Data   string
 }
 
 type entity2 struct {
-	entity struct{} `d3:"table_name:im_test_entity_2"`
+	entity struct{} `d3:"table_name:im_test_entity_2"` //nolint:unused,structcheck
 	Id     int32    `d3:"pk:auto"`
 	Data   string
 }
@@ -99,7 +99,8 @@ func (o *IMCacheTS) TestNoQueryCreateForCachedEntities() {
 	o.Assert().Equal(2, wrappedDbAdapter.QueryCounter())
 
 	repository2, _ := session.MakeRepository((*entity2)(nil))
-	_, err = repository2.FindOne(repository.CreateQuery().AndWhere("im_test_entity_2.id = ?", 1))
+	_, err = repository2.FindOne(repository2.CreateQuery().AndWhere("im_test_entity_2.id = ?", 1))
+	o.Assert().NoError(err)
 
 	o.Assert().Equal(2, wrappedDbAdapter.QueryCounter())
 }

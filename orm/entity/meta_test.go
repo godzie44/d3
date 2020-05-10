@@ -28,7 +28,7 @@ func TestCreateMetaFromVariousReflectionsOfOneEntity(t *testing.T) {
 }
 
 type shop struct {
-	entity  struct{}      `d3:"table_name:shop"`
+	entity  struct{}      `d3:"table_name:shop"` //nolint:unused,structcheck
 	ID      sql.NullInt32 `d3:"pk:auto"`
 	Books   Collection    `d3:"one_to_many:<target_entity:book,join_on:shop_id>,type:lazy"`
 	Profile WrappedEntity `d3:"one_to_one:<target_entity:shopProfile,join_on:profile_id,delete:cascade>"`
@@ -76,7 +76,7 @@ func TestCreateMetaWithRelations(t *testing.T) {
 }
 
 type author struct {
-	entity struct{}      `d3:"table_name:author"`
+	entity struct{}      `d3:"table_name:author"` //nolint:unused,structcheck
 	ID     sql.NullInt32 `d3:"pk:manual"`
 	Name   string        `d3:"column:author_name"`
 }

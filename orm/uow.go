@@ -59,7 +59,7 @@ func (uow *UnitOfWork) registerDirty(box *entity.Box) error {
 	}
 
 	if _, exists := uow.dirtyEntities[box.GetEName()]; !exists {
-		uow.dirtyEntities[box.GetEName()] = make(map[interface{}]*dirtyEl, 0)
+		uow.dirtyEntities[box.GetEName()] = make(map[interface{}]*dirtyEl)
 	}
 
 	uow.dirtyEntities[box.GetEName()][pkVal] = &dirtyEl{

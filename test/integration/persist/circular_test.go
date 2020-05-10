@@ -77,7 +77,7 @@ func TestPersistsCircularSuite(t *testing.T) {
 }
 
 type ShopCirc struct {
-	entity struct{}      `d3:"table_name:shop_c"`
+	entity struct{}      `d3:"table_name:shop_c"` //nolint:unused,structcheck
 	Id     sql.NullInt32 `d3:"pk:auto"`
 	Name   string
 
@@ -91,14 +91,14 @@ type ShopCirc struct {
 }
 
 type ShopProfileCirc struct {
-	entity      struct{}             `d3:"table_name:profile_c"`
+	entity      struct{}             `d3:"table_name:profile_c"` //nolint:unused,structcheck
 	Id          sql.NullInt32        `d3:"pk:auto"`
 	Shop        entity.WrappedEntity `d3:"one_to_one:<target_entity:d3/test/integration/persist/ShopCirc,join_on:shop_id>,type:lazy"`
 	Description string
 }
 
 type SellerCirc struct {
-	entity struct{}      `d3:"table_name:seller_c"`
+	entity struct{}      `d3:"table_name:seller_c"` //nolint:unused,structcheck
 	Id     sql.NullInt32 `d3:"pk:auto"`
 	Name   string
 

@@ -52,6 +52,7 @@ func (d *DeleteTS) TestDeleteEntity() {
 	d.NoError(err)
 
 	profile, err := rep.FindOne(rep.CreateQuery().AndWhere("profile_p.id = 1001"))
+	d.NoError(err)
 
 	d.NoError(rep.Delete(profile))
 
@@ -67,6 +68,7 @@ func (d *DeleteTS) TestDeleteWithRelations() {
 	d.NoError(err)
 
 	shop, err := rep.FindOne(rep.CreateQuery().AndWhere("shop_p.id = 1001"))
+	d.NoError(err)
 
 	d.NoError(rep.Delete(shop))
 
@@ -87,6 +89,7 @@ func (d *DeleteTS) TestDeleteWithManyToMany() {
 	d.NoError(err)
 
 	book, err := rep.FindOne(rep.CreateQuery().AndWhere("book_p.id = 1001"))
+	d.NoError(err)
 
 	d.NoError(rep.Delete(book))
 

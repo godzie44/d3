@@ -314,7 +314,8 @@ func (u *UpdateTs) TestSelectThenViewButDontChangeOtoMRelation() {
 	shop1, err := repo.FindOne(repo.CreateQuery().AndWhere("shop_p.id = 1001"))
 	u.NoError(err)
 
-	shop1.(*Shop).Books.Get(0).(*Book).Name = shop1.(*Shop).Books.Get(0).(*Book).Name
+	sameName := shop1.(*Shop).Books.Get(0).(*Book).Name
+	shop1.(*Shop).Books.Get(0).(*Book).Name = sameName
 
 	u.dbAdapter.ResetCounters()
 	u.NoError(u.session.Flush())
@@ -402,7 +403,8 @@ func (u *UpdateTs) TestSelectThenViewButDontChangeMtoMRelation() {
 	book1, err := repo.FindOne(repo.CreateQuery().AndWhere("book_p.id = 1002"))
 	u.NoError(err)
 
-	book1.(*Book).Authors.Get(0).(*Author).Name = book1.(*Book).Authors.Get(0).(*Author).Name
+	sameName := book1.(*Book).Authors.Get(0).(*Author).Name
+	book1.(*Book).Authors.Get(0).(*Author).Name = sameName
 
 	u.dbAdapter.ResetCounters()
 	u.NoError(u.session.Flush())

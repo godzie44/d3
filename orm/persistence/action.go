@@ -191,8 +191,6 @@ type InsertAction struct {
 	pkCols        []string
 
 	box *persistBox
-
-	pkFieldInfo *entity.FieldInfo
 }
 
 func NewInsertAction(pkHydrator func([]interface{}) error, box *persistBox) *InsertAction {

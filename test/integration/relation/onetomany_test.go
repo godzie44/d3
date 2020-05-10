@@ -64,14 +64,14 @@ DROP TABLE discount;
 }
 
 type ShopLR struct {
-	entity struct{}           `d3:"table_name:shop"`
+	entity struct{}           `d3:"table_name:shop"` //nolint:unused,structcheck
 	Id     int32              `d3:"pk:auto"`
 	Books  entity2.Collection `d3:"one_to_many:<target_entity:d3/test/integration/relation/BookLR,join_on:t1_id>,type:lazy"`
 	Name   string
 }
 
 type BookLR struct {
-	entity struct{} `d3:"table_name:book"`
+	entity struct{} `d3:"table_name:book"` //nolint:unused,structcheck
 	Id     int32    `d3:"pk:auto"`
 	//Profile    entity.WrappedEntity `d3:"one_to_one:<target_entity:d3/test/integration/relation/PhotoLL,join_on:t3_id,reference_on:id>,type:eager"`
 	Name string
@@ -106,21 +106,21 @@ func (o *OneToManyRelationTS) TestLazyRelation() {
 }
 
 type ShopER struct {
-	entity struct{}           `d3:"table_name:shop"`
+	entity struct{}           `d3:"table_name:shop"` //nolint:unused,structcheck
 	Id     int32              `d3:"pk:auto"`
 	Books  entity2.Collection `d3:"one_to_many:<target_entity:d3/test/integration/relation/BookER,join_on:t1_id,reference_on:id>,type:eager"`
 	Name   string
 }
 
 type BookER struct {
-	entity    struct{}           `d3:"table_name:book"`
+	entity    struct{}           `d3:"table_name:book"` //nolint:unused,structcheck
 	Id        int32              `d3:"pk:auto"`
 	Discounts entity2.Collection `d3:"one_to_many:<target_entity:d3/test/integration/relation/DiscountER,join_on:t2_id,reference_on:id>,type:eager"`
 	Name      string
 }
 
 type DiscountER struct {
-	entity struct{} `d3:"table_name:discount"`
+	entity struct{} `d3:"table_name:discount"` //nolint:unused,structcheck
 	Id     int32    `d3:"pk:auto"`
 	Value  int32
 }

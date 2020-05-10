@@ -7,13 +7,13 @@ import (
 )
 
 type imTestEntity1 struct {
-	entity struct{} `d3:"table_name:test_entity_t1"`
+	entity struct{} `d3:"table_name:test_entity_t1"` //nolint:unused,structcheck
 	ID     int64    `d3:"pk:auto"`
 	Data   string
 }
 
 type imTestEntity2 struct {
-	entity struct{} `d3:"table_name:test_entity_t2"`
+	entity struct{} `d3:"table_name:test_entity_t2"` //nolint:unused,structcheck
 	ID     int64    `d3:"pk:auto"`
 	Data   string
 }

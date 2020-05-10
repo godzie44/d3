@@ -94,14 +94,14 @@ func TestFetchWithRelationTestSuite(t *testing.T) {
 }
 
 type fwTestEntity1 struct {
-	entity struct{}               `d3:"table_name:test_entity_1"`
+	entity struct{}               `d3:"table_name:test_entity_1"` //nolint:unused,structcheck
 	Id     int32                  `d3:"pk:auto"`
 	Rel    d3entity.WrappedEntity `d3:"one_to_one:<target_entity:d3/test/integration/relation/fwTestEntity2,join_on:e2_id,reference_on:id>,type:lazy"`
 	Data   string
 }
 
 type fwTestEntity2 struct {
-	entity struct{}            `d3:"table_name:test_entity_2"`
+	entity struct{}            `d3:"table_name:test_entity_2"` //nolint:unused,structcheck
 	Id     int32               `d3:"pk:auto"`
 	Rel    d3entity.Collection `d3:"one_to_many:<target_entity:d3/test/integration/relation/fwTestEntity3,join_on:e2_id>,type:lazy"`
 	Data   string
@@ -132,7 +132,7 @@ func (o *FetchWithRelationTS) TestFetchWithOneToOne() {
 }
 
 type fwTestEntity3 struct {
-	entity struct{}            `d3:"table_name:test_entity_3"`
+	entity struct{}            `d3:"table_name:test_entity_3"` //nolint:unused,structcheck
 	Id     int32               `d3:"pk:auto"`
 	Rel    d3entity.Collection `d3:"many_to_many:<target_entity:d3/test/integration/relation/fwTestEntity4,join_on:t3_id,reference_on:t4_id,join_table:t3_t4>,type:lazy"`
 	Data   string
@@ -164,7 +164,7 @@ func (o *FetchWithRelationTS) TestFetchWithOneToMany() {
 }
 
 type fwTestEntity4 struct {
-	entity struct{} `d3:"table_name:test_entity_4"`
+	entity struct{} `d3:"table_name:test_entity_4"` //nolint:unused,structcheck
 	Id     int32    `d3:"pk:auto"`
 	Data   string
 }
