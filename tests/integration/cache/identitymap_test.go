@@ -5,7 +5,7 @@ import (
 	"d3/adapter"
 	"d3/orm"
 	entity3 "d3/orm/entity"
-	"d3/test/helpers"
+	"d3/tests/helpers"
 	"github.com/jackc/pgx/v4"
 	"github.com/stretchr/testify/suite"
 	"os"
@@ -66,7 +66,7 @@ DROP TABLE im_test_entity_3;
 type entity1 struct {
 	entity struct{}           `d3:"table_name:im_test_entity_1"` //nolint:unused,structcheck
 	Id     int32              `d3:"pk:auto"`
-	Rel    entity3.Collection `d3:"one_to_many:<target_entity:d3/test/integration/cache/entity2,join_on:t1_id>,type:eager"`
+	Rel    entity3.Collection `d3:"one_to_many:<target_entity:d3/tests/integration/cache/entity2,join_on:t1_id>,type:eager"`
 	Data   string
 }
 

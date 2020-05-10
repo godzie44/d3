@@ -4,7 +4,7 @@ import (
 	"context"
 	"d3/adapter"
 	"d3/orm"
-	"d3/test/helpers"
+	"d3/tests/helpers"
 	"github.com/jackc/pgx/v4"
 	"github.com/stretchr/testify/suite"
 	"os"

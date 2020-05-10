@@ -5,7 +5,7 @@ import (
 	"d3/adapter"
 	"d3/orm"
 	"d3/orm/entity"
-	"d3/test/helpers"
+	"d3/tests/helpers"
 	"github.com/jackc/pgx/v4"
 	"github.com/stretchr/testify/suite"
 	"os"
@@ -147,7 +147,7 @@ func createAndPersistsShop(s *orm.Session) (*Shop, error) {
 			Name:    "book 2",
 		}}),
 		Profile: entity.NewWrapEntity(&ShopProfile{
-			Description: "this is test shop",
+			Description: "this is tests shop",
 		}),
 		Name: "shop",
 	}

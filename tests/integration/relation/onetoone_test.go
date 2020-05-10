@@ -69,14 +69,14 @@ func TestOneToOneRunTestSuite(t *testing.T) {
 type ShopLL struct {
 	entity  struct{}             `d3:"table_name:shop"` //nolint:unused,structcheck
 	ID      sql.NullInt32        `d3:"pk:auto"`
-	Profile entity.WrappedEntity `d3:"one_to_one:<target_entity:d3/test/integration/relation/ProfileLL,join_on:t2_id>,type:lazy"`
+	Profile entity.WrappedEntity `d3:"one_to_one:<target_entity:d3/tests/integration/relation/ProfileLL,join_on:t2_id>,type:lazy"`
 	Data    string
 }
 
 type ProfileLL struct {
 	entity struct{}             `d3:"table_name:profile"` //nolint:unused,structcheck
 	ID     int32                `d3:"pk:auto"`
-	Photo  entity.WrappedEntity `d3:"one_to_one:<target_entity:d3/test/integration/relation/PhotoLL,join_on:t3_id,reference_on:id>,type:eager"`
+	Photo  entity.WrappedEntity `d3:"one_to_one:<target_entity:d3/tests/integration/relation/PhotoLL,join_on:t3_id,reference_on:id>,type:eager"`
 	Data   string
 }
 
@@ -112,7 +112,7 @@ func (o *OneToOneRelationTS) TestLazyRelation() {
 type ShopEL struct {
 	entity  struct{}             `d3:"table_name:shop"` //nolint:unused,structcheck
 	Id      int32                `d3:"pk:auto"`
-	Profile entity.WrappedEntity `d3:"one_to_one:<target_entity:d3/test/integration/relation/ProfileLL,join_on:t2_id,reference_on:id>,type:eager"`
+	Profile entity.WrappedEntity `d3:"one_to_one:<target_entity:d3/tests/integration/relation/ProfileLL,join_on:t2_id,reference_on:id>,type:eager"`
 	Data    string
 }
 

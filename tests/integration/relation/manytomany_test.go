@@ -86,7 +86,7 @@ func TestManyToManyTestSuite(t *testing.T) {
 type BookLL struct {
 	entity  struct{}           `d3:"table_name:book"` //nolint:unused,structcheck
 	ID      int32              `d3:"pk:auto"`
-	Authors entity2.Collection `d3:"many_to_many:<target_entity:d3/test/integration/relation/AuthorLL,join_on:book_id,reference_on:author_id,join_table:book_author>,type:lazy"`
+	Authors entity2.Collection `d3:"many_to_many:<target_entity:d3/tests/integration/relation/AuthorLL,join_on:book_id,reference_on:author_id,join_table:book_author>,type:lazy"`
 	Name    string
 }
 
@@ -123,14 +123,14 @@ func (o *ManyToManyRelationTS) TestLazyRelation() {
 type BookEL struct {
 	entity struct{}           `d3:"table_name:book"` //nolint:unused,structcheck
 	Id     int32              `d3:"pk:auto"`
-	Rel    entity2.Collection `d3:"many_to_many:<target_entity:d3/test/integration/relation/AuthorEL,join_on:book_id,reference_on:author_id,join_table:book_author>,type:eager"`
+	Rel    entity2.Collection `d3:"many_to_many:<target_entity:d3/tests/integration/relation/AuthorEL,join_on:book_id,reference_on:author_id,join_table:book_author>,type:eager"`
 	Name   string
 }
 
 type AuthorEL struct {
 	entity struct{}           `d3:"table_name:author"` //nolint:unused,structcheck
 	Id     int32              `d3:"pk:auto"`
-	Rel    entity2.Collection `d3:"many_to_many:<target_entity:d3/test/integration/relation/Redactor,join_on:author_id,reference_on:redactor_id,join_table:author_redactor>,type:eager"`
+	Rel    entity2.Collection `d3:"many_to_many:<target_entity:d3/tests/integration/relation/Redactor,join_on:author_id,reference_on:redactor_id,join_table:author_redactor>,type:eager"`
 	Name   string
 }
 

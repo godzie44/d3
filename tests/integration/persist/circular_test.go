@@ -5,7 +5,7 @@ import (
 	"d3/adapter"
 	"d3/orm"
 	"d3/orm/entity"
-	"d3/test/helpers"
+	"d3/tests/helpers"
 	"database/sql"
 	"github.com/jackc/pgx/v4"
 	"github.com/stretchr/testify/suite"
@@ -24,7 +24,7 @@ func (o *PersistsCircularTS) SetupSuite() {
 	_, err := o.pgDb.Exec(context.Background(), `CREATE TABLE IF NOT EXISTS shop_c(
 		id SERIAL PRIMARY KEY,
 		profile_id integer,
-		friend_id integer, --for test circular ref
+		friend_id integer, --for tests circular ref
 		top_seller_id integer,
 		name character varying(200) NOT NULL
 	)`)
@@ -32,7 +32,7 @@ func (o *PersistsCircularTS) SetupSuite() {
 
 	_, err = o.pgDb.Exec(context.Background(), `CREATE TABLE IF NOT EXISTS profile_c(
 		id SERIAL PRIMARY KEY,
-		shop_id integer, --for test circular ref
+		shop_id integer, --for tests circular ref
 		description character varying(1000) NOT NULL
 	)`)
 	o.Assert().NoError(err)
@@ -80,19 +80,19 @@ type ShopCirc struct {
 	Id     sql.NullInt32 `d3:"pk:auto"`
 	Name   string
 
-	Profile entity.WrappedEntity `d3:"one_to_one:<target_entity:d3/test/integration/persist/ShopProfileCirc,join_on:profile_id>,type:lazy"`
+	Profile entity.WrappedEntity `d3:"one_to_one:<target_entity:d3/tests/integration/persist/ShopProfileCirc,join_on:profile_id>,type:lazy"`
 
-	FriendShop entity.WrappedEntity `d3:"one_to_one:<target_entity:d3/test/integration/persist/ShopCirc,join_on:friend_id>,type:lazy"`
+	FriendShop entity.WrappedEntity `d3:"one_to_one:<target_entity:d3/tests/integration/persist/ShopCirc,join_on:friend_id>,type:lazy"`
 
-	TopSeller    entity.WrappedEntity `d3:"one_to_one:<target_entity:d3/test/integration/persist/SellerCirc,join_on:top_seller_id>,type:lazy"`
-	Sellers      entity.Collection    `d3:"one_to_many:<target_entity:d3/test/integration/persist/SellerCirc,join_on:shop_id>,type:lazy"`
-	KnownSellers entity.Collection    `d3:"many_to_many:<target_entity:d3/test/integration/persist/SellerCirc,join_on:shop_id,reference_on:seller_id,join_table:known_shop_seller_c>,type:lazy"`
+	TopSeller    entity.WrappedEntity `d3:"one_to_one:<target_entity:d3/tests/integration/persist/SellerCirc,join_on:top_seller_id>,type:lazy"`
+	Sellers      entity.Collection    `d3:"one_to_many:<target_entity:d3/tests/integration/persist/SellerCirc,join_on:shop_id>,type:lazy"`
+	KnownSellers entity.Collection    `d3:"many_to_many:<target_entity:d3/tests/integration/persist/SellerCirc,join_on:shop_id,reference_on:seller_id,join_table:known_shop_seller_c>,type:lazy"`
 }
 
 type ShopProfileCirc struct {
 	entity      struct{}             `d3:"table_name:profile_c"` //nolint:unused,structcheck
 	Id          sql.NullInt32        `d3:"pk:auto"`
-	Shop        entity.WrappedEntity `d3:"one_to_one:<target_entity:d3/test/integration/persist/ShopCirc,join_on:shop_id>,type:lazy"`
+	Shop        entity.WrappedEntity `d3:"one_to_one:<target_entity:d3/tests/integration/persist/ShopCirc,join_on:shop_id>,type:lazy"`
 	Description string
 }
 
@@ -101,8 +101,8 @@ type SellerCirc struct {
 	Id     sql.NullInt32 `d3:"pk:auto"`
 	Name   string
 
-	CurrentShop entity.WrappedEntity `d3:"one_to_one:<target_entity:d3/test/integration/persist/ShopCirc,join_on:shop_id>,type:lazy"`
-	KnownShops  entity.Collection    `d3:"many_to_many:<target_entity:d3/test/integration/persist/ShopCirc,join_on:seller_id,reference_on:shop_id,join_table:known_shop_seller_c>,type:lazy"`
+	CurrentShop entity.WrappedEntity `d3:"one_to_one:<target_entity:d3/tests/integration/persist/ShopCirc,join_on:shop_id>,type:lazy"`
+	KnownShops  entity.Collection    `d3:"many_to_many:<target_entity:d3/tests/integration/persist/ShopCirc,join_on:seller_id,reference_on:shop_id,join_table:known_shop_seller_c>,type:lazy"`
 }
 
 func (o *PersistsCircularTS) TestInsertWithCircularRef() {

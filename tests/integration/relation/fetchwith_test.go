@@ -5,7 +5,7 @@ import (
 	"d3/adapter"
 	"d3/orm"
 	d3entity "d3/orm/entity"
-	"d3/test/helpers"
+	"d3/tests/helpers"
 	"github.com/jackc/pgx/v4"
 	"github.com/stretchr/testify/suite"
 	"os"
@@ -95,14 +95,14 @@ func TestFetchWithRelationTestSuite(t *testing.T) {
 type fwTestEntity1 struct {
 	entity struct{}               `d3:"table_name:test_entity_1"` //nolint:unused,structcheck
 	Id     int32                  `d3:"pk:auto"`
-	Rel    d3entity.WrappedEntity `d3:"one_to_one:<target_entity:d3/test/integration/relation/fwTestEntity2,join_on:e2_id,reference_on:id>,type:lazy"`
+	Rel    d3entity.WrappedEntity `d3:"one_to_one:<target_entity:d3/tests/integration/relation/fwTestEntity2,join_on:e2_id,reference_on:id>,type:lazy"`
 	Data   string
 }
 
 type fwTestEntity2 struct {
 	entity struct{}            `d3:"table_name:test_entity_2"` //nolint:unused,structcheck
 	Id     int32               `d3:"pk:auto"`
-	Rel    d3entity.Collection `d3:"one_to_many:<target_entity:d3/test/integration/relation/fwTestEntity3,join_on:e2_id>,type:lazy"`
+	Rel    d3entity.Collection `d3:"one_to_many:<target_entity:d3/tests/integration/relation/fwTestEntity3,join_on:e2_id>,type:lazy"`
 	Data   string
 }
 
@@ -114,7 +114,7 @@ func (o *FetchWithRelationTS) TestFetchWithOneToOne() {
 	session := d3Orm.MakeSession()
 	repository, _ := session.MakeRepository((*fwTestEntity1)(nil))
 	q := repository.CreateQuery()
-	_ = q.AndWhere("test_entity_1.id = ?", 1).With("d3/test/integration/relation/fwTestEntity2")
+	_ = q.AndWhere("test_entity_1.id = ?", 1).With("d3/tests/integration/relation/fwTestEntity2")
 	entity, _ := repository.FindOne(q)
 
 	o.Assert().IsType(&fwTestEntity1{}, entity)
@@ -133,7 +133,7 @@ func (o *FetchWithRelationTS) TestFetchWithOneToOne() {
 type fwTestEntity3 struct {
 	entity struct{}            `d3:"table_name:test_entity_3"` //nolint:unused,structcheck
 	Id     int32               `d3:"pk:auto"`
-	Rel    d3entity.Collection `d3:"many_to_many:<target_entity:d3/test/integration/relation/fwTestEntity4,join_on:t3_id,reference_on:t4_id,join_table:t3_t4>,type:lazy"`
+	Rel    d3entity.Collection `d3:"many_to_many:<target_entity:d3/tests/integration/relation/fwTestEntity4,join_on:t3_id,reference_on:t4_id,join_table:t3_t4>,type:lazy"`
 	Data   string
 }
 
@@ -145,7 +145,7 @@ func (o *FetchWithRelationTS) TestFetchWithOneToMany() {
 	session := d3Orm.MakeSession()
 	repository, _ := session.MakeRepository((*fwTestEntity2)(nil))
 	q := repository.CreateQuery()
-	_ = q.AndWhere("test_entity_2.id = ?", 1).With("d3/test/integration/relation/fwTestEntity3")
+	_ = q.AndWhere("test_entity_2.id = ?", 1).With("d3/tests/integration/relation/fwTestEntity3")
 	entity, _ := repository.FindOne(q)
 
 	o.Assert().IsType(&fwTestEntity2{}, entity)
@@ -177,7 +177,7 @@ func (o *FetchWithRelationTS) TestFetchWithManyToMany() {
 	repository, _ := d3Orm.MakeSession().MakeRepository((*fwTestEntity3)(nil))
 
 	q := repository.CreateQuery()
-	_ = q.AndWhere("test_entity_3.id = ?", 1).With("d3/test/integration/relation/fwTestEntity4")
+	_ = q.AndWhere("test_entity_3.id = ?", 1).With("d3/tests/integration/relation/fwTestEntity4")
 	entity, _ := repository.FindOne(q)
 
 	o.Assert().IsType(&fwTestEntity3{}, entity)
@@ -203,9 +203,9 @@ func (o *FetchWithRelationTS) TestFetchFullGraph() {
 	repository, _ := d3Orm.MakeSession().MakeRepository((*fwTestEntity1)(nil))
 
 	q := repository.CreateQuery()
-	_ = q.AndWhere("test_entity_1.id = ?", 1).With("d3/test/integration/relation/fwTestEntity2")
-	_ = q.With("d3/test/integration/relation/fwTestEntity3")
-	_ = q.With("d3/test/integration/relation/fwTestEntity4")
+	_ = q.AndWhere("test_entity_1.id = ?", 1).With("d3/tests/integration/relation/fwTestEntity2")
+	_ = q.With("d3/tests/integration/relation/fwTestEntity3")
+	_ = q.With("d3/tests/integration/relation/fwTestEntity4")
 	entity, _ := repository.FindOne(q)
 
 	o.Assert().Equal([]interface{}{int32(1), "entity_1_data_1"}, []interface{}{entity.(*fwTestEntity1).Id, entity.(*fwTestEntity1).Data})

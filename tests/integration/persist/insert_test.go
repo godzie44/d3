@@ -5,7 +5,7 @@ import (
 	"d3/adapter"
 	"d3/orm"
 	"d3/orm/entity"
-	"d3/test/helpers"
+	"d3/tests/helpers"
 	"github.com/jackc/pgx/v4"
 	"github.com/stretchr/testify/suite"
 	"os"
@@ -56,7 +56,7 @@ func (o *PersistsTS) TestSimpleInsert() {
 	shop := &Shop{
 		Books: nil,
 		Profile: entity.NewWrapEntity(&ShopProfile{
-			Description: "this is simple test shop",
+			Description: "this is simple tests shop",
 		}),
 		Name: "simple-shop",
 	}
@@ -69,7 +69,7 @@ func (o *PersistsTS) TestSimpleInsert() {
 
 	helpers.NewPgTester(o.T(), o.pgDb).
 		SeeOne("SELECT * FROM shop_p WHERE name='simple-shop' AND profile_id IS NOT NULL").
-		SeeOne("SELECT * FROM profile_p WHERE description='this is simple test shop'")
+		SeeOne("SELECT * FROM profile_p WHERE description='this is simple tests shop'")
 }
 
 func (o *PersistsTS) TestBigInsert() {
@@ -87,7 +87,7 @@ func (o *PersistsTS) TestBigInsert() {
 
 	helpers.NewPgTester(o.T(), o.pgDb).
 		SeeOne("SELECT * FROM shop_p WHERE name='shop' AND profile_id IS NOT NULL").
-		SeeOne("SELECT * FROM profile_p WHERE description='this is test shop'").
+		SeeOne("SELECT * FROM profile_p WHERE description='this is tests shop'").
 		SeeTwo("SELECT * FROM book_p").
 		SeeThree("SELECT * FROM author_p").
 		SeeFour("SELECT * FROM book_author_p")

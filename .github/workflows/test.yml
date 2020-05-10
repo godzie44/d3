@@ -1,0 +1,40 @@
+name: "tests"
+on:
+  pull_request:
+  push:
+    branches:
+      - master
+
+jobs:
+  test:
+    strategy:
+      matrix:
+        go-version: [1.13.x, 1.14.x]
+        platform: [ubuntu-latest]
+
+    runs-on: ${{ matrix.platform }}
+
+    services:
+      postgres:
+        image: postgres:10.8
+        env:
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_DB: d3db
+        ports:
+          - 5432:5432
+        options: --health-cmd pg_isready --health-interval 10s --health-timeout 5s --health-retries 5
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+
+      - name: Install Go
+        uses: actions/setup-go@v2
+        with:
+          go-version: ${{ matrix.go-version }}
+    
+      - name: Test
+        run: go test ./...
+        env:
+          D3_PG_TEST_DB: "postgres://postgres:postgres@0.0.0.0:5432/d3db"
