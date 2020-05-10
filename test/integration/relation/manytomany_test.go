@@ -102,8 +102,8 @@ func (o *ManyToManyRelationTS) TestLazyRelation() {
 	err := d3Orm.Register((*BookLL)(nil), (*AuthorLL)(nil), (*Redactor)(nil))
 	o.Assert().NoError(err)
 
-	session := d3Orm.CreateSession()
-	repository, err := d3Orm.CreateRepository(session, (*BookLL)(nil))
+	session := d3Orm.MakeSession()
+	repository, err := session.MakeRepository((*BookLL)(nil))
 	o.Assert().NoError(err)
 
 	entity, err := repository.FindOne(repository.CreateQuery().AndWhere("book.id = ?", 1))
@@ -146,8 +146,8 @@ func (o *ManyToManyRelationTS) TestEagerRelation() {
 	err := d3Orm.Register((*BookEL)(nil), (*AuthorEL)(nil), (*Redactor)(nil))
 	o.Assert().NoError(err)
 
-	session := d3Orm.CreateSession()
-	repository, err := d3Orm.CreateRepository(session, (*BookEL)(nil))
+	session := d3Orm.MakeSession()
+	repository, err := session.MakeRepository((*BookEL)(nil))
 	o.Assert().NoError(err)
 
 	entity, err := repository.FindOne(repository.CreateQuery().AndWhere("book.id = ?", 1))

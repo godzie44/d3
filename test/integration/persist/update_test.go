@@ -34,7 +34,7 @@ func (u *UpdateTs) SetupSuite() {
 }
 
 func (u *UpdateTs) SetupTest() {
-	u.session = u.d3Orm.CreateSession()
+	u.session = u.d3Orm.MakeSession()
 }
 
 func (u *UpdateTs) TearDownSuite() {
@@ -51,7 +51,7 @@ func TestUpdateSuite(t *testing.T) {
 }
 
 func (u *UpdateTs) TestInsertThenUpdate() {
-	shop, err := createAndPersistsShop(u.d3Orm, u.session)
+	shop, err := createAndPersistsShop(u.session)
 	u.NoError(err)
 
 	u.NoError(u.session.Flush())
@@ -67,7 +67,7 @@ func (u *UpdateTs) TestInsertThenUpdate() {
 }
 
 func (u *UpdateTs) TestInsertThenUpdateOToMRelation() {
-	shop, err := createAndPersistsShop(u.d3Orm, u.session)
+	shop, err := createAndPersistsShop(u.session)
 	u.NoError(err)
 
 	u.NoError(u.session.Flush())
@@ -83,7 +83,7 @@ func (u *UpdateTs) TestInsertThenUpdateOToMRelation() {
 }
 
 func (u *UpdateTs) TestInsertThenUpdateMToMRelations() {
-	shop, err := createAndPersistsShop(u.d3Orm, u.session)
+	shop, err := createAndPersistsShop(u.session)
 	u.NoError(err)
 
 	u.NoError(u.session.Flush())
@@ -101,7 +101,7 @@ func (u *UpdateTs) TestInsertThenUpdateMToMRelations() {
 }
 
 func (u *UpdateTs) TestInsertThenFullUpdate() {
-	shop, err := createAndPersistsShop(u.d3Orm, u.session)
+	shop, err := createAndPersistsShop(u.session)
 	u.NoError(err)
 
 	u.NoError(u.session.Flush())
@@ -133,8 +133,8 @@ func (u *UpdateTs) TestInsertThenFullUpdate() {
 		SeeOne("SELECT * FROM book_author_p WHERE book_id = $1 and author_id = $2", newBook.Id, newAuthor.Id)
 }
 
-func createAndPersistsShop(orm *orm.Orm, s *orm.Session) (*Shop, error) {
-	repository, _ := orm.CreateRepository(s, (*Shop)(nil))
+func createAndPersistsShop(s *orm.Session) (*Shop, error) {
+	repository, _ := s.MakeRepository((*Shop)(nil))
 
 	author1 := &Author{
 		Name: "author1",
@@ -159,7 +159,7 @@ func createAndPersistsShop(orm *orm.Orm, s *orm.Session) (*Shop, error) {
 func (u *UpdateTs) TestSelectThenSimpleUpdate() {
 	fillDb(u.Assert(), u.dbAdapter)
 
-	repo, err := u.d3Orm.CreateRepository(u.session, (*Shop)(nil))
+	repo, err := u.session.MakeRepository((*Shop)(nil))
 	u.NoError(err)
 
 	shop1i, err := repo.FindOne(repo.CreateQuery().AndWhere("shop_p.id = 1001"))
@@ -183,7 +183,7 @@ func (u *UpdateTs) TestSelectThenSimpleUpdate() {
 func (u *UpdateTs) TestSelectThenUpdateOtoORelation() {
 	fillDb(u.Assert(), u.dbAdapter)
 
-	repo, err := u.d3Orm.CreateRepository(u.session, (*Shop)(nil))
+	repo, err := u.session.MakeRepository((*Shop)(nil))
 	u.NoError(err)
 
 	shop1i, err := repo.FindOne(repo.CreateQuery().AndWhere("shop_p.id = 1001"))
@@ -203,7 +203,7 @@ func (u *UpdateTs) TestSelectThenUpdateOtoORelation() {
 func (u *UpdateTs) TestSelectThenDeleteOtoORelation() {
 	fillDb(u.Assert(), u.dbAdapter)
 
-	repo, err := u.d3Orm.CreateRepository(u.session, (*Shop)(nil))
+	repo, err := u.session.MakeRepository((*Shop)(nil))
 	u.NoError(err)
 
 	shop1i, err := repo.FindOne(repo.CreateQuery().AndWhere("shop_p.id = 1001"))
@@ -223,7 +223,7 @@ func (u *UpdateTs) TestSelectThenDeleteOtoORelation() {
 func (u *UpdateTs) TestSelectThenViewButDontChangeOtoORelation() {
 	fillDb(u.Assert(), u.dbAdapter)
 
-	repo, err := u.d3Orm.CreateRepository(u.session, (*Shop)(nil))
+	repo, err := u.session.MakeRepository((*Shop)(nil))
 	u.NoError(err)
 
 	shop1i, err := repo.FindOne(repo.CreateQuery().AndWhere("shop_p.id = 1001"))
@@ -241,7 +241,7 @@ func (u *UpdateTs) TestSelectThenViewButDontChangeOtoORelation() {
 func (u *UpdateTs) TestSelectThenUpdateOtoMRelation() {
 	fillDb(u.Assert(), u.dbAdapter)
 
-	repo, err := u.d3Orm.CreateRepository(u.session, (*Shop)(nil))
+	repo, err := u.session.MakeRepository((*Shop)(nil))
 	u.NoError(err)
 
 	shop1, err := repo.FindOne(repo.CreateQuery().AndWhere("shop_p.id = 1001"))
@@ -263,7 +263,7 @@ func (u *UpdateTs) TestSelectThenUpdateOtoMRelation() {
 func (u *UpdateTs) TestSelectThenDeleteOtoMRelation() {
 	fillDb(u.Assert(), u.dbAdapter)
 
-	repo, err := u.d3Orm.CreateRepository(u.session, (*Shop)(nil))
+	repo, err := u.session.MakeRepository((*Shop)(nil))
 	u.NoError(err)
 
 	shop1, err := repo.FindOne(repo.CreateQuery().AndWhere("shop_p.id = 1001"))
@@ -284,7 +284,7 @@ func (u *UpdateTs) TestSelectThenDeleteOtoMRelation() {
 func (u *UpdateTs) TestSelectThenAddOtoMRelation() {
 	fillDb(u.Assert(), u.dbAdapter)
 
-	repo, err := u.d3Orm.CreateRepository(u.session, (*Shop)(nil))
+	repo, err := u.session.MakeRepository((*Shop)(nil))
 	u.NoError(err)
 
 	shop1, err := repo.FindOne(repo.CreateQuery().AndWhere("shop_p.id = 1001"))
@@ -308,7 +308,7 @@ func (u *UpdateTs) TestSelectThenAddOtoMRelation() {
 func (u *UpdateTs) TestSelectThenViewButDontChangeOtoMRelation() {
 	fillDb(u.Assert(), u.dbAdapter)
 
-	repo, err := u.d3Orm.CreateRepository(u.session, (*Shop)(nil))
+	repo, err := u.session.MakeRepository((*Shop)(nil))
 	u.NoError(err)
 
 	shop1, err := repo.FindOne(repo.CreateQuery().AndWhere("shop_p.id = 1001"))
@@ -325,7 +325,7 @@ func (u *UpdateTs) TestSelectThenViewButDontChangeOtoMRelation() {
 func (u *UpdateTs) TestSelectThenUpdateMtoMRelation() {
 	fillDb(u.Assert(), u.dbAdapter)
 
-	repo, err := u.d3Orm.CreateRepository(u.session, (*Book)(nil))
+	repo, err := u.session.MakeRepository((*Book)(nil))
 	u.NoError(err)
 
 	book1, err := repo.FindOne(repo.CreateQuery().AndWhere("book_p.id = 1002"))
@@ -347,7 +347,7 @@ func (u *UpdateTs) TestSelectThenUpdateMtoMRelation() {
 func (u *UpdateTs) TestSelectThenDeleteMtoMRelation() {
 	fillDb(u.Assert(), u.dbAdapter)
 
-	repo, err := u.d3Orm.CreateRepository(u.session, (*Book)(nil))
+	repo, err := u.session.MakeRepository((*Book)(nil))
 	u.NoError(err)
 
 	book1, err := repo.FindOne(repo.CreateQuery().AndWhere("book_p.id = 1002"))
@@ -368,7 +368,7 @@ func (u *UpdateTs) TestSelectThenDeleteMtoMRelation() {
 func (u *UpdateTs) TestSelectThenAddMtoMRelation() {
 	fillDb(u.Assert(), u.dbAdapter)
 
-	repo, err := u.d3Orm.CreateRepository(u.session, (*Book)(nil))
+	repo, err := u.session.MakeRepository((*Book)(nil))
 	u.NoError(err)
 
 	book1, err := repo.FindOne(repo.CreateQuery().AndWhere("book_p.id = 1001"))
@@ -396,7 +396,7 @@ func (u *UpdateTs) TestSelectThenAddMtoMRelation() {
 func (u *UpdateTs) TestSelectThenViewButDontChangeMtoMRelation() {
 	fillDb(u.Assert(), u.dbAdapter)
 
-	repo, err := u.d3Orm.CreateRepository(u.session, (*Book)(nil))
+	repo, err := u.session.MakeRepository((*Book)(nil))
 	u.NoError(err)
 
 	book1, err := repo.FindOne(repo.CreateQuery().AndWhere("book_p.id = 1002"))
@@ -413,7 +413,7 @@ func (u *UpdateTs) TestSelectThenViewButDontChangeMtoMRelation() {
 func (u *UpdateTs) TestSelectThenFullUpdate() {
 	fillDb(u.Assert(), u.dbAdapter)
 
-	repo, err := u.d3Orm.CreateRepository(u.session, (*Shop)(nil))
+	repo, err := u.session.MakeRepository((*Shop)(nil))
 	u.NoError(err)
 
 	shop1i, err := repo.FindOne(repo.CreateQuery().AndWhere("shop_p.id = 1001"))

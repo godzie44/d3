@@ -34,7 +34,7 @@ func (o *PersistsTS) SetupSuite() {
 }
 
 func (o *PersistsTS) SetupTest() {
-	o.session = o.d3Orm.CreateSession()
+	o.session = o.d3Orm.MakeSession()
 }
 
 func (o *PersistsTS) TearDownSuite() {
@@ -51,7 +51,7 @@ func TestPersistsSuite(t *testing.T) {
 }
 
 func (o *PersistsTS) TestSimpleInsert() {
-	repository, err := o.d3Orm.CreateRepository(o.session, (*Shop)(nil))
+	repository, err := o.session.MakeRepository((*Shop)(nil))
 	o.NoError(err)
 
 	shop := &Shop{
@@ -74,7 +74,7 @@ func (o *PersistsTS) TestSimpleInsert() {
 }
 
 func (o *PersistsTS) TestBigInsert() {
-	shop, err := createAndPersistsShop(o.d3Orm, o.session)
+	shop, err := createAndPersistsShop(o.session)
 	o.NoError(err)
 
 	o.NoError(o.session.Flush())
@@ -95,9 +95,9 @@ func (o *PersistsTS) TestBigInsert() {
 }
 
 func (o *PersistsTS) TestNoNewQueriesIfDoubleFlush() {
-	session := o.d3Orm.CreateSession()
+	session := o.d3Orm.MakeSession()
 
-	_, err := createAndPersistsShop(o.d3Orm, session)
+	_, err := createAndPersistsShop(session)
 	o.NoError(err)
 
 	o.NoError(session.Flush())
@@ -110,9 +110,9 @@ func (o *PersistsTS) TestNoNewQueriesIfDoubleFlush() {
 }
 
 func (o *PersistsTS) TestOneNewEntityIfDoublePersist() {
-	session := o.d3Orm.CreateSession()
+	session := o.d3Orm.MakeSession()
 
-	repository, _ := o.d3Orm.CreateRepository(session, (*Shop)(nil))
+	repository, _ := session.MakeRepository((*Shop)(nil))
 
 	shop := &Shop{
 		Name: "shop",

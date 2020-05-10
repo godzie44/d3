@@ -33,7 +33,7 @@ func (d *DeleteTS) SetupSuite() {
 }
 
 func (d *DeleteTS) SetupTest() {
-	d.session = d.d3Orm.CreateSession()
+	d.session = d.d3Orm.MakeSession()
 }
 
 func (d *DeleteTS) TearDownSuite() {
@@ -48,7 +48,7 @@ func (d *DeleteTS) TearDownTest() {
 func (d *DeleteTS) TestDeleteEntity() {
 	fillDb(d.Assert(), d.dbAdapter)
 
-	rep, err := d.d3Orm.CreateRepository(d.session, (*ShopProfile)(nil))
+	rep, err := d.session.MakeRepository((*ShopProfile)(nil))
 	d.NoError(err)
 
 	profile, err := rep.FindOne(rep.CreateQuery().AndWhere("profile_p.id = 1001"))
@@ -63,7 +63,7 @@ func (d *DeleteTS) TestDeleteEntity() {
 func (d *DeleteTS) TestDeleteWithRelations() {
 	fillDb(d.Assert(), d.dbAdapter)
 
-	rep, err := d.d3Orm.CreateRepository(d.session, (*Shop)(nil))
+	rep, err := d.session.MakeRepository((*Shop)(nil))
 	d.NoError(err)
 
 	shop, err := rep.FindOne(rep.CreateQuery().AndWhere("shop_p.id = 1001"))
@@ -83,7 +83,7 @@ func (d *DeleteTS) TestDeleteWithRelations() {
 func (d *DeleteTS) TestDeleteWithManyToMany() {
 	fillDb(d.Assert(), d.dbAdapter)
 
-	rep, err := d.d3Orm.CreateRepository(d.session, (*Book)(nil))
+	rep, err := d.session.MakeRepository((*Book)(nil))
 	d.NoError(err)
 
 	book, err := rep.FindOne(rep.CreateQuery().AndWhere("book_p.id = 1001"))

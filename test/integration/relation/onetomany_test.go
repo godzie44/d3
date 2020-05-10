@@ -86,8 +86,8 @@ func (o *OneToManyRelationTS) TestLazyRelation() {
 	err := d3Orm.Register((*ShopLR)(nil), (*BookLR)(nil))
 	o.Assert().NoError(err)
 
-	session := d3Orm.CreateSession()
-	repository, err := d3Orm.CreateRepository(session, (*ShopLR)(nil))
+	session := d3Orm.MakeSession()
+	repository, err := session.MakeRepository((*ShopLR)(nil))
 	o.Assert().NoError(err)
 
 	entity, err := repository.FindOne(repository.CreateQuery().AndWhere("id = ?", 1))
@@ -130,8 +130,8 @@ func (o *OneToManyRelationTS) TestEagerRelation() {
 	err := d3Orm.Register((*ShopER)(nil), (*BookER)(nil), (*DiscountER)(nil))
 	o.Assert().NoError(err)
 
-	session := d3Orm.CreateSession()
-	repository, err := d3Orm.CreateRepository(session, (*ShopER)(nil))
+	session := d3Orm.MakeSession()
+	repository, err := session.MakeRepository((*ShopER)(nil))
 	o.Assert().NoError(err)
 
 	entity, err := repository.FindOne(repository.CreateQuery().AndWhere("shop.id = ?", 1))

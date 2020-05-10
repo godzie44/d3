@@ -86,8 +86,8 @@ func (o *IMCacheTS) TestNoQueryCreateForCachedEntities() {
 	d3Orm := orm.NewOrm(wrappedDbAdapter)
 	_ = d3Orm.Register((*entity1)(nil), (*entity2)(nil))
 
-	session := d3Orm.CreateSession()
-	repository, _ := d3Orm.CreateRepository(session, (*entity1)(nil))
+	session := d3Orm.MakeSession()
+	repository, _ := session.MakeRepository((*entity1)(nil))
 	_, err := repository.FindOne(repository.CreateQuery().AndWhere("im_test_entity_1.id = ?", 1))
 	o.Assert().NoError(err)
 
@@ -98,7 +98,7 @@ func (o *IMCacheTS) TestNoQueryCreateForCachedEntities() {
 
 	o.Assert().Equal(2, wrappedDbAdapter.QueryCounter())
 
-	repository2, _ := d3Orm.CreateRepository(session, (*entity2)(nil))
+	repository2, _ := session.MakeRepository((*entity2)(nil))
 	_, err = repository2.FindOne(repository.CreateQuery().AndWhere("im_test_entity_2.id = ?", 1))
 
 	o.Assert().Equal(2, wrappedDbAdapter.QueryCounter())

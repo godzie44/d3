@@ -33,7 +33,7 @@ func (t *TransactionalTs) SetupSuite() {
 }
 
 func (t *TransactionalTs) SetupTest() {
-	t.session = t.d3Orm.CreateSession()
+	t.session = t.d3Orm.MakeSession()
 }
 
 func (t *TransactionalTs) TearDownSuite() {
@@ -46,9 +46,9 @@ func (t *TransactionalTs) TearDownTest() {
 }
 
 func (t *TransactionalTs) TestAutoCommit() {
-	session := t.d3Orm.CreateSession()
+	session := t.d3Orm.MakeSession()
 
-	repository, _ := t.d3Orm.CreateRepository(session, (*Shop)(nil))
+	repository, _ := session.MakeRepository((*Shop)(nil))
 
 	shop1 := &Shop{
 		Name: "shop1",
@@ -71,9 +71,9 @@ func newConn() *pgx.Conn {
 }
 
 func (t *TransactionalTs) TestManualCommit() {
-	session := t.d3Orm.CreateSession()
+	session := t.d3Orm.MakeSession()
 
-	repository, _ := t.d3Orm.CreateRepository(session, (*Shop)(nil))
+	repository, _ := session.MakeRepository((*Shop)(nil))
 
 	t.NoError(session.BeginTx())
 
@@ -97,9 +97,9 @@ func (t *TransactionalTs) TestManualCommit() {
 }
 
 func (t *TransactionalTs) TestManualRollback() {
-	session := t.d3Orm.CreateSession()
+	session := t.d3Orm.MakeSession()
 
-	repository, _ := t.d3Orm.CreateRepository(session, (*Shop)(nil))
+	repository, _ := session.MakeRepository((*Shop)(nil))
 
 	t.NoError(session.BeginTx())
 

@@ -2,7 +2,6 @@ package orm
 
 import (
 	d3Entity "d3/orm/entity"
-	"fmt"
 )
 
 type Orm struct {
@@ -40,18 +39,6 @@ func (o *Orm) Register(entities ...interface{}) error {
 	return nil
 }
 
-func (o *Orm) CreateSession() *Session {
+func (o *Orm) MakeSession() *Session {
 	return NewSession(o.PgDb, NewUOW(o.PgDb), o.metaRegistry)
-}
-
-func (o *Orm) CreateRepository(session *Session, entity interface{}) (*Repository, error) {
-	entityMeta, err := o.metaRegistry.GetMeta(entity)
-	if err != nil {
-		return nil, fmt.Errorf("repository: %w", err)
-	}
-
-	return &Repository{
-		session:    session,
-		entityMeta: entityMeta,
-	}, nil
 }

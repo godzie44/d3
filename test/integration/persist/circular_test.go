@@ -111,8 +111,8 @@ func (o *PersistsCircularTS) TestInsertWithCircularRef() {
 	d3Orm := orm.NewOrm(dbAdapter)
 	o.Assert().NoError(d3Orm.Register((*ShopCirc)(nil), (*ShopProfileCirc)(nil), (*SellerCirc)(nil)))
 
-	session := d3Orm.CreateSession()
-	repository, _ := d3Orm.CreateRepository(session, (*ShopCirc)(nil))
+	session := d3Orm.MakeSession()
+	repository, _ := session.MakeRepository((*ShopCirc)(nil))
 
 	profile := &ShopProfileCirc{
 		Description: "shop profile",
@@ -142,8 +142,8 @@ func (o *PersistsCircularTS) TestInsertWithSelfCircularRef() {
 	d3Orm := orm.NewOrm(dbAdapter)
 	_ = d3Orm.Register((*ShopCirc)(nil), (*ShopProfileCirc)(nil), (*SellerCirc)(nil))
 
-	session := d3Orm.CreateSession()
-	repository, _ := d3Orm.CreateRepository(session, (*ShopCirc)(nil))
+	session := d3Orm.MakeSession()
+	repository, _ := session.MakeRepository((*ShopCirc)(nil))
 
 	shop1 := &ShopCirc{Name: "shop1"}
 	shop2 := &ShopCirc{Name: "shop2"}
@@ -183,8 +183,8 @@ func (o *PersistsCircularTS) TestBigCircularReferenceGraph() {
 	d3Orm := orm.NewOrm(dbAdapter)
 	_ = d3Orm.Register((*ShopCirc)(nil), (*ShopProfileCirc)(nil), (*SellerCirc)(nil))
 
-	session := d3Orm.CreateSession()
-	repository, _ := d3Orm.CreateRepository(session, (*ShopCirc)(nil))
+	session := d3Orm.MakeSession()
+	repository, _ := session.MakeRepository((*ShopCirc)(nil))
 
 	shop1 := &ShopCirc{Name: "shop1"}
 	shop2 := &ShopCirc{Name: "shop2"}

@@ -112,8 +112,8 @@ func (o *FetchWithRelationTS) TestFetchWithOneToOne() {
 	d3Orm := orm.NewOrm(wrappedDbAdapter)
 
 	_ = d3Orm.Register((*fwTestEntity1)(nil), (*fwTestEntity2)(nil), (*fwTestEntity3)(nil), (*fwTestEntity4)(nil))
-	session := d3Orm.CreateSession()
-	repository, _ := d3Orm.CreateRepository(session, (*fwTestEntity1)(nil))
+	session := d3Orm.MakeSession()
+	repository, _ := session.MakeRepository((*fwTestEntity1)(nil))
 	q := repository.CreateQuery()
 	_ = q.AndWhere("test_entity_1.id = ?", 1).With("d3/test/integration/relation/fwTestEntity2")
 	entity, _ := repository.FindOne(q)
@@ -143,8 +143,8 @@ func (o *FetchWithRelationTS) TestFetchWithOneToMany() {
 	d3Orm := orm.NewOrm(wrappedDbAdapter)
 
 	_ = d3Orm.Register((*fwTestEntity1)(nil), (*fwTestEntity2)(nil), (*fwTestEntity3)(nil), (*fwTestEntity4)(nil))
-	session := d3Orm.CreateSession()
-	repository, _ := d3Orm.CreateRepository(session, (*fwTestEntity2)(nil))
+	session := d3Orm.MakeSession()
+	repository, _ := session.MakeRepository((*fwTestEntity2)(nil))
 	q := repository.CreateQuery()
 	_ = q.AndWhere("test_entity_2.id = ?", 1).With("d3/test/integration/relation/fwTestEntity3")
 	entity, _ := repository.FindOne(q)
@@ -174,8 +174,8 @@ func (o *FetchWithRelationTS) TestFetchWithManyToMany() {
 	d3Orm := orm.NewOrm(wrappedDbAdapter)
 
 	_ = d3Orm.Register((*fwTestEntity1)(nil), (*fwTestEntity2)(nil), (*fwTestEntity3)(nil), (*fwTestEntity4)(nil))
-	session := d3Orm.CreateSession()
-	repository, _ := d3Orm.CreateRepository(session, (*fwTestEntity3)(nil))
+
+	repository, _ := d3Orm.MakeSession().MakeRepository((*fwTestEntity3)(nil))
 
 	q := repository.CreateQuery()
 	_ = q.AndWhere("test_entity_3.id = ?", 1).With("d3/test/integration/relation/fwTestEntity4")
@@ -200,8 +200,8 @@ func (o *FetchWithRelationTS) TestFetchFullGraph() {
 	d3Orm := orm.NewOrm(wrappedDbAdapter)
 
 	_ = d3Orm.Register((*fwTestEntity1)(nil), (*fwTestEntity2)(nil), (*fwTestEntity3)(nil), (*fwTestEntity4)(nil))
-	session := d3Orm.CreateSession()
-	repository, _ := d3Orm.CreateRepository(session, (*fwTestEntity1)(nil))
+
+	repository, _ := d3Orm.MakeSession().MakeRepository((*fwTestEntity1)(nil))
 
 	q := repository.CreateQuery()
 	_ = q.AndWhere("test_entity_1.id = ?", 1).With("d3/test/integration/relation/fwTestEntity2")

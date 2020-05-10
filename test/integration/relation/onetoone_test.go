@@ -93,8 +93,8 @@ func (o *OneToOneRelationTS) TestLazyRelation() {
 	err := d3Orm.Register((*ShopLL)(nil), (*ProfileLL)(nil), (*PhotoLL)(nil))
 	o.Assert().NoError(err)
 
-	session := d3Orm.CreateSession()
-	repository, err := d3Orm.CreateRepository(session, (*ShopLL)(nil))
+	session := d3Orm.MakeSession()
+	repository, err := session.MakeRepository((*ShopLL)(nil))
 	o.Assert().NoError(err)
 
 	entity, err := repository.FindOne(repository.CreateQuery().AndWhere("id = ?", 1))
@@ -121,8 +121,8 @@ func (o *OneToOneRelationTS) TestEagerRelation() {
 	d3Orm := orm.NewOrm(adapter.NewGoPgXAdapter(o.pgDb, &adapter.SquirrelAdapter{}))
 	_ = d3Orm.Register((*ShopEL)(nil), (*ProfileLL)(nil), (*PhotoLL)(nil))
 
-	session := d3Orm.CreateSession()
-	repository, _ := d3Orm.CreateRepository(session, (*ShopEL)(nil))
+	session := d3Orm.MakeSession()
+	repository, _ := session.MakeRepository((*ShopEL)(nil))
 	e, err := repository.FindOne(repository.CreateQuery().AndWhere("shop.id = ?", 1))
 	o.Assert().NoError(err)
 
@@ -145,8 +145,8 @@ func (o *OneToOneRelationTS) TestEagerRelationNoRelated() {
 	d3Orm := orm.NewOrm(adapter.NewGoPgXAdapter(o.pgDb, &adapter.SquirrelAdapter{}))
 	_ = d3Orm.Register((*ShopEL)(nil), (*ProfileLL)(nil), (*PhotoLL)(nil))
 
-	session := d3Orm.CreateSession()
-	repository, _ := d3Orm.CreateRepository(session, (*ShopEL)(nil))
+	session := d3Orm.MakeSession()
+	repository, _ := session.MakeRepository((*ShopEL)(nil))
 	e, _ := repository.FindOne(repository.CreateQuery().AndWhere("shop.id = ?", 2))
 
 	o.Assert().IsType(&ShopEL{}, e)
@@ -160,8 +160,8 @@ func (o *OneToOneRelationTS) TestEagerRelationNoRelated() {
 //	stormOrm := orm.NewOrm(adapter.NewGoPgAdapter(o.pgDb, &adapter.SquirrelAdapter{}))
 //	_ = stormOrm.Register((*ShopEL)(nil), (*ProfileLL)(nil), (*PhotoLL)(nil))
 //
-//	session := stormOrm.CreateSession()
-//	repository, _ := stormOrm.CreateRepository(session, (*ShopEL)(nil))
+//	session := stormOrm.MakeSession()
+//	repository, _ := stormOrm.MakeRepository(session, (*ShopEL)(nil))
 //	e, _ := repository.FindAll(query.NewQuery())
 //
 //	o.Assert().IsType( []*ShopEL{}, e)

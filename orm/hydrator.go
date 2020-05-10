@@ -176,8 +176,6 @@ func (h *Hydrator) createRelation(entity interface{}, relation d3entity.Relation
 			extractor = h.session.makeOneToManyExtractor(relatedId, rel, h.meta.RelatedMeta[rel.RelatedWith()])
 		case *d3entity.ManyToMany:
 			extractor = h.session.makeManyToManyExtractor(relatedId, rel, h.meta.RelatedMeta[rel.RelatedWith()])
-		default:
-			panic("unreachable statement")
 		}
 
 		switch rel.Type() {
