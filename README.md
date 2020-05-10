@@ -1,1 +1,1 @@
-![golangci-lint](https://github.com/godzie44/d3orm/workflows/golangci-lint/badge.svg)
+![golangci-lint](https://github.com/godzie44/d3orm/workflows/golangci-lint/badge.svg) ![tests](https://github.com/godzie44/d3orm/workflows/tests/badge.svg)
