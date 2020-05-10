@@ -129,14 +129,6 @@ func SetField(field *reflect.Value, val interface{}) {
 }
 
 func Copy(strctPtr interface{}) interface{} {
-	//val := reflect.ValueOf(strctPtr).Elem()
-	//pt := reflect.PtrTo(val.Type())
-	//pv := reflect.New(pt.Elem())
-	//
-	//pv.Elem().Set(val)
-	//
-	//return pv.Interface()
-
 	return deepcopy.Copy(strctPtr)
 }
 
