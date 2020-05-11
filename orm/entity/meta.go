@@ -52,6 +52,11 @@ func CreateMeta(mapping UserMapping) (*MetaInfo, error) {
 	for i := 0; i < eType.NumField(); i++ {
 		fieldReflection := eType.Field(i)
 
+		// skip unexported fields
+		if fieldReflection.PkgPath != "" {
+			continue
+		}
+
 		tag := parseTag(fieldReflection.Tag)
 
 		field := &FieldInfo{
