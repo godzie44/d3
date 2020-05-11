@@ -35,20 +35,11 @@ func (o *IMCacheTS) SetupSuite() {
 	)`)
 	o.Assert().NoError(err)
 
-	_, err = o.pgDb.Exec(context.Background(), `CREATE TABLE IF NOT EXISTS im_test_entity_3(
-		id integer NOT NULL,
-		data character varying(200) NOT NULL,
-		t2_id integer,
-		CONSTRAINT im_test_entity_t3_pkey PRIMARY KEY (id)
-	)`)
-	o.Assert().NoError(err)
-
 	_, err = o.pgDb.Exec(context.Background(), `
 INSERT INTO im_test_entity_1(id, data) VALUES (1, 'entity_1_data');
 INSERT INTO im_test_entity_2(id, data, t1_id) VALUES (1, 'entity_2_data_1', 1);
 INSERT INTO im_test_entity_2(id, data, t1_id) VALUES (2, 'entity_2_data_2', 1);
 INSERT INTO im_test_entity_2(id, data, t1_id) VALUES (3, 'entity_2_data_3', 1);
-INSERT INTO im_test_entity_3(id, data, t2_id) VALUES (1, 'entity_3_data', 1);
 `)
 	o.Assert().NoError(err)
 
@@ -58,22 +49,19 @@ func (o *IMCacheTS) TearDownSuite() {
 	_, err := o.pgDb.Exec(context.Background(), `
 DROP TABLE im_test_entity_1;
 DROP TABLE im_test_entity_2;
-DROP TABLE im_test_entity_3;
 `)
 	o.Assert().NoError(err)
 }
 
 type entity1 struct {
-	entity struct{}           `d3:"table_name:im_test_entity_1"` //nolint:unused,structcheck
-	Id     int32              `d3:"pk:auto"`
-	Rel    entity3.Collection `d3:"one_to_many:<target_entity:d3/tests/integration/cache/entity2,join_on:t1_id>,type:eager"`
-	Data   string
+	Id   int32              `d3:"pk:auto"`
+	Rel  entity3.Collection `d3:"one_to_many:<target_entity:d3/tests/integration/cache/entity2,join_on:t1_id>,type:eager"`
+	Data string
 }
 
 type entity2 struct {
-	entity struct{} `d3:"table_name:im_test_entity_2"` //nolint:unused,structcheck
-	Id     int32    `d3:"pk:auto"`
-	Data   string
+	Id   int32 `d3:"pk:auto"`
+	Data string
 }
 
 func TestIdentityMapCacheSuite(t *testing.T) {
@@ -83,7 +71,16 @@ func TestIdentityMapCacheSuite(t *testing.T) {
 func (o *IMCacheTS) TestNoQueryCreateForCachedEntities() {
 	wrappedDbAdapter := helpers.NewDbAdapterWithQueryCounter(adapter.NewGoPgXAdapter(o.pgDb, &adapter.SquirrelAdapter{}))
 	d3Orm := orm.NewOrm(wrappedDbAdapter)
-	_ = d3Orm.Register((*entity1)(nil), (*entity2)(nil))
+	_ = d3Orm.Register(
+		orm.Mapping{
+			Table:  "im_test_entity_1",
+			Entity: (*entity1)(nil),
+		},
+		orm.Mapping{
+			Table:  "im_test_entity_2",
+			Entity: (*entity2)(nil),
+		},
+	)
 
 	session := d3Orm.MakeSession()
 	repository, _ := session.MakeRepository((*entity1)(nil))

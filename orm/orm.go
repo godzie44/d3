@@ -16,24 +16,30 @@ func NewOrm(adapter Storage) *Orm {
 	}
 }
 
-func (o *Orm) Register(entities ...interface{}) error {
-	err := o.metaRegistry.Add(entities...)
-	if err != nil {
-		return err
+type Mapping struct {
+	Table  string
+	Entity interface{}
+}
+
+func NewMapping(tableName string, entity interface{}) Mapping {
+	return Mapping{
+		Table:  tableName,
+		Entity: entity,
+	}
+}
+
+func (o *Orm) Register(mappings ...Mapping) error {
+	ms := make([]d3Entity.UserMapping, len(mappings))
+	for i := range mappings {
+		ms[i] = d3Entity.UserMapping{
+			Entity:    mappings[i].Entity,
+			TableName: mappings[i].Table,
+		}
 	}
 
-	allDependencies := make(map[d3Entity.Name]struct{})
-	o.metaRegistry.ForEach(func(meta *d3Entity.MetaInfo) {
-		for entityName := range meta.DependencyEntities() {
-			allDependencies[entityName] = struct{}{}
-		}
-	})
-
-	for dep := range allDependencies {
-		_, err := o.metaRegistry.GetMetaByName(dep)
-		if err != nil {
-			return err
-		}
+	err := o.metaRegistry.Add(ms...)
+	if err != nil {
+		return err
 	}
 
 	return nil

@@ -27,7 +27,12 @@ func (u *UpdateTs) SetupSuite() {
 
 	u.dbAdapter = helpers.NewDbAdapterWithQueryCounter(adapter.NewGoPgXAdapter(u.pgDb, &adapter.SquirrelAdapter{}))
 	u.d3Orm = orm.NewOrm(u.dbAdapter)
-	u.NoError(u.d3Orm.Register((*Book)(nil), (*Shop)(nil), (*ShopProfile)(nil), (*Author)(nil)))
+	u.NoError(u.d3Orm.Register(
+		orm.NewMapping("book_p", (*Book)(nil)),
+		orm.NewMapping("shop_p", (*Shop)(nil)),
+		orm.NewMapping("profile_p", (*ShopProfile)(nil)),
+		orm.NewMapping("author_p", (*Author)(nil)),
+	))
 
 	u.NoError(err)
 }

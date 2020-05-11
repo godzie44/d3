@@ -2,7 +2,6 @@ package entity
 
 import (
 	d3reflect "d3/reflect"
-	"errors"
 	"reflect"
 	"regexp"
 	"strings"
@@ -35,20 +34,15 @@ type FieldInfo struct {
 	FullDbAlias    string
 }
 
-func CreateMeta(e interface{}) (*MetaInfo, error) {
-	eType, err := d3reflect.IntoStructType(reflect.TypeOf(e))
+func CreateMeta(mapping UserMapping) (*MetaInfo, error) {
+	eType, err := d3reflect.IntoStructType(reflect.TypeOf(mapping.Entity))
 	if err != nil {
 		return nil, err
 	}
 
-	tableName, err := parseEntityTableName(eType)
-	if err != nil {
-		tableName = strings.ToLower(eType.Name())
-	}
-
 	meta := &MetaInfo{
-		Tpl:         e,
-		TableName:   tableName,
+		Tpl:         mapping.Entity,
+		TableName:   mapping.TableName,
 		Fields:      make(map[string]*FieldInfo),
 		Relations:   make(map[string]Relation),
 		RelatedMeta: make(map[Name]*MetaInfo),
@@ -57,10 +51,6 @@ func CreateMeta(e interface{}) (*MetaInfo, error) {
 
 	for i := 0; i < eType.NumField(); i++ {
 		fieldReflection := eType.Field(i)
-
-		if fieldReflection.Name == "entity" {
-			continue
-		}
 
 		tag := parseTag(fieldReflection.Tag)
 
@@ -101,24 +91,6 @@ func CreateMeta(e interface{}) (*MetaInfo, error) {
 	return meta, nil
 }
 
-func parseEntityTableName(eType reflect.Type) (string, error) {
-	if metaField, ok := eType.FieldByName("entity"); ok {
-		parsedTag := parseTag(metaField.Tag)
-		if parsedTag == nil {
-			return "", errors.New("tags not found")
-		}
-
-		tableNameProp, found := parsedTag.getProperty("table_name")
-		if !found {
-			return "", errors.New("tag table_name not found")
-		}
-
-		return tableNameProp.val, nil
-	}
-
-	return "", errors.New("field entity not found")
-}
-
 var matchFirstCap = regexp.MustCompile("(.)([A-Z][a-z]+)")
 var matchAllCap = regexp.MustCompile("([a-z0-9])([A-Z])")
 
@@ -150,10 +122,6 @@ func (m *MetaInfo) DependencyEntities() map[Name]struct{} {
 	}
 
 	return dependencies
-}
-
-func (m *MetaInfo) dependenciesIsSet() bool {
-	return len(m.RelatedMeta) == len(m.DependencyEntities())
 }
 
 func (m *MetaInfo) FindRelativeMetaRecursive(entityName Name) (*MetaInfo, bool) {

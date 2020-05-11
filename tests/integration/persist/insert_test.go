@@ -27,7 +27,12 @@ func (o *PersistsTS) SetupSuite() {
 
 	o.dbAdapter = helpers.NewDbAdapterWithQueryCounter(adapter.NewGoPgXAdapter(o.pgDb, &adapter.SquirrelAdapter{}))
 	o.d3Orm = orm.NewOrm(o.dbAdapter)
-	o.NoError(o.d3Orm.Register((*Book)(nil), (*Shop)(nil), (*ShopProfile)(nil), (*Author)(nil)))
+	o.NoError(o.d3Orm.Register(
+		orm.NewMapping("book_p", (*Book)(nil)),
+		orm.NewMapping("shop_p", (*Shop)(nil)),
+		orm.NewMapping("profile_p", (*ShopProfile)(nil)),
+		orm.NewMapping("author_p", (*Author)(nil)),
+	))
 
 	o.NoError(err)
 }

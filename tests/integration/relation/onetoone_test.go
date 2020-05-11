@@ -15,6 +15,7 @@ import (
 type OneToOneRelationTS struct {
 	suite.Suite
 	pgDb *pgx.Conn
+	orm  *orm.Orm
 }
 
 func (o *OneToOneRelationTS) SetupSuite() {
@@ -51,6 +52,13 @@ INSERT INTO photo(id, data) VALUES (1, 'entity_3_data');
 `)
 	o.Assert().NoError(err)
 
+	o.orm = orm.NewOrm(adapter.NewGoPgXAdapter(o.pgDb, &adapter.SquirrelAdapter{}))
+	o.NoError(o.orm.Register(
+		orm.NewMapping("shop", (*ShopLL)(nil)),
+		orm.NewMapping("profile", (*ProfileLL)(nil)),
+		orm.NewMapping("photo", (*PhotoLL)(nil)),
+		orm.NewMapping("shop", (*ShopEL)(nil)),
+	))
 }
 
 func (o *OneToOneRelationTS) TearDownSuite() {
@@ -67,32 +75,24 @@ func TestOneToOneRunTestSuite(t *testing.T) {
 }
 
 type ShopLL struct {
-	entity  struct{}             `d3:"table_name:shop"` //nolint:unused,structcheck
 	ID      sql.NullInt32        `d3:"pk:auto"`
 	Profile entity.WrappedEntity `d3:"one_to_one:<target_entity:d3/tests/integration/relation/ProfileLL,join_on:t2_id>,type:lazy"`
 	Data    string
 }
 
 type ProfileLL struct {
-	entity struct{}             `d3:"table_name:profile"` //nolint:unused,structcheck
-	ID     int32                `d3:"pk:auto"`
-	Photo  entity.WrappedEntity `d3:"one_to_one:<target_entity:d3/tests/integration/relation/PhotoLL,join_on:t3_id,reference_on:id>,type:eager"`
-	Data   string
+	ID    int32                `d3:"pk:auto"`
+	Photo entity.WrappedEntity `d3:"one_to_one:<target_entity:d3/tests/integration/relation/PhotoLL,join_on:t3_id,reference_on:id>,type:eager"`
+	Data  string
 }
 
 type PhotoLL struct {
-	entity struct{} `d3:"table_name:photo"` //nolint:unused,structcheck
-	ID     int32    `d3:"pk:auto"`
-	Data   string
+	ID   int32 `d3:"pk:auto"`
+	Data string
 }
 
 func (o *OneToOneRelationTS) TestLazyRelation() {
-	d3Orm := orm.NewOrm(adapter.NewGoPgXAdapter(o.pgDb, &adapter.SquirrelAdapter{}))
-
-	err := d3Orm.Register((*ShopLL)(nil), (*ProfileLL)(nil), (*PhotoLL)(nil))
-	o.Assert().NoError(err)
-
-	session := d3Orm.MakeSession()
+	session := o.orm.MakeSession()
 	repository, err := session.MakeRepository((*ShopLL)(nil))
 	o.Assert().NoError(err)
 
@@ -110,17 +110,13 @@ func (o *OneToOneRelationTS) TestLazyRelation() {
 }
 
 type ShopEL struct {
-	entity  struct{}             `d3:"table_name:shop"` //nolint:unused,structcheck
 	Id      int32                `d3:"pk:auto"`
 	Profile entity.WrappedEntity `d3:"one_to_one:<target_entity:d3/tests/integration/relation/ProfileLL,join_on:t2_id,reference_on:id>,type:eager"`
 	Data    string
 }
 
 func (o *OneToOneRelationTS) TestEagerRelation() {
-	d3Orm := orm.NewOrm(adapter.NewGoPgXAdapter(o.pgDb, &adapter.SquirrelAdapter{}))
-	_ = d3Orm.Register((*ShopEL)(nil), (*ProfileLL)(nil), (*PhotoLL)(nil))
-
-	session := d3Orm.MakeSession()
+	session := o.orm.MakeSession()
 	repository, _ := session.MakeRepository((*ShopEL)(nil))
 	e, err := repository.FindOne(repository.CreateQuery().AndWhere("shop.id = ?", 1))
 	o.Assert().NoError(err)
@@ -141,10 +137,7 @@ func (o *OneToOneRelationTS) TestEagerRelation() {
 }
 
 func (o *OneToOneRelationTS) TestEagerRelationNoRelated() {
-	d3Orm := orm.NewOrm(adapter.NewGoPgXAdapter(o.pgDb, &adapter.SquirrelAdapter{}))
-	_ = d3Orm.Register((*ShopEL)(nil), (*ProfileLL)(nil), (*PhotoLL)(nil))
-
-	session := d3Orm.MakeSession()
+	session := o.orm.MakeSession()
 	repository, _ := session.MakeRepository((*ShopEL)(nil))
 	e, _ := repository.FindOne(repository.CreateQuery().AndWhere("shop.id = ?", 2))
 
@@ -154,14 +147,3 @@ func (o *OneToOneRelationTS) TestEagerRelationNoRelated() {
 
 	o.Assert().True(e.(*ShopEL).Profile.IsNil())
 }
-
-//func (o *OneToOneRelationTS)TestOneToOneEagerRelationNoRelated2() {
-//	stormOrm := orm.NewOrm(adapter.NewGoPgAdapter(o.pgDb, &adapter.SquirrelAdapter{}))
-//	_ = stormOrm.Register((*ShopEL)(nil), (*ProfileLL)(nil), (*PhotoLL)(nil))
-//
-//	session := stormOrm.MakeSession()
-//	repository, _ := stormOrm.MakeRepository(session, (*ShopEL)(nil))
-//	e, _ := repository.FindAll(query.NewQuery())
-//
-//	o.Assert().IsType( []*ShopEL{}, e)
-//}

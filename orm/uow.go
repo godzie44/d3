@@ -36,7 +36,7 @@ func NewUOW(storage Storage) *UnitOfWork {
 func (uow *UnitOfWork) registerNew(box *entity.Box) error {
 	pkVal, err := box.ExtractPk()
 	if err != nil {
-		return fmt.Errorf("while adding entity to new: %w", err)
+		return fmt.Errorf("while adding Entity to new: %w", err)
 	}
 
 	if _, exists := uow.dirtyEntities[box.GetEName()][pkVal]; exists {
@@ -55,7 +55,7 @@ func (uow *UnitOfWork) registerNew(box *entity.Box) error {
 func (uow *UnitOfWork) registerDirty(box *entity.Box) error {
 	pkVal, err := box.ExtractPk()
 	if err != nil {
-		return fmt.Errorf("while adding entity to dirty: %w", err)
+		return fmt.Errorf("while adding Entity to dirty: %w", err)
 	}
 
 	if _, exists := uow.dirtyEntities[box.GetEName()]; !exists {

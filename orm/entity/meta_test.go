@@ -8,27 +8,35 @@ import (
 )
 
 func TestCreateSimpleMeta(t *testing.T) {
-	meta, _ := CreateMeta((*testEntity)(nil))
+	meta, _ := CreateMeta(
+		UserMapping{
+			Entity: (*testEntity)(nil),
+		})
 
 	assert.Equal(t, meta.EntityName, Name("d3/orm/entity/testEntity"))
 }
 
 func TestCreateMetaFromVariousReflectionsOfOneEntity(t *testing.T) {
-	meta1, _ := CreateMeta((*testEntity)(nil))
-	meta2, _ := CreateMeta(&testEntity{})
+	meta1, _ := CreateMeta(UserMapping{
+		Entity: (*testEntity)(nil),
+	})
+	meta2, _ := CreateMeta(UserMapping{
+		Entity: &testEntity{},
+	})
 
 	//cause (*testEntity)(nil) != &testEntity{} do this
 	meta2.Tpl = meta1.Tpl
 	assert.Equal(t, meta1, meta2)
 
-	meta3, _ := CreateMeta(testEntity{})
+	meta3, _ := CreateMeta(UserMapping{
+		Entity: testEntity{},
+	})
 	meta3.Tpl = meta1.Tpl
 
 	assert.Equal(t, meta1, meta3)
 }
 
 type shop struct {
-	entity  struct{}      `d3:"table_name:shop"` //nolint:unused,structcheck
 	ID      sql.NullInt32 `d3:"pk:auto"`
 	Books   Collection    `d3:"one_to_many:<target_entity:book,join_on:shop_id>,type:lazy"`
 	Profile WrappedEntity `d3:"one_to_one:<target_entity:shopProfile,join_on:profile_id,delete:cascade>"`
@@ -36,7 +44,10 @@ type shop struct {
 }
 
 func TestCreateMetaWithRelations(t *testing.T) {
-	meta, _ := CreateMeta((*shop)(nil))
+	meta, _ := CreateMeta(UserMapping{
+		TableName: "shop",
+		Entity:    (*shop)(nil),
+	})
 
 	assert.Equal(t, Name("d3/orm/entity/shop"), meta.EntityName)
 	assert.Equal(t, "shop", meta.TableName)
@@ -76,13 +87,15 @@ func TestCreateMetaWithRelations(t *testing.T) {
 }
 
 type author struct {
-	entity struct{}      `d3:"table_name:author"` //nolint:unused,structcheck
-	ID     sql.NullInt32 `d3:"pk:manual"`
-	Name   string        `d3:"column:author_name"`
+	ID   sql.NullInt32 `d3:"pk:manual"`
+	Name string        `d3:"column:author_name"`
 }
 
 func TestCreateMetaWithFieldAlias(t *testing.T) {
-	meta, _ := CreateMeta((*author)(nil))
+	meta, _ := CreateMeta(UserMapping{
+		TableName: "author",
+		Entity:    (*author)(nil),
+	})
 
 	assert.Equal(t, FieldInfo{
 		Name:           "Name",

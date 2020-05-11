@@ -77,6 +77,7 @@ func (d *DbAdapterWithQueryCounter) ResetCounters() {
 	d.deleteCounter = 0
 	d.updateCounter = 0
 	d.insertCounter = 0
+	d.queryCounter = 0
 }
 
 type persistStoreWithCounters struct {

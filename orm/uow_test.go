@@ -12,13 +12,15 @@ import (
 )
 
 type uowTestEntity struct {
-	entity struct{} `d3:"table_name:t"` //nolint:unused,structcheck
-	Id     int      `d3:"pk:auto"`
+	Id     int `d3:"pk:auto"`
 	Field1 int
 	Field2 string
 }
 
-var testEntityMeta, _ = entity.CreateMeta((*uowTestEntity)(nil))
+var testEntityMeta, _ = entity.CreateMeta(entity.UserMapping{
+	TableName: "t",
+	Entity:    (*uowTestEntity)(nil),
+})
 
 func TestRegisterNewEntity(t *testing.T) {
 	uow := NewUOW(nil)

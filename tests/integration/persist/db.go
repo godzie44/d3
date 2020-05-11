@@ -10,7 +10,6 @@ import (
 )
 
 type Shop struct {
-	entity  struct{}             `d3:"table_name:shop_p"` //nolint:unused,structcheck
 	Id      sql.NullInt32        `d3:"pk:auto"`
 	Books   entity.Collection    `d3:"one_to_many:<target_entity:d3/tests/integration/persist/Book,join_on:shop_id,delete:nullable>,type:lazy"`
 	Profile entity.WrappedEntity `d3:"one_to_one:<target_entity:d3/tests/integration/persist/ShopProfile,join_on:profile_id,delete:cascade>,type:lazy"`
@@ -18,22 +17,19 @@ type Shop struct {
 }
 
 type ShopProfile struct {
-	entity      struct{}      `d3:"table_name:profile_p"` //nolint:unused,structcheck
 	Id          sql.NullInt32 `d3:"pk:auto"`
 	Description string
 }
 
 type Book struct {
-	entity  struct{}          `d3:"table_name:book_p"` //nolint:unused,structcheck
 	Id      sql.NullInt32     `d3:"pk:auto"`
 	Authors entity.Collection `d3:"many_to_many:<target_entity:d3/tests/integration/persist/Author,join_on:book_id,reference_on:author_id,join_table:book_author_p>,type:lazy"`
 	Name    string
 }
 
 type Author struct {
-	entity struct{}      `d3:"table_name:author_p"` //nolint:unused,structcheck
-	Id     sql.NullInt32 `d3:"pk:auto"`
-	Name   string
+	Id   sql.NullInt32 `d3:"pk:auto"`
+	Name string
 }
 
 func createSchema(db *pgx.Conn) error {

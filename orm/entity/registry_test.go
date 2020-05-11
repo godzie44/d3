@@ -12,7 +12,13 @@ type testEntity struct {
 
 func TestRegistryAdd(t *testing.T) {
 	registry := NewMetaRegistry()
-	_ = registry.Add((*testEntity)(nil), (*testEntity)(nil))
+	_ = registry.Add(
+		UserMapping{
+			Entity: (*testEntity)(nil),
+		},
+		UserMapping{
+			Entity: (*testEntity)(nil),
+		})
 
 	assert.Len(t, registry.metaMap, 1)
 }
@@ -20,7 +26,9 @@ func TestRegistryAdd(t *testing.T) {
 func TestRegistryGet(t *testing.T) {
 	registry := NewMetaRegistry()
 
-	_ = registry.Add((*testEntity)(nil))
+	_ = registry.Add(UserMapping{
+		Entity: (*testEntity)(nil),
+	})
 
 	meta, _ := registry.GetMeta((*testEntity)(nil))
 	assert.NotEmpty(t, meta)
@@ -36,7 +44,11 @@ type testEntity2 struct {
 func TestRegistryGetMetaParallel(t *testing.T) {
 	registry := NewMetaRegistry()
 
-	_ = registry.Add((*testEntity)(nil), (*testEntity2)(nil))
+	_ = registry.Add(UserMapping{
+		Entity: (*testEntity)(nil),
+	}, UserMapping{
+		Entity: (*testEntity2)(nil),
+	})
 
 	var meta1, meta2 MetaInfo
 	wg := &sync.WaitGroup{}

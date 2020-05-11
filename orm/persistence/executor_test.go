@@ -48,7 +48,7 @@ func (s *pusherStub) Insert(table string, cols []string, values []interface{}) e
 	return nil
 }
 
-func (s *pusherStub) InsertWithReturn(table string, cols []string, values []interface{}, returnCols []string, withReturned func(scanner Scanner) error) error {
+func (s *pusherStub) InsertWithReturn(table string, cols []string, values []interface{}, _ []string, withReturned func(scanner Scanner) error) error {
 	qValues := map[string]interface{}{}
 	for i, val := range values {
 		if fn, ok := val.(func() (interface{}, error)); ok {
@@ -67,7 +67,7 @@ func (s *pusherStub) InsertWithReturn(table string, cols []string, values []inte
 	return withReturned(&scannerStub{ret: []interface{}{values[0]}})
 }
 
-func (s *pusherStub) Update(table string, cols []string, values []interface{}, identityCond map[string]interface{}) error {
+func (s *pusherStub) Update(_ string, _ []string, _ []interface{}, _ map[string]interface{}) error {
 	return nil
 }
 
@@ -189,19 +189,25 @@ func TestExecuteComplexGraph(t *testing.T) {
 }
 
 type Order struct {
-	entity   struct{}             `d3:"table_name:order"` //nolint:unused,structcheck
 	Id       int                  `d3:"pk:auto"`
 	Items    entity.Collection    `d3:"one_to_many:<target_entity:d3/orm/persistence/OrderItem,join_on:order_id>,type:lazy"`
 	BestItem entity.WrappedEntity `d3:"one_to_one:<target_entity:d3/orm/persistence/OrderItem,join_on:best_item_id>,type:lazy"`
 }
 
 type OrderItem struct {
-	entity struct{} `d3:"table_name:order_item"` //nolint:unused,structcheck
-	Id     int      `d3:"pk:auto"`
+	Id int `d3:"pk:auto"`
 }
 
 func TestExecuteWithCircularReference(t *testing.T) {
-	_ = metaRegistry.Add((*Order)(nil), (*OrderItem)(nil))
+	_ = metaRegistry.Add(
+		entity.UserMapping{
+			Entity:    (*Order)(nil),
+			TableName: "order",
+		},
+		entity.UserMapping{
+			Entity:    (*OrderItem)(nil),
+			TableName: "order_item",
+		})
 
 	bestItem := &OrderItem{Id: 1}
 	orderItems := []interface{}{

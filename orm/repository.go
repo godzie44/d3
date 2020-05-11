@@ -20,7 +20,7 @@ func (r *Repository) FindOne(q *query.Query) (interface{}, error) {
 
 	el, err := d3reflect.GetFirstElementFromSlice(entities)
 	if err != nil {
-		return nil, fmt.Errorf("entity not found: %w", err)
+		return nil, fmt.Errorf("Entity not found: %w", err)
 	}
 
 	return el, nil

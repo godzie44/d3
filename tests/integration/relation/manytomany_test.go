@@ -14,6 +14,7 @@ import (
 type ManyToManyRelationTS struct {
 	suite.Suite
 	pgDb *pgx.Conn
+	orm  *orm.Orm
 }
 
 func (o *ManyToManyRelationTS) SetupSuite() {
@@ -66,6 +67,15 @@ INSERT INTO book_author(book_id, author_id) VALUES (3, 1);
 INSERT INTO author_redactor(author_id, redactor_id) VALUES (1, 1);
 `)
 	o.Assert().NoError(err)
+
+	o.orm = orm.NewOrm(adapter.NewGoPgXAdapter(o.pgDb, &adapter.SquirrelAdapter{}))
+	o.Assert().NoError(o.orm.Register(
+		orm.NewMapping("book", (*BookLL)(nil)),
+		orm.NewMapping("author", (*AuthorLL)(nil)),
+		orm.NewMapping("redactor", (*Redactor)(nil)),
+		orm.NewMapping("book", (*BookEL)(nil)),
+		orm.NewMapping("author", (*AuthorEL)(nil)),
+	))
 }
 
 func (o *ManyToManyRelationTS) TearDownSuite() {
@@ -84,24 +94,18 @@ func TestManyToManyTestSuite(t *testing.T) {
 }
 
 type BookLL struct {
-	entity  struct{}           `d3:"table_name:book"` //nolint:unused,structcheck
 	ID      int32              `d3:"pk:auto"`
 	Authors entity2.Collection `d3:"many_to_many:<target_entity:d3/tests/integration/relation/AuthorLL,join_on:book_id,reference_on:author_id,join_table:book_author>,type:lazy"`
 	Name    string
 }
 
 type AuthorLL struct {
-	entity struct{} `d3:"table_name:author"` //nolint:unused,structcheck
-	ID     int32    `d3:"pk:auto"`
-	Name   string
+	ID   int32 `d3:"pk:auto"`
+	Name string
 }
 
 func (o *ManyToManyRelationTS) TestLazyRelation() {
-	d3Orm := orm.NewOrm(adapter.NewGoPgXAdapter(o.pgDb, &adapter.SquirrelAdapter{}))
-	err := d3Orm.Register((*BookLL)(nil), (*AuthorLL)(nil), (*Redactor)(nil))
-	o.Assert().NoError(err)
-
-	session := d3Orm.MakeSession()
+	session := o.orm.MakeSession()
 	repository, err := session.MakeRepository((*BookLL)(nil))
 	o.Assert().NoError(err)
 
@@ -121,31 +125,24 @@ func (o *ManyToManyRelationTS) TestLazyRelation() {
 }
 
 type BookEL struct {
-	entity struct{}           `d3:"table_name:book"` //nolint:unused,structcheck
-	Id     int32              `d3:"pk:auto"`
-	Rel    entity2.Collection `d3:"many_to_many:<target_entity:d3/tests/integration/relation/AuthorEL,join_on:book_id,reference_on:author_id,join_table:book_author>,type:eager"`
-	Name   string
+	Id   int32              `d3:"pk:auto"`
+	Rel  entity2.Collection `d3:"many_to_many:<target_entity:d3/tests/integration/relation/AuthorEL,join_on:book_id,reference_on:author_id,join_table:book_author>,type:eager"`
+	Name string
 }
 
 type AuthorEL struct {
-	entity struct{}           `d3:"table_name:author"` //nolint:unused,structcheck
-	Id     int32              `d3:"pk:auto"`
-	Rel    entity2.Collection `d3:"many_to_many:<target_entity:d3/tests/integration/relation/Redactor,join_on:author_id,reference_on:redactor_id,join_table:author_redactor>,type:eager"`
-	Name   string
+	Id   int32              `d3:"pk:auto"`
+	Rel  entity2.Collection `d3:"many_to_many:<target_entity:d3/tests/integration/relation/Redactor,join_on:author_id,reference_on:redactor_id,join_table:author_redactor>,type:eager"`
+	Name string
 }
 
 type Redactor struct {
-	entity struct{} `d3:"table_name:redactor"` //nolint:unused,structcheck
-	Id     int32    `d3:"pk:auto"`
-	Name   string
+	Id   int32 `d3:"pk:auto"`
+	Name string
 }
 
 func (o *ManyToManyRelationTS) TestEagerRelation() {
-	d3Orm := orm.NewOrm(adapter.NewGoPgXAdapter(o.pgDb, &adapter.SquirrelAdapter{}))
-	err := d3Orm.Register((*BookEL)(nil), (*AuthorEL)(nil), (*Redactor)(nil))
-	o.Assert().NoError(err)
-
-	session := d3Orm.MakeSession()
+	session := o.orm.MakeSession()
 	repository, err := session.MakeRepository((*BookEL)(nil))
 	o.Assert().NoError(err)
 

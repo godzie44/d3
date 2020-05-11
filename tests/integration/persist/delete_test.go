@@ -26,7 +26,12 @@ func (d *DeleteTS) SetupSuite() {
 
 	d.dbAdapter = helpers.NewDbAdapterWithQueryCounter(adapter.NewGoPgXAdapter(d.pgDb, &adapter.SquirrelAdapter{}))
 	d.d3Orm = orm.NewOrm(d.dbAdapter)
-	d.NoError(d.d3Orm.Register((*Book)(nil), (*Shop)(nil), (*ShopProfile)(nil), (*Author)(nil)))
+	d.NoError(d.d3Orm.Register(
+		orm.NewMapping("book_p", (*Book)(nil)),
+		orm.NewMapping("shop_p", (*Shop)(nil)),
+		orm.NewMapping("profile_p", (*ShopProfile)(nil)),
+		orm.NewMapping("author_p", (*Author)(nil)),
+	))
 
 	d.NoError(err)
 }

@@ -14,7 +14,9 @@ import (
 
 type FetchWithRelationTS struct {
 	suite.Suite
-	pgDb *pgx.Conn
+	pgDb      *pgx.Conn
+	dbAdapter *helpers.DbAdapterWithQueryCounter
+	orm       *orm.Orm
 }
 
 func (o *FetchWithRelationTS) SetupSuite() {
@@ -75,6 +77,14 @@ INSERT INTO t3_t4(t3_id, t4_id) VALUES (2, 2);
 `)
 	o.Assert().NoError(err)
 
+	o.dbAdapter = helpers.NewDbAdapterWithQueryCounter(adapter.NewGoPgXAdapter(o.pgDb, &adapter.SquirrelAdapter{}))
+	o.orm = orm.NewOrm(o.dbAdapter)
+	o.Assert().NoError(o.orm.Register(
+		orm.NewMapping("test_entity_1", (*fwTestEntity1)(nil)),
+		orm.NewMapping("test_entity_2", (*fwTestEntity2)(nil)),
+		orm.NewMapping("test_entity_3", (*fwTestEntity3)(nil)),
+		orm.NewMapping("test_entity_4", (*fwTestEntity4)(nil)),
+	))
 }
 
 func (o *FetchWithRelationTS) TearDownSuite() {
@@ -88,30 +98,28 @@ DROP TABLE t3_t4;
 	o.Assert().NoError(err)
 }
 
+func (o *FetchWithRelationTS) TearDownTest() {
+	o.dbAdapter.ResetCounters()
+}
+
 func TestFetchWithRelationTestSuite(t *testing.T) {
 	suite.Run(t, new(FetchWithRelationTS))
 }
 
 type fwTestEntity1 struct {
-	entity struct{}               `d3:"table_name:test_entity_1"` //nolint:unused,structcheck
-	Id     int32                  `d3:"pk:auto"`
-	Rel    d3entity.WrappedEntity `d3:"one_to_one:<target_entity:d3/tests/integration/relation/fwTestEntity2,join_on:e2_id,reference_on:id>,type:lazy"`
-	Data   string
+	Id   int32                  `d3:"pk:auto"`
+	Rel  d3entity.WrappedEntity `d3:"one_to_one:<target_entity:d3/tests/integration/relation/fwTestEntity2,join_on:e2_id,reference_on:id>,type:lazy"`
+	Data string
 }
 
 type fwTestEntity2 struct {
-	entity struct{}            `d3:"table_name:test_entity_2"` //nolint:unused,structcheck
-	Id     int32               `d3:"pk:auto"`
-	Rel    d3entity.Collection `d3:"one_to_many:<target_entity:d3/tests/integration/relation/fwTestEntity3,join_on:e2_id>,type:lazy"`
-	Data   string
+	Id   int32               `d3:"pk:auto"`
+	Rel  d3entity.Collection `d3:"one_to_many:<target_entity:d3/tests/integration/relation/fwTestEntity3,join_on:e2_id>,type:lazy"`
+	Data string
 }
 
 func (o *FetchWithRelationTS) TestFetchWithOneToOne() {
-	wrappedDbAdapter := helpers.NewDbAdapterWithQueryCounter(adapter.NewGoPgXAdapter(o.pgDb, &adapter.SquirrelAdapter{}))
-	d3Orm := orm.NewOrm(wrappedDbAdapter)
-
-	_ = d3Orm.Register((*fwTestEntity1)(nil), (*fwTestEntity2)(nil), (*fwTestEntity3)(nil), (*fwTestEntity4)(nil))
-	session := d3Orm.MakeSession()
+	session := o.orm.MakeSession()
 	repository, _ := session.MakeRepository((*fwTestEntity1)(nil))
 	q := repository.CreateQuery()
 	_ = q.AndWhere("test_entity_1.id = ?", 1).With("d3/tests/integration/relation/fwTestEntity2")
@@ -127,22 +135,17 @@ func (o *FetchWithRelationTS) TestFetchWithOneToOne() {
 		[]interface{}{relatedEntity.Id, relatedEntity.Data},
 	)
 
-	o.Assert().Equal(1, wrappedDbAdapter.QueryCounter())
+	o.Assert().Equal(1, o.dbAdapter.QueryCounter())
 }
 
 type fwTestEntity3 struct {
-	entity struct{}            `d3:"table_name:test_entity_3"` //nolint:unused,structcheck
-	Id     int32               `d3:"pk:auto"`
-	Rel    d3entity.Collection `d3:"many_to_many:<target_entity:d3/tests/integration/relation/fwTestEntity4,join_on:t3_id,reference_on:t4_id,join_table:t3_t4>,type:lazy"`
-	Data   string
+	Id   int32               `d3:"pk:auto"`
+	Rel  d3entity.Collection `d3:"many_to_many:<target_entity:d3/tests/integration/relation/fwTestEntity4,join_on:t3_id,reference_on:t4_id,join_table:t3_t4>,type:lazy"`
+	Data string
 }
 
 func (o *FetchWithRelationTS) TestFetchWithOneToMany() {
-	wrappedDbAdapter := helpers.NewDbAdapterWithQueryCounter(adapter.NewGoPgXAdapter(o.pgDb, &adapter.SquirrelAdapter{}))
-	d3Orm := orm.NewOrm(wrappedDbAdapter)
-
-	_ = d3Orm.Register((*fwTestEntity1)(nil), (*fwTestEntity2)(nil), (*fwTestEntity3)(nil), (*fwTestEntity4)(nil))
-	session := d3Orm.MakeSession()
+	session := o.orm.MakeSession()
 	repository, _ := session.MakeRepository((*fwTestEntity2)(nil))
 	q := repository.CreateQuery()
 	_ = q.AndWhere("test_entity_2.id = ?", 1).With("d3/tests/integration/relation/fwTestEntity3")
@@ -159,22 +162,16 @@ func (o *FetchWithRelationTS) TestFetchWithOneToMany() {
 		[]string{relatedEntities.Get(0).(*fwTestEntity3).Data, relatedEntities.Get(1).(*fwTestEntity3).Data, relatedEntities.Get(2).(*fwTestEntity3).Data},
 	)
 
-	o.Assert().Equal(1, wrappedDbAdapter.QueryCounter())
+	o.Assert().Equal(1, o.dbAdapter.QueryCounter())
 }
 
 type fwTestEntity4 struct {
-	entity struct{} `d3:"table_name:test_entity_4"` //nolint:unused,structcheck
-	Id     int32    `d3:"pk:auto"`
-	Data   string
+	Id   int32 `d3:"pk:auto"`
+	Data string
 }
 
 func (o *FetchWithRelationTS) TestFetchWithManyToMany() {
-	wrappedDbAdapter := helpers.NewDbAdapterWithQueryCounter(adapter.NewGoPgXAdapter(o.pgDb, &adapter.SquirrelAdapter{}))
-	d3Orm := orm.NewOrm(wrappedDbAdapter)
-
-	_ = d3Orm.Register((*fwTestEntity1)(nil), (*fwTestEntity2)(nil), (*fwTestEntity3)(nil), (*fwTestEntity4)(nil))
-
-	repository, _ := d3Orm.MakeSession().MakeRepository((*fwTestEntity3)(nil))
+	repository, _ := o.orm.MakeSession().MakeRepository((*fwTestEntity3)(nil))
 
 	q := repository.CreateQuery()
 	_ = q.AndWhere("test_entity_3.id = ?", 1).With("d3/tests/integration/relation/fwTestEntity4")
@@ -191,16 +188,11 @@ func (o *FetchWithRelationTS) TestFetchWithManyToMany() {
 		[]string{relatedEntities.Get(0).(*fwTestEntity4).Data, relatedEntities.Get(1).(*fwTestEntity4).Data},
 	)
 
-	o.Assert().Equal(1, wrappedDbAdapter.QueryCounter())
+	o.Assert().Equal(1, o.dbAdapter.QueryCounter())
 }
 
 func (o *FetchWithRelationTS) TestFetchFullGraph() {
-	wrappedDbAdapter := helpers.NewDbAdapterWithQueryCounter(adapter.NewGoPgXAdapter(o.pgDb, &adapter.SquirrelAdapter{}))
-	d3Orm := orm.NewOrm(wrappedDbAdapter)
-
-	_ = d3Orm.Register((*fwTestEntity1)(nil), (*fwTestEntity2)(nil), (*fwTestEntity3)(nil), (*fwTestEntity4)(nil))
-
-	repository, _ := d3Orm.MakeSession().MakeRepository((*fwTestEntity1)(nil))
+	repository, _ := o.orm.MakeSession().MakeRepository((*fwTestEntity1)(nil))
 
 	q := repository.CreateQuery()
 	_ = q.AndWhere("test_entity_1.id = ?", 1).With("d3/tests/integration/relation/fwTestEntity2")
@@ -215,5 +207,5 @@ func (o *FetchWithRelationTS) TestFetchFullGraph() {
 	o.Assert().Equal(3, entity2.Rel.Count())
 	o.Assert().Equal(3, entity2.Rel.Get(0).(*fwTestEntity3).Rel.Count()+entity2.Rel.Get(1).(*fwTestEntity3).Rel.Count()+entity2.Rel.Get(2).(*fwTestEntity3).Rel.Count())
 
-	o.Assert().Equal(1, wrappedDbAdapter.QueryCounter())
+	o.Assert().Equal(1, o.dbAdapter.QueryCounter())
 }

@@ -15,7 +15,9 @@ import (
 
 type PersistsCircularTS struct {
 	suite.Suite
-	pgDb *pgx.Conn
+	pgDb      *pgx.Conn
+	dbAdapter *helpers.DbAdapterWithQueryCounter
+	orm       *orm.Orm
 }
 
 func (o *PersistsCircularTS) SetupSuite() {
@@ -49,6 +51,14 @@ func (o *PersistsCircularTS) SetupSuite() {
 		seller_id integer NOT NULL
 	)`)
 	o.Assert().NoError(err)
+
+	o.dbAdapter = helpers.NewDbAdapterWithQueryCounter(adapter.NewGoPgXAdapter(o.pgDb, &adapter.SquirrelAdapter{}))
+	o.orm = orm.NewOrm(o.dbAdapter)
+	o.Assert().NoError(o.orm.Register(
+		orm.NewMapping("shop_c", (*ShopCirc)(nil)),
+		orm.NewMapping("profile_c", (*ShopProfileCirc)(nil)),
+		orm.NewMapping("seller_c", (*SellerCirc)(nil)),
+	))
 }
 
 func (o *PersistsCircularTS) TearDownSuite() {
@@ -69,6 +79,7 @@ delete from seller_c;
 delete from known_shop_seller_c;
 `)
 	o.Assert().NoError(err)
+	o.dbAdapter.ResetCounters()
 }
 
 func TestPersistsCircularSuite(t *testing.T) {
@@ -76,9 +87,8 @@ func TestPersistsCircularSuite(t *testing.T) {
 }
 
 type ShopCirc struct {
-	entity struct{}      `d3:"table_name:shop_c"` //nolint:unused,structcheck
-	Id     sql.NullInt32 `d3:"pk:auto"`
-	Name   string
+	Id   sql.NullInt32 `d3:"pk:auto"`
+	Name string
 
 	Profile entity.WrappedEntity `d3:"one_to_one:<target_entity:d3/tests/integration/persist/ShopProfileCirc,join_on:profile_id>,type:lazy"`
 
@@ -90,27 +100,21 @@ type ShopCirc struct {
 }
 
 type ShopProfileCirc struct {
-	entity      struct{}             `d3:"table_name:profile_c"` //nolint:unused,structcheck
 	Id          sql.NullInt32        `d3:"pk:auto"`
 	Shop        entity.WrappedEntity `d3:"one_to_one:<target_entity:d3/tests/integration/persist/ShopCirc,join_on:shop_id>,type:lazy"`
 	Description string
 }
 
 type SellerCirc struct {
-	entity struct{}      `d3:"table_name:seller_c"` //nolint:unused,structcheck
-	Id     sql.NullInt32 `d3:"pk:auto"`
-	Name   string
+	Id   sql.NullInt32 `d3:"pk:auto"`
+	Name string
 
 	CurrentShop entity.WrappedEntity `d3:"one_to_one:<target_entity:d3/tests/integration/persist/ShopCirc,join_on:shop_id>,type:lazy"`
 	KnownShops  entity.Collection    `d3:"many_to_many:<target_entity:d3/tests/integration/persist/ShopCirc,join_on:seller_id,reference_on:shop_id,join_table:known_shop_seller_c>,type:lazy"`
 }
 
 func (o *PersistsCircularTS) TestInsertWithCircularRef() {
-	dbAdapter := helpers.NewDbAdapterWithQueryCounter(adapter.NewGoPgXAdapter(o.pgDb, &adapter.SquirrelAdapter{}))
-	d3Orm := orm.NewOrm(dbAdapter)
-	o.Assert().NoError(d3Orm.Register((*ShopCirc)(nil), (*ShopProfileCirc)(nil), (*SellerCirc)(nil)))
-
-	session := d3Orm.MakeSession()
+	session := o.orm.MakeSession()
 	repository, _ := session.MakeRepository((*ShopCirc)(nil))
 
 	profile := &ShopProfileCirc{
@@ -128,8 +132,8 @@ func (o *PersistsCircularTS) TestInsertWithCircularRef() {
 	o.Assert().NotEqual(0, shop.Id.Int32)
 	o.Assert().NotEqual(0, shop.Profile.Unwrap().(*ShopProfileCirc).Id.Int32)
 
-	o.Assert().Equal(2, dbAdapter.InsertCounter())
-	o.Assert().Equal(1, dbAdapter.UpdateCounter())
+	o.Assert().Equal(2, o.dbAdapter.InsertCounter())
+	o.Assert().Equal(1, o.dbAdapter.UpdateCounter())
 
 	helpers.NewPgTester(o.T(), o.pgDb).
 		SeeOne("SELECT * FROM shop_c WHERE name='shop' AND profile_id IS NOT NULL").
@@ -137,11 +141,7 @@ func (o *PersistsCircularTS) TestInsertWithCircularRef() {
 }
 
 func (o *PersistsCircularTS) TestInsertWithSelfCircularRef() {
-	dbAdapter := helpers.NewDbAdapterWithQueryCounter(adapter.NewGoPgXAdapter(o.pgDb, &adapter.SquirrelAdapter{}))
-	d3Orm := orm.NewOrm(dbAdapter)
-	_ = d3Orm.Register((*ShopCirc)(nil), (*ShopProfileCirc)(nil), (*SellerCirc)(nil))
-
-	session := d3Orm.MakeSession()
+	session := o.orm.MakeSession()
 	repository, _ := session.MakeRepository((*ShopCirc)(nil))
 
 	shop1 := &ShopCirc{Name: "shop1"}
@@ -169,8 +169,8 @@ func (o *PersistsCircularTS) TestInsertWithSelfCircularRef() {
 	o.Assert().NotEqual(0, shop4.Id.Int32)
 	o.Assert().NotEqual(0, shop5.Id.Int32)
 
-	o.Assert().Equal(5, dbAdapter.InsertCounter())
-	o.Assert().Equal(2, dbAdapter.UpdateCounter())
+	o.Assert().Equal(5, o.dbAdapter.InsertCounter())
+	o.Assert().Equal(2, o.dbAdapter.UpdateCounter())
 
 	helpers.NewPgTester(o.T(), o.pgDb).
 		SeeTwo("SELECT * FROM shop_c WHERE name in ('shop1', 'shop2') AND friend_id IS NOT NULL").
@@ -178,11 +178,7 @@ func (o *PersistsCircularTS) TestInsertWithSelfCircularRef() {
 }
 
 func (o *PersistsCircularTS) TestBigCircularReferenceGraph() {
-	dbAdapter := helpers.NewDbAdapterWithQueryCounter(adapter.NewGoPgXAdapter(o.pgDb, &adapter.SquirrelAdapter{}))
-	d3Orm := orm.NewOrm(dbAdapter)
-	_ = d3Orm.Register((*ShopCirc)(nil), (*ShopProfileCirc)(nil), (*SellerCirc)(nil))
-
-	session := d3Orm.MakeSession()
+	session := o.orm.MakeSession()
 	repository, _ := session.MakeRepository((*ShopCirc)(nil))
 
 	shop1 := &ShopCirc{Name: "shop1"}
@@ -211,8 +207,8 @@ func (o *PersistsCircularTS) TestBigCircularReferenceGraph() {
 
 	o.Assert().NoError(session.Flush())
 
-	o.Assert().Equal(9, dbAdapter.InsertCounter())
-	o.Assert().Equal(4, dbAdapter.UpdateCounter())
+	o.Assert().Equal(9, o.dbAdapter.InsertCounter())
+	o.Assert().Equal(4, o.dbAdapter.UpdateCounter())
 
 	helpers.NewPgTester(o.T(), o.pgDb).
 		SeeTwo("SELECT * FROM shop_c WHERE name in ('shop1', 'shop2') AND top_seller_id IS NOT NULL").
