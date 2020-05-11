@@ -1,4 +1,4 @@
-![golangci-lint](https://github.com/godzie44/d3orm/workflows/golangci-lint/badge.svg) ![tests](https://github.com/godzie44/d3orm/workflows/tests/badge.svg) [![Coverage Status](https://coveralls.io/repos/github/godzie44/d3orm/badge.svg)](https://coveralls.io/github/godzie44/d3orm)
+![golangci-lint](https://github.com/godzie44/d3orm/workflows/golangci-lint/badge.svg) ![tests](https://github.com/godzie44/d3orm/workflows/tests/badge.svg) [![Coverage Status](https://coveralls.io/repos/github/godzie44/d3orm/badge.svg?branch=master)](https://coveralls.io/github/godzie44/d3orm?branch=master)
 
 # D3: GO ORM FOR DDD
 
