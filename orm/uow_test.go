@@ -7,12 +7,13 @@ import (
 	"errors"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
+	"reflect"
 	"testing"
 	//"testing"
 )
 
 type uowTestEntity struct {
-	Id     int `d3:"pk:auto"`
+	Id     int `d3:"pk:manual"`
 	Field1 int
 	Field2 string
 }
@@ -91,6 +92,12 @@ func TestTransactionCommitIfNoError(t *testing.T) {
 
 type storageMock struct {
 	mock.Mock
+}
+
+func (s *storageMock) MakeRawDataMapper() RawDataMapper {
+	return func(data interface{}, into reflect.Kind) interface{} {
+		return data
+	}
 }
 
 func (s *storageMock) MakePusher(_ Transaction) persistence.Pusher {

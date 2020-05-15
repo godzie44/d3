@@ -2,6 +2,8 @@ package orm
 
 import (
 	d3Entity "d3/orm/entity"
+	"d3/orm/schema"
+	"fmt"
 )
 
 type Orm struct {
@@ -47,4 +49,12 @@ func (o *Orm) Register(mappings ...Mapping) error {
 
 func (o *Orm) MakeSession() *Session {
 	return NewSession(o.PgDb, NewUOW(o.PgDb), o.metaRegistry)
+}
+
+func (o *Orm) GenerateSchema() (string, error) {
+	generator, adapterCanGenerateSchema := o.PgDb.(schema.StorageSchemaGenerator)
+	if !adapterCanGenerateSchema {
+		return "", fmt.Errorf("adapter unsupport schema generation")
+	}
+	return schema.NewBuilder(generator).Build(o.metaRegistry)
 }

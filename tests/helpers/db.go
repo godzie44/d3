@@ -16,6 +16,10 @@ type DbAdapterWithQueryCounter struct {
 	dbAdapter                                                 orm.Storage
 }
 
+func (d *DbAdapterWithQueryCounter) MakeRawDataMapper() orm.RawDataMapper {
+	return d.dbAdapter.MakeRawDataMapper()
+}
+
 func (d *DbAdapterWithQueryCounter) MakePusher(tx orm.Transaction) persistence.Pusher {
 	ps := d.dbAdapter.MakePusher(tx)
 	return &persistStoreWithCounters{
@@ -136,5 +140,16 @@ func (p *pgTester) See(count int, sql string, args ...interface{}) *pgTester {
 	assert.NoError(p.t, err)
 
 	assert.Equal(p.t, count, cnt)
+	return p
+}
+
+func (p *pgTester) SeeTable(tableName string) *pgTester {
+	var tableSql = "SELECT * FROM pg_tables where schemaname = 'public' and tablename=$1"
+
+	var cnt int
+	err := p.conn.QueryRow(context.Background(), fmt.Sprintf("SELECT count(*) cnt FROM (%s) t", tableSql), tableName).Scan(&cnt)
+	assert.NoError(p.t, err)
+
+	assert.GreaterOrEqual(p.t, cnt, 1)
 	return p
 }

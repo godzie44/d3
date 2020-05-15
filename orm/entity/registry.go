@@ -78,11 +78,16 @@ func (r *MetaRegistry) GetMetaByName(entityName Name) (MetaInfo, error) {
 	return MetaInfo{}, fmt.Errorf("unregister entity: %s", entityName)
 }
 
-func (r *MetaRegistry) ForEach(f func(meta *MetaInfo)) {
+func (r *MetaRegistry) ForEach(f func(meta *MetaInfo) error) error {
 	r.mutex.Lock()
 	defer r.mutex.Unlock()
 
 	for _, meta := range r.metaMap {
-		f(meta)
+		err := f(meta)
+		if err != nil {
+			return err
+		}
 	}
+
+	return nil
 }

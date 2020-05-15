@@ -29,7 +29,7 @@ type MetaInfo struct {
 
 type FieldInfo struct {
 	Name           string
-	associatedType reflect.Type
+	AssociatedType reflect.Type
 	DbAlias        string
 	FullDbAlias    string
 }
@@ -61,7 +61,7 @@ func CreateMeta(mapping UserMapping) (*MetaInfo, error) {
 
 		field := &FieldInfo{
 			Name:           fieldReflection.Name,
-			associatedType: fieldReflection.Type,
+			AssociatedType: fieldReflection.Type,
 			DbAlias:        extractDbFieldAlias(tag, fieldReflection.Name),
 		}
 

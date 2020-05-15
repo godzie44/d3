@@ -54,7 +54,7 @@ func (m *MetaInfo) CreateKeyTpl() *KeyTpl {
 		projection: make([]interface{}, 0, 1),
 	}
 
-	value := reflect.New(reflect.PtrTo(m.Pk.Field.associatedType).Elem())
+	value := reflect.New(reflect.PtrTo(m.Pk.Field.AssociatedType).Elem())
 
 	tpl.values = append(tpl.values, value.Elem())
 	tpl.projection = append(tpl.projection, value.Elem().Addr().Interface())

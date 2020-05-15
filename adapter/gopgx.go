@@ -3,11 +3,14 @@ package adapter
 import (
 	"context"
 	"d3/orm"
+	"d3/orm/entity"
 	"d3/orm/persistence"
 	"d3/orm/query"
+	"d3/orm/schema"
 	"errors"
 	"fmt"
 	"github.com/jackc/pgx/v4"
+	"reflect"
 	"strconv"
 	"strings"
 )
@@ -17,6 +20,105 @@ type GoPgXAdapter struct {
 	queryAdapter *SquirrelAdapter
 
 	beforeQCallback, afterQCallback []func(query string, args ...interface{})
+}
+
+func (g *GoPgXAdapter) MakeRawDataMapper() orm.RawDataMapper {
+	return func(data interface{}, into reflect.Kind) interface{} {
+		switch into {
+		case reflect.Int:
+			return int(data.(int64))
+		default:
+			return data
+		}
+	}
+}
+
+func (g *GoPgXAdapter) CreateTableSql(name string, columns map[string]schema.ColumnType, pkColumns []string, pkStrategy entity.PkStrategy) string {
+	isPkCol := func(colName string) bool {
+		for _, pkCol := range pkColumns {
+			if pkCol == colName {
+				return true
+			}
+		}
+		return false
+	}
+
+	sql := strings.Builder{}
+	sql.WriteString("CREATE TABLE IF NOT EXISTS " + name)
+	sql.WriteString("(\n")
+
+	var colsSql []string
+	for col, ctype := range columns {
+		colSql := strings.Builder{}
+		colSql.WriteString(col)
+		colSql.WriteRune(' ')
+
+		switch ctype {
+		case schema.Bool:
+			colSql.WriteString("BOOLEAN NOT NULL")
+		case schema.Int:
+			if isPkCol(col) && pkStrategy == entity.Auto {
+				colSql.WriteString("BIGSERIAL")
+			} else {
+				colSql.WriteString("BIGINT NOT NULL")
+			}
+		case schema.Int32:
+			if isPkCol(col) && pkStrategy == entity.Auto {
+				colSql.WriteString("SERIAL")
+			} else {
+				colSql.WriteString("INTEGER NOT NULL")
+			}
+		case schema.Int64:
+			if isPkCol(col) && pkStrategy == entity.Auto {
+				colSql.WriteString("BIGSERIAL")
+			} else {
+				colSql.WriteString("BIGINT NOT NULL")
+			}
+		case schema.Float32:
+			colSql.WriteString("REAL NOT NULL")
+		case schema.Float64:
+			colSql.WriteString("DOUBLE PRECISION NOT NULL")
+		case schema.String:
+			colSql.WriteString("TEXT NOT NULL")
+		case schema.Time:
+			colSql.WriteString("TIMESTAMP WITH TIME ZONE NOT NULL")
+		case schema.NullBool:
+			colSql.WriteString("BOOLEAN")
+		case schema.NullInt64:
+			if isPkCol(col) && pkStrategy == entity.Auto {
+				colSql.WriteString("BIGSERIAL")
+			} else {
+				colSql.WriteString("BIGINT")
+			}
+		case schema.NullInt32:
+			if isPkCol(col) && pkStrategy == entity.Auto {
+				colSql.WriteString("SERIAL")
+			} else {
+				colSql.WriteString("INTEGER")
+			}
+		case schema.NullFloat64:
+			colSql.WriteString("DOUBLE PRECISION")
+		case schema.NullString:
+			colSql.WriteString("TEXT")
+		case schema.NullTime:
+			colSql.WriteString("TIMESTAMP WITH TIME ZONE")
+		}
+
+		if isPkCol(col) {
+			colSql.WriteRune(' ')
+			colSql.WriteString("PRIMARY KEY")
+		}
+
+		colsSql = append(colsSql, colSql.String())
+	}
+	sql.WriteString(strings.Join(colsSql, ",\n"))
+	sql.WriteString("\n);\n")
+
+	return sql.String()
+}
+
+func (g *GoPgXAdapter) CreateIndexSql(name string, table string, columns ...string) string {
+	panic("implement me")
 }
 
 func NewGoPgXAdapter(pgDb *pgx.Conn, queryAdapter *SquirrelAdapter) *GoPgXAdapter {

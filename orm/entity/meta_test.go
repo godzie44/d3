@@ -53,7 +53,7 @@ func TestCreateMetaWithRelations(t *testing.T) {
 	assert.Equal(t, "shop", meta.TableName)
 	assert.Equal(t, FieldInfo{
 		Name:           "ID",
-		associatedType: reflect.TypeOf(sql.NullInt32{}),
+		AssociatedType: reflect.TypeOf(sql.NullInt32{}),
 		DbAlias:        "id",
 		FullDbAlias:    "shop.id",
 	}, *meta.Pk.Field)
@@ -80,7 +80,7 @@ func TestCreateMetaWithRelations(t *testing.T) {
 
 	assert.Equal(t, FieldInfo{
 		Name:           "Name",
-		associatedType: reflect.TypeOf(""),
+		AssociatedType: reflect.TypeOf(""),
 		DbAlias:        "name",
 		FullDbAlias:    "shop.name",
 	}, *meta.Fields["Name"])
@@ -99,7 +99,7 @@ func TestCreateMetaWithFieldAlias(t *testing.T) {
 
 	assert.Equal(t, FieldInfo{
 		Name:           "Name",
-		associatedType: reflect.TypeOf(""),
+		AssociatedType: reflect.TypeOf(""),
 		DbAlias:        "author_name",
 		FullDbAlias:    "author.author_name",
 	}, *meta.Fields["Name"])
