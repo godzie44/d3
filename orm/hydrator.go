@@ -162,8 +162,8 @@ func (h *Hydrator) createRelation(entity interface{}, relation d3entity.Relation
 
 		switch rel.Type() {
 		case d3entity.Lazy:
-			return d3entity.NewLazyWrappedEntity(extractor, func(entity d3entity.WrappedEntity) {
-				h.session.uow.updateFieldOfOriginal(d3entity.NewBox(entity, h.meta), relation.Field().Name, entity)
+			return d3entity.NewLazyWrappedEntity(extractor, func(we d3entity.WrappedEntity) {
+				h.session.uow.updateFieldOfOriginal(d3entity.NewBox(entity, h.meta), relation.Field().Name, we)
 			}), nil
 		case d3entity.Eager:
 			return d3entity.NewWrapEntity(extractor()), nil
