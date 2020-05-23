@@ -14,8 +14,42 @@ type Shop struct {
 	Profile entity.WrappedEntity `d3:"one_to_one:<target_entity:d3/orm/persistence/ShopProfile,join_on:profile_id>,type:lazy"`
 }
 
+func (s *Shop) D3Token() entity.MetaToken {
+	return entity.MetaToken{
+		Tools: entity.InternalTools{
+			FieldExtractor: func(s interface{}, name string) (interface{}, error) {
+				switch name {
+				case "ID":
+					return s.(*Shop).ID, nil
+				case "Books":
+					return s.(*Shop).Books, nil
+				case "Profile":
+					return s.(*Shop).Profile, nil
+				default:
+					return nil, nil
+				}
+			},
+		},
+	}
+}
+
 type ShopProfile struct {
 	ID int `d3:"pk:manual"`
+}
+
+func (s *ShopProfile) D3Token() entity.MetaToken {
+	return entity.MetaToken{
+		Tools: entity.InternalTools{
+			FieldExtractor: func(s interface{}, name string) (interface{}, error) {
+				switch name {
+				case "ID":
+					return s.(*ShopProfile).ID, nil
+				default:
+					return nil, nil
+				}
+			},
+		},
+	}
 }
 
 type Book struct {
@@ -23,8 +57,40 @@ type Book struct {
 	Authors entity.Collection `d3:"many_to_many:<target_entity:d3/orm/persistence/Author,join_on:book_id,reference_on:author_id,join_table:book_author>,type:lazy"`
 }
 
+func (b *Book) D3Token() entity.MetaToken {
+	return entity.MetaToken{
+		Tools: entity.InternalTools{
+			FieldExtractor: func(s interface{}, name string) (interface{}, error) {
+				switch name {
+				case "ID":
+					return s.(*Book).ID, nil
+				case "Authors":
+					return s.(*Book).Authors, nil
+				default:
+					return nil, nil
+				}
+			},
+		},
+	}
+}
+
 type Author struct {
 	ID int `d3:"pk:manual"`
+}
+
+func (a *Author) D3Token() entity.MetaToken {
+	return entity.MetaToken{
+		Tools: entity.InternalTools{
+			FieldExtractor: func(s interface{}, name string) (interface{}, error) {
+				switch name {
+				case "ID":
+					return s.(*Author).ID, nil
+				default:
+					return nil, nil
+				}
+			},
+		},
+	}
 }
 
 func initMetaRegistry() *entity.MetaRegistry {
@@ -354,14 +420,50 @@ func TestDoublePersistNotAffectGraph(t *testing.T) {
 }
 
 type User struct {
-	Id           int                  `d3:"pk:auto"`
+	ID           int                  `d3:"pk:auto"`
 	Avatar       entity.WrappedEntity `d3:"one_to_one:<target_entity:d3/orm/persistence/Photo,join_on:avatar_id>,type:lazy"`
 	GoodPhotos   entity.Collection    `d3:"one_to_many:<target_entity:d3/orm/persistence/Photo,join_on:user_good_id>,type:lazy"`
 	PrettyPhotos entity.Collection    `d3:"one_to_many:<target_entity:d3/orm/persistence/Photo,join_on:user_pretty_id>,type:lazy"`
 }
 
+func (u *User) D3Token() entity.MetaToken {
+	return entity.MetaToken{
+		Tools: entity.InternalTools{
+			FieldExtractor: func(s interface{}, name string) (interface{}, error) {
+				switch name {
+				case "ID":
+					return s.(*User).ID, nil
+				case "Avatar":
+					return s.(*User).Avatar, nil
+				case "GoodPhotos":
+					return s.(*User).GoodPhotos, nil
+				case "PrettyPhotos":
+					return s.(*User).PrettyPhotos, nil
+				default:
+					return nil, nil
+				}
+			},
+		},
+	}
+}
+
 type Photo struct {
-	Id int `d3:"pk:auto"`
+	ID int `d3:"pk:auto"`
+}
+
+func (p *Photo) D3Token() entity.MetaToken {
+	return entity.MetaToken{
+		Tools: entity.InternalTools{
+			FieldExtractor: func(s interface{}, name string) (interface{}, error) {
+				switch name {
+				case "ID":
+					return s.(*Photo).ID, nil
+				default:
+					return nil, nil
+				}
+			},
+		},
+	}
 }
 
 func TestGenerationTwoOneToManyOnOneEntity(t *testing.T) {
@@ -375,11 +477,11 @@ func TestGenerationTwoOneToManyOnOneEntity(t *testing.T) {
 		})
 	meta, _ := metaRegistry.GetMeta((*User)(nil))
 
-	goodAndPrettyPhoto := &Photo{Id: 1}
+	goodAndPrettyPhoto := &Photo{ID: 1}
 
-	user := &User{Id: 1,
-		GoodPhotos:   entity.NewCollection([]interface{}{goodAndPrettyPhoto, &Photo{Id: 2}}),
-		PrettyPhotos: entity.NewCollection([]interface{}{goodAndPrettyPhoto, &Photo{Id: 3}}),
+	user := &User{ID: 1,
+		GoodPhotos:   entity.NewCollection([]interface{}{goodAndPrettyPhoto, &Photo{ID: 2}}),
+		PrettyPhotos: entity.NewCollection([]interface{}{goodAndPrettyPhoto, &Photo{ID: 3}}),
 	}
 
 	graph := createNewGraph()
@@ -419,9 +521,9 @@ func TestNoCycleOneToOneToMany(t *testing.T) {
 		})
 	meta, _ := metaRegistry.GetMeta((*User)(nil))
 
-	goodAndAvatarPhoto := &Photo{Id: 1}
+	goodAndAvatarPhoto := &Photo{ID: 1}
 
-	user := &User{Id: 1,
+	user := &User{ID: 1,
 		GoodPhotos: entity.NewCollection([]interface{}{goodAndAvatarPhoto}),
 		Avatar:     entity.NewWrapEntity(goodAndAvatarPhoto),
 	}
@@ -435,9 +537,28 @@ func TestNoCycleOneToOneToMany(t *testing.T) {
 }
 
 type BookCirc struct {
-	Id         int                  `d3:"pk:auto"`
+	ID         int                  `d3:"pk:auto"`
 	Authors    entity.Collection    `d3:"many_to_many:<target_entity:d3/orm/persistence/Author,join_on:book_id,reference_on:author_id,join_table:book_author>,type:lazy"`
 	MainAuthor entity.WrappedEntity `d3:"one_to_one:<target_entity:d3/orm/persistence/Author,join_on:m_author_id>,type:lazy"`
+}
+
+func (b *BookCirc) D3Token() entity.MetaToken {
+	return entity.MetaToken{
+		Tools: entity.InternalTools{
+			FieldExtractor: func(s interface{}, name string) (interface{}, error) {
+				switch name {
+				case "ID":
+					return s.(*BookCirc).ID, nil
+				case "Authors":
+					return s.(*BookCirc).Authors, nil
+				case "MainAuthor":
+					return s.(*BookCirc).MainAuthor, nil
+				default:
+					return nil, nil
+				}
+			},
+		},
+	}
 }
 
 func TestNoCycleManyToManyToOne(t *testing.T) {
@@ -453,7 +574,7 @@ func TestNoCycleManyToManyToOne(t *testing.T) {
 
 	mainAuthor := &Author{ID: 1}
 	book := &BookCirc{
-		Id: 1,
+		ID: 1,
 		Authors: entity.NewCollection([]interface{}{
 			mainAuthor, &Author{ID: 2},
 		}),
@@ -471,20 +592,75 @@ func TestNoCycleManyToManyToOne(t *testing.T) {
 }
 
 type shopCirc struct {
-	Id      sql.NullInt32        `d3:"pk:auto"`
+	ID      sql.NullInt32        `d3:"pk:auto"`
 	Profile entity.WrappedEntity `d3:"one_to_one:<target_entity:d3/orm/persistence/shopProfileCirc,join_on:profile_id>"`
 	Sellers entity.Collection    `d3:"one_to_many:<target_entity:d3/orm/persistence/sellerCirc,join_on:shop_id>"`
 	Name    string
 }
 
+func (s *shopCirc) D3Token() entity.MetaToken {
+	return entity.MetaToken{
+		Tools: entity.InternalTools{
+			FieldExtractor: func(s interface{}, name string) (interface{}, error) {
+				switch name {
+				case "ID":
+					return s.(*shopCirc).ID, nil
+				case "Profile":
+					return s.(*shopCirc).Profile, nil
+				case "Sellers":
+					return s.(*shopCirc).Sellers, nil
+				case "Name":
+					return s.(*shopCirc).Name, nil
+				default:
+					return nil, nil
+				}
+			},
+		},
+	}
+}
+
 type shopProfileCirc struct {
-	Id   sql.NullInt32        `d3:"pk:auto"`
+	ID   sql.NullInt32        `d3:"pk:auto"`
 	Shop entity.WrappedEntity `d3:"one_to_one:<target_entity:d3/orm/persistence/shopCirc,join_on:shop_id>"`
 }
 
+func (s *shopProfileCirc) D3Token() entity.MetaToken {
+	return entity.MetaToken{
+		Tools: entity.InternalTools{
+			FieldExtractor: func(s interface{}, name string) (interface{}, error) {
+				switch name {
+				case "ID":
+					return s.(*shopProfileCirc).ID, nil
+				case "Shop":
+					return s.(*shopProfileCirc).Shop, nil
+				default:
+					return nil, nil
+				}
+			},
+		},
+	}
+}
+
 type sellerCirc struct {
-	Id   sql.NullInt32        `d3:"pk:auto"`
+	ID   sql.NullInt32        `d3:"pk:auto"`
 	Shop entity.WrappedEntity `d3:"one_to_one:<target_entity:d3/orm/persistence/shopCirc,join_on:shop_id>"`
+}
+
+func (s *sellerCirc) D3Token() entity.MetaToken {
+	return entity.MetaToken{
+		Tools: entity.InternalTools{
+			FieldExtractor: func(s interface{}, name string) (interface{}, error) {
+				switch name {
+				case "ID":
+					return s.(*sellerCirc).ID, nil
+				case "Shop":
+					return s.(*sellerCirc).Shop, nil
+				default:
+					return nil, nil
+				}
+			},
+		},
+	}
 }
 
 func TestNoCycleOneToOne(t *testing.T) {
@@ -541,11 +717,11 @@ func TestNoCycleOneToMany(t *testing.T) {
 	seller2 := &sellerCirc{}
 	seller3 := &sellerCirc{}
 	shop1 := &shopCirc{
-		Id:      sql.NullInt32{Int32: 1, Valid: true},
+		ID:      sql.NullInt32{Int32: 1, Valid: true},
 		Sellers: entity.NewCollection([]interface{}{seller1}),
 	}
 	shop2 := &shopCirc{
-		Id:      sql.NullInt32{Int32: 2, Valid: true},
+		ID:      sql.NullInt32{Int32: 2, Valid: true},
 		Sellers: entity.NewCollection([]interface{}{seller2, seller3}),
 	}
 	seller1.Shop = entity.NewWrapEntity(shop1)

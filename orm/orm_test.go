@@ -1,6 +1,7 @@
 package orm
 
 import (
+	"d3/orm/entity"
 	"github.com/stretchr/testify/assert"
 	"testing"
 )
@@ -10,8 +11,16 @@ type testEntity1 struct {
 	Rel interface{} `d3:"one_to_one:<target_entity:d3/orm/testEntity2>"`
 }
 
+func (t *testEntity1) D3Token() entity.MetaToken {
+	return entity.MetaToken{}
+}
+
 type testEntity2 struct {
 	Id int `d3:"pk:auto"`
+}
+
+func (t *testEntity2) D3Token() entity.MetaToken {
+	return entity.MetaToken{}
 }
 
 func TestRegisterEntities(t *testing.T) {

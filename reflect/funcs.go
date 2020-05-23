@@ -68,24 +68,6 @@ func FullName(t reflect.Type) string {
 	}
 }
 
-func ExtractStructField(strctPtr interface{}, fieldName string) (interface{}, error) {
-	elPtr := reflect.ValueOf(strctPtr)
-	if elPtr.Kind() != reflect.Ptr {
-		return nil, fmt.Errorf("entity value must be pointer")
-	}
-
-	if elPtr.Elem().Kind() != reflect.Struct {
-		return nil, fmt.Errorf("entity pointer not link to struct")
-	}
-
-	field := elPtr.Elem().FieldByName(fieldName)
-	if !field.IsValid() {
-		return nil, fmt.Errorf("invalid field: %s", fieldName)
-	}
-
-	return field.Interface(), nil
-}
-
 var scannerType = reflect.TypeOf((*sql.Scanner)(nil)).Elem()
 
 func SetFields(strctPtr interface{}, fields map[string]interface{}) error {

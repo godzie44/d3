@@ -100,14 +100,16 @@ func TestExecuteSimpleGraph(t *testing.T) {
 	testPusher := &pusherStub{}
 	executor := NewExecutor(testPusher, func(act CompositeAction) {})
 
-	meta, _ := metaRegistry.GetMeta((*Shop)(nil))
+	meta, err := metaRegistry.GetMeta((*Shop)(nil))
+	assert.NoError(t, err)
+
 	shop := &Shop{ID: 1, Profile: entity.NewWrapEntity(&ShopProfile{ID: 1})}
 
 	graph := createNewGraph()
 
 	_ = graph.ProcessEntity(entity.NewBox(shop, &meta))
 
-	err := executor.Exec(graph)
+	err = executor.Exec(graph)
 	assert.NoError(t, err)
 
 	testPusher.assertQueryAfter(t, queryStub{
@@ -189,13 +191,47 @@ func TestExecuteComplexGraph(t *testing.T) {
 }
 
 type Order struct {
-	Id       int                  `d3:"pk:auto"`
+	ID       int                  `d3:"pk:auto"`
 	Items    entity.Collection    `d3:"one_to_many:<target_entity:d3/orm/persistence/OrderItem,join_on:order_id>,type:lazy"`
 	BestItem entity.WrappedEntity `d3:"one_to_one:<target_entity:d3/orm/persistence/OrderItem,join_on:best_item_id>,type:lazy"`
 }
 
+func (o *Order) D3Token() entity.MetaToken {
+	return entity.MetaToken{
+		Tools: entity.InternalTools{
+			FieldExtractor: func(s interface{}, name string) (interface{}, error) {
+				switch name {
+				case "ID":
+					return s.(*Order).ID, nil
+				case "Items":
+					return s.(*Order).Items, nil
+				case "BestItem":
+					return s.(*Order).BestItem, nil
+				default:
+					return nil, nil
+				}
+			},
+		},
+	}
+}
+
 type OrderItem struct {
-	Id int `d3:"pk:auto"`
+	ID int `d3:"pk:auto"`
+}
+
+func (o *OrderItem) D3Token() entity.MetaToken {
+	return entity.MetaToken{
+		Tools: entity.InternalTools{
+			FieldExtractor: func(s interface{}, name string) (interface{}, error) {
+				switch name {
+				case "ID":
+					return s.(*OrderItem).ID, nil
+				default:
+					return nil, nil
+				}
+			},
+		},
+	}
 }
 
 func TestExecuteWithCircularReference(t *testing.T) {
@@ -209,14 +245,14 @@ func TestExecuteWithCircularReference(t *testing.T) {
 			TableName: "order_item",
 		})
 
-	bestItem := &OrderItem{Id: 1}
+	bestItem := &OrderItem{ID: 1}
 	orderItems := []interface{}{
 		bestItem,
-		&OrderItem{Id: 2},
+		&OrderItem{ID: 2},
 	}
 
 	order := &Order{
-		Id:       1,
+		ID:       1,
 		Items:    entity.NewCollection(orderItems),
 		BestItem: entity.NewWrapEntity(bestItem),
 	}

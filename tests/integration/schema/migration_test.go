@@ -1,4 +1,4 @@
-package shema
+package schema
 
 import (
 	"context"

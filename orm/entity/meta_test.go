@@ -27,13 +27,6 @@ func TestCreateMetaFromVariousReflectionsOfOneEntity(t *testing.T) {
 	//cause (*testEntity)(nil) != &testEntity{} do this
 	meta2.Tpl = meta1.Tpl
 	assert.Equal(t, meta1, meta2)
-
-	meta3, _ := CreateMeta(UserMapping{
-		Entity: testEntity{},
-	})
-	meta3.Tpl = meta1.Tpl
-
-	assert.Equal(t, meta1, meta3)
 }
 
 type shop struct {
@@ -43,11 +36,16 @@ type shop struct {
 	Name    string
 }
 
+func (s *shop) D3Token() MetaToken {
+	return MetaToken{}
+}
+
 func TestCreateMetaWithRelations(t *testing.T) {
-	meta, _ := CreateMeta(UserMapping{
+	meta, err := CreateMeta(UserMapping{
 		TableName: "shop",
 		Entity:    (*shop)(nil),
 	})
+	assert.NoError(t, err)
 
 	assert.Equal(t, Name("d3/orm/entity/shop"), meta.EntityName)
 	assert.Equal(t, "shop", meta.TableName)
@@ -89,6 +87,10 @@ func TestCreateMetaWithRelations(t *testing.T) {
 type author struct {
 	ID   sql.NullInt32 `d3:"pk:manual"`
 	Name string        `d3:"column:author_name"`
+}
+
+func (a *author) D3Token() MetaToken {
+	return MetaToken{}
 }
 
 func TestCreateMetaWithFieldAlias(t *testing.T) {

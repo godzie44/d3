@@ -11,9 +11,43 @@ type imTestEntity1 struct {
 	Data string
 }
 
+func (i *imTestEntity1) D3Token() entity.MetaToken {
+	return entity.MetaToken{
+		Tools: entity.InternalTools{
+			FieldExtractor: func(s interface{}, name string) (interface{}, error) {
+				switch name {
+				case "ID":
+					return s.(*imTestEntity1).ID, nil
+				case "Data":
+					return s.(*imTestEntity1).Data, nil
+				default:
+					return nil, nil
+				}
+			},
+		},
+	}
+}
+
 type imTestEntity2 struct {
 	ID   int64 `d3:"pk:auto"`
 	Data string
+}
+
+func (i *imTestEntity2) D3Token() entity.MetaToken {
+	return entity.MetaToken{
+		Tools: entity.InternalTools{
+			FieldExtractor: func(s interface{}, name string) (interface{}, error) {
+				switch name {
+				case "ID":
+					return s.(*imTestEntity2).ID, nil
+				case "Data":
+					return s.(*imTestEntity2).Data, nil
+				default:
+					return nil, nil
+				}
+			},
+		},
+	}
 }
 
 func TestPutEntities(t *testing.T) {

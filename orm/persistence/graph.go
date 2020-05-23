@@ -216,14 +216,14 @@ func (p *PersistGraph) processBox(box *persistBox) error {
 }
 
 func (p *PersistGraph) persistOneToOneRel(ownerBox *persistBox, relation *d3entity.OneToOne) error {
-	relatedEntity, err := relation.Extract(ownerBox.Entity)
+	relatedEntity, err := relation.Extract(ownerBox.Box)
 	if err != nil {
 		return err
 	}
 
 	var origRelatedEntity d3entity.WrappedEntity = d3entity.NewWrapEntity(nil)
 	if ownerBox.original != nil {
-		origRelatedEntity, err = relation.Extract(ownerBox.original)
+		origRelatedEntity, err = relation.Extract(d3entity.NewBox(ownerBox.original, ownerBox.Meta))
 		if err != nil {
 			return err
 		}
@@ -266,7 +266,7 @@ func (p *PersistGraph) persistOneToOneRel(ownerBox *persistBox, relation *d3enti
 }
 
 func (p *PersistGraph) persistOneToManyRel(ownerBox *persistBox, relation *d3entity.OneToMany) error {
-	newCollection, err := relation.ExtractCollection(ownerBox.Entity)
+	newCollection, err := relation.ExtractCollection(ownerBox.Box)
 	if err != nil {
 		return err
 	}
@@ -274,7 +274,7 @@ func (p *PersistGraph) persistOneToManyRel(ownerBox *persistBox, relation *d3ent
 
 	origRelatedEntities := make(map[interface{}]struct{})
 	if ownerBox.original != nil {
-		origCollection, err := relation.ExtractCollection(ownerBox.original)
+		origCollection, err := relation.ExtractCollection(d3entity.NewBox(ownerBox.original, ownerBox.Meta))
 		if err != nil {
 			return err
 		}
@@ -319,7 +319,7 @@ func (p *PersistGraph) persistOneToManyRel(ownerBox *persistBox, relation *d3ent
 }
 
 func (p *PersistGraph) persistManyToManyRel(ownerBox *persistBox, relation *d3entity.ManyToMany) error {
-	newCollection, err := relation.ExtractCollection(ownerBox.Entity)
+	newCollection, err := relation.ExtractCollection(ownerBox.Box)
 	if err != nil {
 		return err
 	}
@@ -327,7 +327,7 @@ func (p *PersistGraph) persistManyToManyRel(ownerBox *persistBox, relation *d3en
 
 	origRelatedEntities := make(map[interface{}]struct{})
 	if ownerBox.original != nil {
-		origCollection, err := relation.ExtractCollection(ownerBox.original)
+		origCollection, err := relation.ExtractCollection(d3entity.NewBox(ownerBox.original, ownerBox.Meta))
 		if err != nil {
 			return err
 		}
@@ -388,10 +388,11 @@ func extractSimpleFields(box *persistBox) ([]*actionField, error) {
 			continue
 		}
 
-		val, err := reflect.ExtractStructField(box.Entity, field.Name)
+		val, err := box.Meta.FieldExtractor(box.Entity, field.Name)
 		if err != nil {
 			return nil, err
 		}
+
 		fields = append(fields, ActionField(field.DbAlias, val))
 	}
 
@@ -467,7 +468,7 @@ func (p *PersistGraph) deleteOneToOneRel(ownerBox *persistBox, relation *d3entit
 	case d3entity.None, d3entity.Nullable:
 		return nil
 	case d3entity.Cascade:
-		relatedEntity, err := relation.Extract(ownerBox.Entity)
+		relatedEntity, err := relation.Extract(ownerBox.Box)
 		if err != nil {
 			return err
 		}
@@ -497,7 +498,7 @@ func (p *PersistGraph) deleteOneToManyRel(ownerBox *persistBox, relation *d3enti
 		ownerBox.action.addChild(updAction)
 	case d3entity.Cascade:
 		relatedMeta := ownerBox.GetRelatedMeta(relation.RelatedWith())
-		relatedCollection, err := relation.ExtractCollection(ownerBox.Entity)
+		relatedCollection, err := relation.ExtractCollection(ownerBox.Box)
 		if err != nil {
 			return err
 		}
@@ -524,7 +525,7 @@ func (p *PersistGraph) deleteManyToManyRel(ownerBox *persistBox, relation *d3ent
 		return nil
 	case d3entity.Cascade:
 		relatedMeta := ownerBox.GetRelatedMeta(relation.RelatedWith())
-		relatedCollection, err := relation.ExtractCollection(ownerBox.Entity)
+		relatedCollection, err := relation.ExtractCollection(ownerBox.Box)
 		if err != nil {
 			return err
 		}

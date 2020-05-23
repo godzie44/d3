@@ -3,7 +3,6 @@ package schema
 import (
 	"d3/orm/entity"
 	"database/sql"
-	"fmt"
 	"github.com/stretchr/testify/assert"
 	"reflect"
 	"testing"
@@ -79,9 +78,17 @@ type shop struct {
 	Name    string
 }
 
+func (s *shop) D3Token() entity.MetaToken {
+	return entity.MetaToken{}
+}
+
 type profile struct {
 	UUID        string `d3:"pk:manual"`
 	Description string
+}
+
+func (p *profile) D3Token() entity.MetaToken {
+	return entity.MetaToken{}
 }
 
 type book struct {
@@ -90,9 +97,17 @@ type book struct {
 	Name    string
 }
 
+func (b *book) D3Token() entity.MetaToken {
+	return entity.MetaToken{}
+}
+
 type author struct {
 	Id   sql.NullInt32 `d3:"pk:auto"`
 	Name string
+}
+
+func (a *author) D3Token() entity.MetaToken {
+	return entity.MetaToken{}
 }
 
 func TestCreateTables(t *testing.T) {
@@ -149,5 +164,4 @@ func TestCreateTables(t *testing.T) {
 		columns:   map[string]ColumnType{"book_id": Int32, "author_id": Int32},
 		pkColumns: nil,
 	}, commands["book_author"])
-	fmt.Println(commands)
 }

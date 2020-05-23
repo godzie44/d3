@@ -2,6 +2,7 @@ package entity
 
 import (
 	d3reflect "d3/reflect"
+	"fmt"
 	"reflect"
 	"regexp"
 	"strings"
@@ -15,6 +16,23 @@ const (
 	Manual
 )
 
+type InternalTools struct {
+	FieldExtractor FieldExtractor
+	Instantiator   interface{}
+}
+
+type MetaToken struct {
+	Tools     InternalTools
+	Tpl       interface{}
+	TableName string
+}
+
+type D3Entity interface {
+	D3Token() MetaToken
+}
+
+type FieldExtractor func(s interface{}, name string) (interface{}, error)
+
 type MetaInfo struct {
 	Tpl        interface{}
 	EntityName Name
@@ -24,7 +42,8 @@ type MetaInfo struct {
 	Fields    map[string]*FieldInfo
 	Pk        *pk
 
-	RelatedMeta map[Name]*MetaInfo
+	RelatedMeta    map[Name]*MetaInfo
+	FieldExtractor FieldExtractor
 }
 
 type FieldInfo struct {
@@ -40,13 +59,18 @@ func CreateMeta(mapping UserMapping) (*MetaInfo, error) {
 		return nil, err
 	}
 
+	if _, hasToken := mapping.Entity.(D3Entity); !hasToken {
+		return nil, fmt.Errorf("entity %s must implement D3Entity interface (use codegeneration instead)", eType.Name())
+	}
+
 	meta := &MetaInfo{
-		Tpl:         mapping.Entity,
-		TableName:   mapping.TableName,
-		Fields:      make(map[string]*FieldInfo),
-		Relations:   make(map[string]Relation),
-		RelatedMeta: make(map[Name]*MetaInfo),
-		EntityName:  Name(d3reflect.FullName(eType)),
+		Tpl:            mapping.Entity,
+		TableName:      mapping.TableName,
+		Fields:         make(map[string]*FieldInfo),
+		Relations:      make(map[string]Relation),
+		RelatedMeta:    make(map[Name]*MetaInfo),
+		EntityName:     Name(d3reflect.FullName(eType)),
+		FieldExtractor: mapping.Entity.(D3Entity).D3Token().Tools.FieldExtractor,
 	}
 
 	for i := 0; i < eType.NumField(); i++ {

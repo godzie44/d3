@@ -1,4 +1,4 @@
-package shema
+package schema
 
 import (
 	"context"
@@ -11,24 +11,6 @@ import (
 	"testing"
 	"time"
 )
-
-type allTypeStruct struct {
-	ID               sql.NullInt32 `d3:"pk:auto"`
-	BoolField        bool
-	IntField         int
-	Int32Field       int32
-	Int64Field       int64
-	Float32Field     float32
-	Float64Field     float64
-	StringField      string
-	TimeField        time.Time
-	NullBoolField    sql.NullBool
-	NullI32Field     sql.NullInt32
-	NullI64Field     sql.NullInt64
-	NullFloat64Field sql.NullFloat64
-	NullStringField  sql.NullString
-	NullTimeField    sql.NullTime
-}
 
 func TestTypeConversion(t *testing.T) {
 	pgDb, d3orm := initDb(t)

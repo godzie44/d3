@@ -1,7 +1,6 @@
 package entity
 
 import (
-	"d3/reflect"
 	"errors"
 )
 
@@ -113,8 +112,8 @@ func (o *OneToMany) fillFromTag(tag *parsedTag) {
 	o.ReferenceColumn = prop.getSubPropVal("reference_on")
 }
 
-func (o *OneToMany) ExtractCollection(owner interface{}) (Collection, error) {
-	val, err := reflect.ExtractStructField(owner, o.Field().Name)
+func (o *OneToMany) ExtractCollection(ownerBox *Box) (Collection, error) {
+	val, err := ownerBox.Meta.FieldExtractor(ownerBox.Entity, o.Field().Name)
 	if err != nil {
 		return nil, err
 	}
@@ -154,8 +153,8 @@ func (o *OneToOne) fillFromTag(tag *parsedTag) {
 	o.ReferenceColumn = prop.getSubPropVal("reference_on")
 }
 
-func (o *OneToOne) Extract(owner interface{}) (WrappedEntity, error) {
-	val, err := reflect.ExtractStructField(owner, o.Field().Name)
+func (o *OneToOne) Extract(ownerBox *Box) (WrappedEntity, error) {
+	val, err := ownerBox.Meta.FieldExtractor(ownerBox.Entity, o.Field().Name)
 	if err != nil {
 		return nil, err
 	}
@@ -198,8 +197,8 @@ func (m *ManyToMany) fillFromTag(tag *parsedTag) {
 	m.JoinTable = prop.getSubPropVal("join_table")
 }
 
-func (m *ManyToMany) ExtractCollection(owner interface{}) (Collection, error) {
-	val, err := reflect.ExtractStructField(owner, m.Field().Name)
+func (m *ManyToMany) ExtractCollection(ownerBox *Box) (Collection, error) {
+	val, err := ownerBox.Meta.FieldExtractor(ownerBox.Entity, m.Field().Name)
 	if err != nil {
 		return nil, err
 	}

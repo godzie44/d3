@@ -3,34 +3,9 @@ package persist
 import (
 	"context"
 	"d3/orm"
-	"d3/orm/entity"
-	"database/sql"
 	"github.com/jackc/pgx/v4"
 	"github.com/stretchr/testify/assert"
 )
-
-type Shop struct {
-	Id      sql.NullInt32        `d3:"pk:auto"`
-	Books   entity.Collection    `d3:"one_to_many:<target_entity:d3/tests/integration/persist/Book,join_on:shop_id,delete:nullable>,type:lazy"`
-	Profile entity.WrappedEntity `d3:"one_to_one:<target_entity:d3/tests/integration/persist/ShopProfile,join_on:profile_id,delete:cascade>,type:lazy"`
-	Name    string
-}
-
-type ShopProfile struct {
-	Id          sql.NullInt32 `d3:"pk:auto"`
-	Description string
-}
-
-type Book struct {
-	Id      sql.NullInt32     `d3:"pk:auto"`
-	Authors entity.Collection `d3:"many_to_many:<target_entity:d3/tests/integration/persist/Author,join_on:book_id,reference_on:author_id,join_table:book_author_p>,type:lazy"`
-	Name    string
-}
-
-type Author struct {
-	Id   sql.NullInt32 `d3:"pk:auto"`
-	Name string
-}
 
 func createSchema(db *pgx.Conn) error {
 	_, err := db.Exec(context.Background(), `CREATE TABLE IF NOT EXISTS shop_p(
