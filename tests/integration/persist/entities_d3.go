@@ -10,12 +10,13 @@ func (s *Shop) D3Token() entity.MetaToken {
 		Tpl:       (*Shop)(nil),
 		TableName: "",
 		Tools: entity.InternalTools{
-			FieldExtractor: s.__d3_createFieldExtractor(),
+			FieldExtractor: s.__d3_makeFieldExtractor(),
+			Instantiator:   s.__d3_makeInstantiator(),
 		},
 	}
 }
 
-func (s *Shop) __d3_createFieldExtractor() entity.FieldExtractor {
+func (s *Shop) __d3_makeFieldExtractor() entity.FieldExtractor {
 	return func(s interface{}, name string) (interface{}, error) {
 		sTyped, ok := s.(*Shop)
 		if !ok {
@@ -42,17 +43,24 @@ func (s *Shop) __d3_createFieldExtractor() entity.FieldExtractor {
 	}
 }
 
+func (s *Shop) __d3_makeInstantiator() entity.Instantiator {
+	return func() interface{} {
+		return &Shop{}
+	}
+}
+
 func (s *ShopProfile) D3Token() entity.MetaToken {
 	return entity.MetaToken{
 		Tpl:       (*ShopProfile)(nil),
 		TableName: "",
 		Tools: entity.InternalTools{
-			FieldExtractor: s.__d3_createFieldExtractor(),
+			FieldExtractor: s.__d3_makeFieldExtractor(),
+			Instantiator:   s.__d3_makeInstantiator(),
 		},
 	}
 }
 
-func (s *ShopProfile) __d3_createFieldExtractor() entity.FieldExtractor {
+func (s *ShopProfile) __d3_makeFieldExtractor() entity.FieldExtractor {
 	return func(s interface{}, name string) (interface{}, error) {
 		sTyped, ok := s.(*ShopProfile)
 		if !ok {
@@ -73,17 +81,24 @@ func (s *ShopProfile) __d3_createFieldExtractor() entity.FieldExtractor {
 	}
 }
 
+func (s *ShopProfile) __d3_makeInstantiator() entity.Instantiator {
+	return func() interface{} {
+		return &ShopProfile{}
+	}
+}
+
 func (b *Book) D3Token() entity.MetaToken {
 	return entity.MetaToken{
 		Tpl:       (*Book)(nil),
 		TableName: "",
 		Tools: entity.InternalTools{
-			FieldExtractor: b.__d3_createFieldExtractor(),
+			FieldExtractor: b.__d3_makeFieldExtractor(),
+			Instantiator:   b.__d3_makeInstantiator(),
 		},
 	}
 }
 
-func (b *Book) __d3_createFieldExtractor() entity.FieldExtractor {
+func (b *Book) __d3_makeFieldExtractor() entity.FieldExtractor {
 	return func(s interface{}, name string) (interface{}, error) {
 		sTyped, ok := s.(*Book)
 		if !ok {
@@ -107,17 +122,24 @@ func (b *Book) __d3_createFieldExtractor() entity.FieldExtractor {
 	}
 }
 
+func (b *Book) __d3_makeInstantiator() entity.Instantiator {
+	return func() interface{} {
+		return &Book{}
+	}
+}
+
 func (a *Author) D3Token() entity.MetaToken {
 	return entity.MetaToken{
 		Tpl:       (*Author)(nil),
 		TableName: "",
 		Tools: entity.InternalTools{
-			FieldExtractor: a.__d3_createFieldExtractor(),
+			FieldExtractor: a.__d3_makeFieldExtractor(),
+			Instantiator:   a.__d3_makeInstantiator(),
 		},
 	}
 }
 
-func (a *Author) __d3_createFieldExtractor() entity.FieldExtractor {
+func (a *Author) __d3_makeFieldExtractor() entity.FieldExtractor {
 	return func(s interface{}, name string) (interface{}, error) {
 		sTyped, ok := s.(*Author)
 		if !ok {
@@ -135,5 +157,11 @@ func (a *Author) __d3_createFieldExtractor() entity.FieldExtractor {
 		default:
 			return nil, fmt.Errorf("field %s not found", name)
 		}
+	}
+}
+
+func (a *Author) __d3_makeInstantiator() entity.Instantiator {
+	return func() interface{} {
+		return &Author{}
 	}
 }

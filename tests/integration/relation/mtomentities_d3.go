@@ -10,12 +10,13 @@ func (b *BookLL) D3Token() entity.MetaToken {
 		Tpl:       (*BookLL)(nil),
 		TableName: "",
 		Tools: entity.InternalTools{
-			FieldExtractor: b.__d3_createFieldExtractor(),
+			FieldExtractor: b.__d3_makeFieldExtractor(),
+			Instantiator:   b.__d3_makeInstantiator(),
 		},
 	}
 }
 
-func (b *BookLL) __d3_createFieldExtractor() entity.FieldExtractor {
+func (b *BookLL) __d3_makeFieldExtractor() entity.FieldExtractor {
 	return func(s interface{}, name string) (interface{}, error) {
 		sTyped, ok := s.(*BookLL)
 		if !ok {
@@ -39,17 +40,24 @@ func (b *BookLL) __d3_createFieldExtractor() entity.FieldExtractor {
 	}
 }
 
+func (b *BookLL) __d3_makeInstantiator() entity.Instantiator {
+	return func() interface{} {
+		return &BookLL{}
+	}
+}
+
 func (a *AuthorLL) D3Token() entity.MetaToken {
 	return entity.MetaToken{
 		Tpl:       (*AuthorLL)(nil),
 		TableName: "",
 		Tools: entity.InternalTools{
-			FieldExtractor: a.__d3_createFieldExtractor(),
+			FieldExtractor: a.__d3_makeFieldExtractor(),
+			Instantiator:   a.__d3_makeInstantiator(),
 		},
 	}
 }
 
-func (a *AuthorLL) __d3_createFieldExtractor() entity.FieldExtractor {
+func (a *AuthorLL) __d3_makeFieldExtractor() entity.FieldExtractor {
 	return func(s interface{}, name string) (interface{}, error) {
 		sTyped, ok := s.(*AuthorLL)
 		if !ok {
@@ -70,17 +78,24 @@ func (a *AuthorLL) __d3_createFieldExtractor() entity.FieldExtractor {
 	}
 }
 
+func (a *AuthorLL) __d3_makeInstantiator() entity.Instantiator {
+	return func() interface{} {
+		return &AuthorLL{}
+	}
+}
+
 func (b *BookEL) D3Token() entity.MetaToken {
 	return entity.MetaToken{
 		Tpl:       (*BookEL)(nil),
 		TableName: "",
 		Tools: entity.InternalTools{
-			FieldExtractor: b.__d3_createFieldExtractor(),
+			FieldExtractor: b.__d3_makeFieldExtractor(),
+			Instantiator:   b.__d3_makeInstantiator(),
 		},
 	}
 }
 
-func (b *BookEL) __d3_createFieldExtractor() entity.FieldExtractor {
+func (b *BookEL) __d3_makeFieldExtractor() entity.FieldExtractor {
 	return func(s interface{}, name string) (interface{}, error) {
 		sTyped, ok := s.(*BookEL)
 		if !ok {
@@ -104,17 +119,24 @@ func (b *BookEL) __d3_createFieldExtractor() entity.FieldExtractor {
 	}
 }
 
+func (b *BookEL) __d3_makeInstantiator() entity.Instantiator {
+	return func() interface{} {
+		return &BookEL{}
+	}
+}
+
 func (a *AuthorEL) D3Token() entity.MetaToken {
 	return entity.MetaToken{
 		Tpl:       (*AuthorEL)(nil),
 		TableName: "",
 		Tools: entity.InternalTools{
-			FieldExtractor: a.__d3_createFieldExtractor(),
+			FieldExtractor: a.__d3_makeFieldExtractor(),
+			Instantiator:   a.__d3_makeInstantiator(),
 		},
 	}
 }
 
-func (a *AuthorEL) __d3_createFieldExtractor() entity.FieldExtractor {
+func (a *AuthorEL) __d3_makeFieldExtractor() entity.FieldExtractor {
 	return func(s interface{}, name string) (interface{}, error) {
 		sTyped, ok := s.(*AuthorEL)
 		if !ok {
@@ -138,17 +160,24 @@ func (a *AuthorEL) __d3_createFieldExtractor() entity.FieldExtractor {
 	}
 }
 
+func (a *AuthorEL) __d3_makeInstantiator() entity.Instantiator {
+	return func() interface{} {
+		return &AuthorEL{}
+	}
+}
+
 func (r *Redactor) D3Token() entity.MetaToken {
 	return entity.MetaToken{
 		Tpl:       (*Redactor)(nil),
 		TableName: "",
 		Tools: entity.InternalTools{
-			FieldExtractor: r.__d3_createFieldExtractor(),
+			FieldExtractor: r.__d3_makeFieldExtractor(),
+			Instantiator:   r.__d3_makeInstantiator(),
 		},
 	}
 }
 
-func (r *Redactor) __d3_createFieldExtractor() entity.FieldExtractor {
+func (r *Redactor) __d3_makeFieldExtractor() entity.FieldExtractor {
 	return func(s interface{}, name string) (interface{}, error) {
 		sTyped, ok := s.(*Redactor)
 		if !ok {
@@ -166,5 +195,11 @@ func (r *Redactor) __d3_createFieldExtractor() entity.FieldExtractor {
 		default:
 			return nil, fmt.Errorf("field %s not found", name)
 		}
+	}
+}
+
+func (r *Redactor) __d3_makeInstantiator() entity.Instantiator {
+	return func() interface{} {
+		return &Redactor{}
 	}
 }

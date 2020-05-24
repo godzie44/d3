@@ -9,12 +9,13 @@ import (
 )
 
 type CodeGenerator struct {
-	out        io.Writer
-	extractGen *extractor
+	out             io.Writer
+	extractGen      *extractor
+	instantiatorGen *instantiator
 }
 
 func NewGenerator(out io.Writer) *CodeGenerator {
-	return &CodeGenerator{out: out, extractGen: &extractor{out: out}}
+	return &CodeGenerator{out: out, extractGen: &extractor{out: out}, instantiatorGen: &instantiator{out: out}}
 }
 
 func (r *CodeGenerator) WritePreamble() {
@@ -42,7 +43,8 @@ func ({{.receiver}} *{{.entity}}) D3Token() entity.MetaToken {
 		Tpl: (*{{.entity}})(nil),
 		TableName: "",
 		Tools: entity.InternalTools{
-			FieldExtractor: {{.receiver}}.__d3_createFieldExtractor(),
+			FieldExtractor: {{.receiver}}.__d3_makeFieldExtractor(),
+			Instantiator: {{.receiver}}.__d3_makeInstantiator(),
 		},
 	}
 }
@@ -51,9 +53,10 @@ func ({{.receiver}} *{{.entity}}) D3Token() entity.MetaToken {
 		return
 	}
 
-	if err := tpl.Execute(r.out, map[string]interface{}{"receiver": receiverName, "entity": t.Name()}); err != nil {
+	if err := tpl.Execute(r.out, map[string]interface{}{"receiver": receiverName, "entity": name}); err != nil {
 		return
 	}
 
 	r.extractGen.run(t)
+	r.instantiatorGen.run(t)
 }

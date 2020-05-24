@@ -10,12 +10,13 @@ func (s *ShopCirc) D3Token() entity.MetaToken {
 		Tpl:       (*ShopCirc)(nil),
 		TableName: "",
 		Tools: entity.InternalTools{
-			FieldExtractor: s.__d3_createFieldExtractor(),
+			FieldExtractor: s.__d3_makeFieldExtractor(),
+			Instantiator:   s.__d3_makeInstantiator(),
 		},
 	}
 }
 
-func (s *ShopCirc) __d3_createFieldExtractor() entity.FieldExtractor {
+func (s *ShopCirc) __d3_makeFieldExtractor() entity.FieldExtractor {
 	return func(s interface{}, name string) (interface{}, error) {
 		sTyped, ok := s.(*ShopCirc)
 		if !ok {
@@ -51,17 +52,24 @@ func (s *ShopCirc) __d3_createFieldExtractor() entity.FieldExtractor {
 	}
 }
 
+func (s *ShopCirc) __d3_makeInstantiator() entity.Instantiator {
+	return func() interface{} {
+		return &ShopCirc{}
+	}
+}
+
 func (s *ShopProfileCirc) D3Token() entity.MetaToken {
 	return entity.MetaToken{
 		Tpl:       (*ShopProfileCirc)(nil),
 		TableName: "",
 		Tools: entity.InternalTools{
-			FieldExtractor: s.__d3_createFieldExtractor(),
+			FieldExtractor: s.__d3_makeFieldExtractor(),
+			Instantiator:   s.__d3_makeInstantiator(),
 		},
 	}
 }
 
-func (s *ShopProfileCirc) __d3_createFieldExtractor() entity.FieldExtractor {
+func (s *ShopProfileCirc) __d3_makeFieldExtractor() entity.FieldExtractor {
 	return func(s interface{}, name string) (interface{}, error) {
 		sTyped, ok := s.(*ShopProfileCirc)
 		if !ok {
@@ -85,17 +93,24 @@ func (s *ShopProfileCirc) __d3_createFieldExtractor() entity.FieldExtractor {
 	}
 }
 
+func (s *ShopProfileCirc) __d3_makeInstantiator() entity.Instantiator {
+	return func() interface{} {
+		return &ShopProfileCirc{}
+	}
+}
+
 func (s *SellerCirc) D3Token() entity.MetaToken {
 	return entity.MetaToken{
 		Tpl:       (*SellerCirc)(nil),
 		TableName: "",
 		Tools: entity.InternalTools{
-			FieldExtractor: s.__d3_createFieldExtractor(),
+			FieldExtractor: s.__d3_makeFieldExtractor(),
+			Instantiator:   s.__d3_makeInstantiator(),
 		},
 	}
 }
 
-func (s *SellerCirc) __d3_createFieldExtractor() entity.FieldExtractor {
+func (s *SellerCirc) __d3_makeFieldExtractor() entity.FieldExtractor {
 	return func(s interface{}, name string) (interface{}, error) {
 		sTyped, ok := s.(*SellerCirc)
 		if !ok {
@@ -119,5 +134,11 @@ func (s *SellerCirc) __d3_createFieldExtractor() entity.FieldExtractor {
 		default:
 			return nil, fmt.Errorf("field %s not found", name)
 		}
+	}
+}
+
+func (s *SellerCirc) __d3_makeInstantiator() entity.Instantiator {
+	return func() interface{} {
+		return &SellerCirc{}
 	}
 }

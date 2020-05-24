@@ -16,10 +16,14 @@ const (
 	Manual
 )
 
-type InternalTools struct {
-	FieldExtractor FieldExtractor
-	Instantiator   interface{}
-}
+type (
+	InternalTools struct {
+		FieldExtractor FieldExtractor
+		Instantiator   Instantiator
+	}
+	FieldExtractor func(s interface{}, name string) (interface{}, error)
+	Instantiator   func() interface{}
+)
 
 type MetaToken struct {
 	Tools     InternalTools
@@ -31,8 +35,6 @@ type D3Entity interface {
 	D3Token() MetaToken
 }
 
-type FieldExtractor func(s interface{}, name string) (interface{}, error)
-
 type MetaInfo struct {
 	Tpl        interface{}
 	EntityName Name
@@ -42,8 +44,8 @@ type MetaInfo struct {
 	Fields    map[string]*FieldInfo
 	Pk        *pk
 
-	RelatedMeta    map[Name]*MetaInfo
-	FieldExtractor FieldExtractor
+	RelatedMeta map[Name]*MetaInfo
+	Tools       InternalTools
 }
 
 type FieldInfo struct {
@@ -64,13 +66,13 @@ func CreateMeta(mapping UserMapping) (*MetaInfo, error) {
 	}
 
 	meta := &MetaInfo{
-		Tpl:            mapping.Entity,
-		TableName:      mapping.TableName,
-		Fields:         make(map[string]*FieldInfo),
-		Relations:      make(map[string]Relation),
-		RelatedMeta:    make(map[Name]*MetaInfo),
-		EntityName:     Name(d3reflect.FullName(eType)),
-		FieldExtractor: mapping.Entity.(D3Entity).D3Token().Tools.FieldExtractor,
+		Tpl:         mapping.Entity,
+		TableName:   mapping.TableName,
+		Fields:      make(map[string]*FieldInfo),
+		Relations:   make(map[string]Relation),
+		RelatedMeta: make(map[Name]*MetaInfo),
+		EntityName:  Name(d3reflect.FullName(eType)),
+		Tools:       mapping.Entity.(D3Entity).D3Token().Tools,
 	}
 
 	for i := 0; i < eType.NumField(); i++ {

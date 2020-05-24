@@ -388,7 +388,7 @@ func extractSimpleFields(box *persistBox) ([]*actionField, error) {
 			continue
 		}
 
-		val, err := box.Meta.FieldExtractor(box.Entity, field.Name)
+		val, err := box.Meta.Tools.FieldExtractor(box.Entity, field.Name)
 		if err != nil {
 			return nil, err
 		}

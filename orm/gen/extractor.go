@@ -18,7 +18,7 @@ func (e *extractor) run(t reflect.Type) {
 
 	tpl, err := template.New("registrar").Parse(`
 
-func ({{.receiver}} *{{.entity}}) __d3_createFieldExtractor() entity.FieldExtractor {
+func ({{.receiver}} *{{.entity}}) __d3_makeFieldExtractor() entity.FieldExtractor {
 	return func(s interface{}, name string) (interface{}, error) {
 		sTyped, ok := s.(*{{.entity}})
 		if !ok {
@@ -45,7 +45,7 @@ func ({{.receiver}} *{{.entity}}) __d3_createFieldExtractor() entity.FieldExtrac
 		fields = append(fields, t.Field(i).Name)
 	}
 
-	if err := tpl.Execute(e.out, map[string]interface{}{"receiver": receiver, "entity": t.Name(), "fields": fields}); err != nil {
+	if err := tpl.Execute(e.out, map[string]interface{}{"receiver": receiver, "entity": name, "fields": fields}); err != nil {
 		return
 	}
 }

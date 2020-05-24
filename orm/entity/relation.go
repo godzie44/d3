@@ -113,7 +113,7 @@ func (o *OneToMany) fillFromTag(tag *parsedTag) {
 }
 
 func (o *OneToMany) ExtractCollection(ownerBox *Box) (Collection, error) {
-	val, err := ownerBox.Meta.FieldExtractor(ownerBox.Entity, o.Field().Name)
+	val, err := ownerBox.Meta.Tools.FieldExtractor(ownerBox.Entity, o.Field().Name)
 	if err != nil {
 		return nil, err
 	}
@@ -154,7 +154,7 @@ func (o *OneToOne) fillFromTag(tag *parsedTag) {
 }
 
 func (o *OneToOne) Extract(ownerBox *Box) (WrappedEntity, error) {
-	val, err := ownerBox.Meta.FieldExtractor(ownerBox.Entity, o.Field().Name)
+	val, err := ownerBox.Meta.Tools.FieldExtractor(ownerBox.Entity, o.Field().Name)
 	if err != nil {
 		return nil, err
 	}
@@ -198,7 +198,7 @@ func (m *ManyToMany) fillFromTag(tag *parsedTag) {
 }
 
 func (m *ManyToMany) ExtractCollection(ownerBox *Box) (Collection, error) {
-	val, err := ownerBox.Meta.FieldExtractor(ownerBox.Entity, m.Field().Name)
+	val, err := ownerBox.Meta.Tools.FieldExtractor(ownerBox.Entity, m.Field().Name)
 	if err != nil {
 		return nil, err
 	}

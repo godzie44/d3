@@ -33,7 +33,7 @@ func (k *KeyTpl) Key() []interface{} {
 }
 
 func (m *MetaInfo) ExtractPkValue(entity interface{}) (interface{}, error) {
-	val, err := m.FieldExtractor(entity, m.Pk.Field.Name)
+	val, err := m.Tools.FieldExtractor(entity, m.Pk.Field.Name)
 	if err != nil {
 		return nil, err
 	}

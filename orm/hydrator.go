@@ -32,16 +32,15 @@ func (h *Hydrator) Hydrate(fetchedData []map[string]interface{}, plan *query.Fet
 
 	var lastInsertedNum int
 	for _, entityData := range groupByEntityData {
-		newEntity := reflect.New(entityType.Elem())
-
-		err := h.hydrateOne(newEntity.Interface(), entityData, plan)
+		newEntity := h.meta.Tools.Instantiator()
+		err := h.hydrateOne(newEntity, entityData, plan)
 		if err != nil {
 			return nil, err
 		}
 
-		h.afterHydrateEntity(d3entity.NewBox(newEntity.Interface(), h.meta))
+		h.afterHydrateEntity(d3entity.NewBox(newEntity, h.meta))
 
-		sliceVal.Index(lastInsertedNum).Set(newEntity)
+		sliceVal.Index(lastInsertedNum).Set(reflect.ValueOf(newEntity))
 		lastInsertedNum++
 	}
 
@@ -106,7 +105,7 @@ func (h *Hydrator) fetchRelation(relation d3entity.Relation, entityData []map[st
 			return d3entity.NewWrapEntity(nil), nil
 		}
 
-		entity = d3reflect.CreateEmptyEntity(relationMeta.Tpl)
+		entity = relationMeta.Tools.Instantiator()
 		err := relationHydrator.hydrateOne(entity, entityData, plan.GetChildPlan(relation))
 		if err != nil {
 			return nil, fmt.Errorf("hydration: %w", err)
@@ -130,7 +129,7 @@ func (h *Hydrator) fetchRelation(relation d3entity.Relation, entityData []map[st
 		}
 
 		for _, data := range groupByEntity {
-			entity := d3reflect.CreateEmptyEntity(relationMeta.Tpl)
+			entity := relationMeta.Tools.Instantiator()
 			err := relationHydrator.hydrateOne(entity, data, plan.GetChildPlan(relation))
 			if err != nil {
 				return nil, fmt.Errorf("hydration: %w", err)

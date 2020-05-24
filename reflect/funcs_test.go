@@ -18,15 +18,6 @@ func TestEntityToSlice(t *testing.T) {
 	assert.IsType(t, []*testEntity{}, slice)
 }
 
-func TestEntityToEntity(t *testing.T) {
-	entity := &testEntity{}
-	result := CreateEmptyEntity(entity)
-	e := result.(*testEntity)
-	e.ID = "1"
-
-	assert.IsType(t, &testEntity{}, result)
-}
-
 func TestGetFirstElementFromSlice(t *testing.T) {
 	someSlice := []int{1, 2, 3}
 	el, err := GetFirstElementFromSlice(someSlice)

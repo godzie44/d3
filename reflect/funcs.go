@@ -24,11 +24,6 @@ func GetFirstElementFromSlice(slice interface{}) (interface{}, error) {
 	return sliceVal.Index(0).Interface(), nil
 }
 
-func CreateEmptyEntity(strctPtr interface{}) interface{} {
-	entityType := reflect.TypeOf(strctPtr)
-	return reflect.New(entityType.Elem()).Interface()
-}
-
 func CreateSliceOfStructPtrs(strctType reflect.Type, len int) interface{} {
 	sliceType := reflect.SliceOf(strctType)
 	sliceVal := reflect.MakeSlice(sliceType, len, len)
