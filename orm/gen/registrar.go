@@ -1,6 +1,7 @@
 package gen
 
 import (
+	"bytes"
 	"fmt"
 	"io"
 	"reflect"
@@ -10,20 +11,33 @@ import (
 
 type CodeGenerator struct {
 	out             io.Writer
+	tempBuffer      *bytes.Buffer
 	extractGen      *extractor
 	instantiatorGen *instantiator
+	setterGen       *setter
+	pkgPath         string
 }
 
-func NewGenerator(out io.Writer) *CodeGenerator {
-	return &CodeGenerator{out: out, extractGen: &extractor{out: out}, instantiatorGen: &instantiator{out: out}}
+func NewGenerator(out io.Writer, packagePath string) *CodeGenerator {
+	tmpBuff := &bytes.Buffer{}
+	return &CodeGenerator{
+		out:             out,
+		tempBuffer:      tmpBuff,
+		extractGen:      &extractor{tmpBuff},
+		instantiatorGen: &instantiator{tmpBuff},
+		setterGen:       &setter{out: tmpBuff, imports: map[string]struct{}{}, pkgPath: packagePath},
+		pkgPath:         packagePath,
+	}
 }
 
-func (r *CodeGenerator) WritePreamble() {
-	fmt.Fprintf(r.out, "import \"fmt\"\n")
-	fmt.Fprintf(r.out, "import \"d3/orm/entity\"\n")
+func (r *CodeGenerator) commonPreamble() []string {
+	return []string{
+		"fmt",
+		"d3/orm/entity",
+	}
 }
 
-func (r *CodeGenerator) Run(t reflect.Type) {
+func (r *CodeGenerator) Prepare(t reflect.Type) {
 	if t.Kind() == reflect.Ptr {
 		t = t.Elem()
 	}
@@ -44,6 +58,7 @@ func ({{.receiver}} *{{.entity}}) D3Token() entity.MetaToken {
 		TableName: "",
 		Tools: entity.InternalTools{
 			FieldExtractor: {{.receiver}}.__d3_makeFieldExtractor(),
+			FieldSetter: {{.receiver}}.__d3_makeFieldSetter(),
 			Instantiator: {{.receiver}}.__d3_makeInstantiator(),
 		},
 	}
@@ -53,10 +68,26 @@ func ({{.receiver}} *{{.entity}}) D3Token() entity.MetaToken {
 		return
 	}
 
-	if err := tpl.Execute(r.out, map[string]interface{}{"receiver": receiverName, "entity": name}); err != nil {
+	if err := tpl.Execute(r.tempBuffer, map[string]interface{}{"receiver": receiverName, "entity": name}); err != nil {
 		return
 	}
 
-	r.extractGen.run(t)
-	r.instantiatorGen.run(t)
+	r.extractGen.handle(t)
+	r.instantiatorGen.handle(t)
+	r.setterGen.handle(t)
+}
+
+func (r *CodeGenerator) Write() {
+	var imports = map[string]struct{}{}
+	for _, imp := range append(r.commonPreamble(), r.setterGen.preamble()...) {
+		if imp == r.pkgPath {
+			continue
+		}
+		imports[imp] = struct{}{}
+	}
+
+	for imp := range imports {
+		fmt.Fprintf(r.out, "import \"%s\"\n", imp)
+	}
+	_, _ = r.out.Write(r.tempBuffer.Bytes())
 }

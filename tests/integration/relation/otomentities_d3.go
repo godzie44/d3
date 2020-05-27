@@ -11,6 +11,7 @@ func (s *ShopLR) D3Token() entity.MetaToken {
 		TableName: "",
 		Tools: entity.InternalTools{
 			FieldExtractor: s.__d3_makeFieldExtractor(),
+			FieldSetter:    s.__d3_makeFieldSetter(),
 			Instantiator:   s.__d3_makeInstantiator(),
 		},
 	}
@@ -46,12 +47,37 @@ func (s *ShopLR) __d3_makeInstantiator() entity.Instantiator {
 	}
 }
 
+func (s *ShopLR) __d3_makeFieldSetter() entity.FieldSetter {
+	return func(s interface{}, name string, val interface{}) error {
+		eTyped, ok := s.(*ShopLR)
+		if !ok {
+			return fmt.Errorf("invalid entity type")
+		}
+
+		switch name {
+		case "Id":
+			eTyped.Id = val.(int32)
+			return nil
+		case "Books":
+			eTyped.Books = val.(entity.Collection)
+			return nil
+		case "Name":
+			eTyped.Name = val.(string)
+			return nil
+
+		default:
+			return fmt.Errorf("field %s not found", name)
+		}
+	}
+}
+
 func (b *BookLR) D3Token() entity.MetaToken {
 	return entity.MetaToken{
 		Tpl:       (*BookLR)(nil),
 		TableName: "",
 		Tools: entity.InternalTools{
 			FieldExtractor: b.__d3_makeFieldExtractor(),
+			FieldSetter:    b.__d3_makeFieldSetter(),
 			Instantiator:   b.__d3_makeInstantiator(),
 		},
 	}
@@ -84,12 +110,34 @@ func (b *BookLR) __d3_makeInstantiator() entity.Instantiator {
 	}
 }
 
+func (b *BookLR) __d3_makeFieldSetter() entity.FieldSetter {
+	return func(s interface{}, name string, val interface{}) error {
+		eTyped, ok := s.(*BookLR)
+		if !ok {
+			return fmt.Errorf("invalid entity type")
+		}
+
+		switch name {
+		case "Id":
+			eTyped.Id = val.(int32)
+			return nil
+		case "Name":
+			eTyped.Name = val.(string)
+			return nil
+
+		default:
+			return fmt.Errorf("field %s not found", name)
+		}
+	}
+}
+
 func (s *ShopER) D3Token() entity.MetaToken {
 	return entity.MetaToken{
 		Tpl:       (*ShopER)(nil),
 		TableName: "",
 		Tools: entity.InternalTools{
 			FieldExtractor: s.__d3_makeFieldExtractor(),
+			FieldSetter:    s.__d3_makeFieldSetter(),
 			Instantiator:   s.__d3_makeInstantiator(),
 		},
 	}
@@ -125,12 +173,37 @@ func (s *ShopER) __d3_makeInstantiator() entity.Instantiator {
 	}
 }
 
+func (s *ShopER) __d3_makeFieldSetter() entity.FieldSetter {
+	return func(s interface{}, name string, val interface{}) error {
+		eTyped, ok := s.(*ShopER)
+		if !ok {
+			return fmt.Errorf("invalid entity type")
+		}
+
+		switch name {
+		case "Id":
+			eTyped.Id = val.(int32)
+			return nil
+		case "Books":
+			eTyped.Books = val.(entity.Collection)
+			return nil
+		case "Name":
+			eTyped.Name = val.(string)
+			return nil
+
+		default:
+			return fmt.Errorf("field %s not found", name)
+		}
+	}
+}
+
 func (b *BookER) D3Token() entity.MetaToken {
 	return entity.MetaToken{
 		Tpl:       (*BookER)(nil),
 		TableName: "",
 		Tools: entity.InternalTools{
 			FieldExtractor: b.__d3_makeFieldExtractor(),
+			FieldSetter:    b.__d3_makeFieldSetter(),
 			Instantiator:   b.__d3_makeInstantiator(),
 		},
 	}
@@ -166,12 +239,37 @@ func (b *BookER) __d3_makeInstantiator() entity.Instantiator {
 	}
 }
 
+func (b *BookER) __d3_makeFieldSetter() entity.FieldSetter {
+	return func(s interface{}, name string, val interface{}) error {
+		eTyped, ok := s.(*BookER)
+		if !ok {
+			return fmt.Errorf("invalid entity type")
+		}
+
+		switch name {
+		case "Id":
+			eTyped.Id = val.(int32)
+			return nil
+		case "Discounts":
+			eTyped.Discounts = val.(entity.Collection)
+			return nil
+		case "Name":
+			eTyped.Name = val.(string)
+			return nil
+
+		default:
+			return fmt.Errorf("field %s not found", name)
+		}
+	}
+}
+
 func (d *DiscountER) D3Token() entity.MetaToken {
 	return entity.MetaToken{
 		Tpl:       (*DiscountER)(nil),
 		TableName: "",
 		Tools: entity.InternalTools{
 			FieldExtractor: d.__d3_makeFieldExtractor(),
+			FieldSetter:    d.__d3_makeFieldSetter(),
 			Instantiator:   d.__d3_makeInstantiator(),
 		},
 	}
@@ -201,5 +299,26 @@ func (d *DiscountER) __d3_makeFieldExtractor() entity.FieldExtractor {
 func (d *DiscountER) __d3_makeInstantiator() entity.Instantiator {
 	return func() interface{} {
 		return &DiscountER{}
+	}
+}
+
+func (d *DiscountER) __d3_makeFieldSetter() entity.FieldSetter {
+	return func(s interface{}, name string, val interface{}) error {
+		eTyped, ok := s.(*DiscountER)
+		if !ok {
+			return fmt.Errorf("invalid entity type")
+		}
+
+		switch name {
+		case "Id":
+			eTyped.Id = val.(int32)
+			return nil
+		case "Value":
+			eTyped.Value = val.(int32)
+			return nil
+
+		default:
+			return fmt.Errorf("field %s not found", name)
+		}
 	}
 }

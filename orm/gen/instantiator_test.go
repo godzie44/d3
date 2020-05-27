@@ -20,7 +20,7 @@ func TestInstantiatorGeneration(t *testing.T) {
 	buff := &strings.Builder{}
 	gen := &instantiator{buff}
 
-	gen.run(reflect.TypeOf(instantiatorTestStruct{}))
+	gen.handle(reflect.TypeOf(instantiatorTestStruct{}))
 
 	assert.Equal(t, expectedInstantiator, strings.Trim(buff.String(), "\n"))
 }

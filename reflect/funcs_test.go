@@ -1,7 +1,6 @@
 package reflect
 
 import (
-	"database/sql"
 	"github.com/stretchr/testify/assert"
 	"reflect"
 	"testing"
@@ -23,30 +22,6 @@ func TestGetFirstElementFromSlice(t *testing.T) {
 	el, err := GetFirstElementFromSlice(someSlice)
 	assert.NoError(t, err)
 	assert.Equal(t, el.(int), 1)
-}
-
-func TestSetVal(t *testing.T) {
-	te := &testEntity{}
-	err := SetFields(te, map[string]interface{}{"ID": "id1", "Count": 5})
-	assert.NoError(t, err)
-
-	assert.Equal(t, 5, te.Count)
-	assert.Equal(t, "id1", te.ID)
-}
-
-type testEntity2 struct {
-	ID sql.NullInt64
-}
-
-func TestSetValSqlNullField(t *testing.T) {
-	te := &testEntity2{}
-	err := SetFields(te, map[string]interface{}{"ID": sql.NullInt64{
-		Int64: 1,
-		Valid: true,
-	}})
-	assert.NoError(t, err)
-
-	assert.Equal(t, int64(1), te.ID.Int64)
 }
 
 type testCollection struct {

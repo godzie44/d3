@@ -19,9 +19,11 @@ const (
 type (
 	InternalTools struct {
 		FieldExtractor FieldExtractor
+		FieldSetter    FieldSetter
 		Instantiator   Instantiator
 	}
-	FieldExtractor func(s interface{}, name string) (interface{}, error)
+	FieldExtractor func(e interface{}, name string) (interface{}, error)
+	FieldSetter    func(e interface{}, name string, val interface{}) error
 	Instantiator   func() interface{}
 )
 

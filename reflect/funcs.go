@@ -1,10 +1,7 @@
 package reflect
 
 import (
-	"database/sql"
-	"database/sql/driver"
 	"errors"
-	"fmt"
 	"github.com/mohae/deepcopy"
 	"reflect"
 )
@@ -60,48 +57,6 @@ func FullName(t reflect.Type) string {
 		return t.Elem().PkgPath() + "/" + t.Elem().Name()
 	default:
 		return t.PkgPath() + "/" + t.Name()
-	}
-}
-
-var scannerType = reflect.TypeOf((*sql.Scanner)(nil)).Elem()
-
-func SetFields(strctPtr interface{}, fields map[string]interface{}) error {
-	reflectVal := reflect.ValueOf(strctPtr).Elem()
-
-	for name, val := range fields {
-		f := reflectVal.FieldByName(name)
-
-		if err := ValidateField(&f); err != nil {
-			return err
-		}
-
-		SetField(&f, val)
-	}
-
-	return nil
-}
-
-func ValidateField(field *reflect.Value) error {
-	if !field.IsValid() || !field.CanSet() {
-		return fmt.Errorf("unreacheble field")
-	}
-	return nil
-}
-
-func SetField(field *reflect.Value, val interface{}) {
-	if reflect.PtrTo(field.Type()).Implements(scannerType) {
-		if valuer, isValuer := val.(driver.Valuer); isValuer {
-			v, err := valuer.Value()
-			if err != nil {
-				_ = field.Addr().Interface().(sql.Scanner).Scan(nil)
-			} else {
-				_ = field.Addr().Interface().(sql.Scanner).Scan(v)
-			}
-		} else {
-			_ = field.Addr().Interface().(sql.Scanner).Scan(val)
-		}
-	} else {
-		field.Set(reflect.ValueOf(val))
 	}
 }
 

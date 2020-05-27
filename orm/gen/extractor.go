@@ -11,7 +11,7 @@ type extractor struct {
 	out io.Writer
 }
 
-func (e *extractor) run(t reflect.Type) {
+func (e *extractor) handle(t reflect.Type) {
 	name := t.Name()
 
 	receiver := strings.ToLower(strings.Split(name, "")[0])

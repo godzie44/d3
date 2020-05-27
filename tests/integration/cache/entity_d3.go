@@ -11,6 +11,7 @@ func (e *entity1) D3Token() entity.MetaToken {
 		TableName: "",
 		Tools: entity.InternalTools{
 			FieldExtractor: e.__d3_makeFieldExtractor(),
+			FieldSetter:    e.__d3_makeFieldSetter(),
 			Instantiator:   e.__d3_makeInstantiator(),
 		},
 	}
@@ -46,12 +47,37 @@ func (e *entity1) __d3_makeInstantiator() entity.Instantiator {
 	}
 }
 
+func (e *entity1) __d3_makeFieldSetter() entity.FieldSetter {
+	return func(s interface{}, name string, val interface{}) error {
+		eTyped, ok := s.(*entity1)
+		if !ok {
+			return fmt.Errorf("invalid entity type")
+		}
+
+		switch name {
+		case "Id":
+			eTyped.Id = val.(int32)
+			return nil
+		case "Rel":
+			eTyped.Rel = val.(entity.Collection)
+			return nil
+		case "Data":
+			eTyped.Data = val.(string)
+			return nil
+
+		default:
+			return fmt.Errorf("field %s not found", name)
+		}
+	}
+}
+
 func (e *entity2) D3Token() entity.MetaToken {
 	return entity.MetaToken{
 		Tpl:       (*entity2)(nil),
 		TableName: "",
 		Tools: entity.InternalTools{
 			FieldExtractor: e.__d3_makeFieldExtractor(),
+			FieldSetter:    e.__d3_makeFieldSetter(),
 			Instantiator:   e.__d3_makeInstantiator(),
 		},
 	}
@@ -81,5 +107,26 @@ func (e *entity2) __d3_makeFieldExtractor() entity.FieldExtractor {
 func (e *entity2) __d3_makeInstantiator() entity.Instantiator {
 	return func() interface{} {
 		return &entity2{}
+	}
+}
+
+func (e *entity2) __d3_makeFieldSetter() entity.FieldSetter {
+	return func(s interface{}, name string, val interface{}) error {
+		eTyped, ok := s.(*entity2)
+		if !ok {
+			return fmt.Errorf("invalid entity type")
+		}
+
+		switch name {
+		case "Id":
+			eTyped.Id = val.(int32)
+			return nil
+		case "Data":
+			eTyped.Data = val.(string)
+			return nil
+
+		default:
+			return fmt.Errorf("field %s not found", name)
+		}
 	}
 }

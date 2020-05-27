@@ -86,10 +86,7 @@ func (uow *UnitOfWork) updateFieldOfOriginal(box *entity.Box, fieldName string, 
 
 	cp := d3reflect.Copy(newVal)
 
-	_ = d3reflect.SetFields(
-		uow.dirtyEntities[box.GetEName()][pkVal].original,
-		map[string]interface{}{fieldName: cp},
-	)
+	_ = box.Meta.Tools.FieldSetter(uow.dirtyEntities[box.GetEName()][pkVal].original, fieldName, cp)
 }
 
 func (uow *UnitOfWork) registerRemove(box *entity.Box) error {

@@ -2,6 +2,8 @@
 
 package schema
 
+import "database/sql/driver"
+import "time"
 import "fmt"
 import "d3/orm/entity"
 
@@ -11,6 +13,7 @@ func (s *shop) D3Token() entity.MetaToken {
 		TableName: "",
 		Tools: entity.InternalTools{
 			FieldExtractor: s.__d3_makeFieldExtractor(),
+			FieldSetter:    s.__d3_makeFieldSetter(),
 			Instantiator:   s.__d3_makeInstantiator(),
 		},
 	}
@@ -49,12 +52,46 @@ func (s *shop) __d3_makeInstantiator() entity.Instantiator {
 	}
 }
 
+func (s *shop) __d3_makeFieldSetter() entity.FieldSetter {
+	return func(s interface{}, name string, val interface{}) error {
+		eTyped, ok := s.(*shop)
+		if !ok {
+			return fmt.Errorf("invalid entity type")
+		}
+
+		switch name {
+		case "Books":
+			eTyped.Books = val.(entity.Collection)
+			return nil
+		case "Profile":
+			eTyped.Profile = val.(entity.WrappedEntity)
+			return nil
+		case "Name":
+			eTyped.Name = val.(string)
+			return nil
+
+		case "Id":
+			if valuer, isValuer := val.(driver.Valuer); isValuer {
+				v, err := valuer.Value()
+				if err != nil {
+					return eTyped.Id.Scan(nil)
+				}
+				return eTyped.Id.Scan(v)
+			}
+			return eTyped.Id.Scan(val)
+		default:
+			return fmt.Errorf("field %s not found", name)
+		}
+	}
+}
+
 func (p *profile) D3Token() entity.MetaToken {
 	return entity.MetaToken{
 		Tpl:       (*profile)(nil),
 		TableName: "",
 		Tools: entity.InternalTools{
 			FieldExtractor: p.__d3_makeFieldExtractor(),
+			FieldSetter:    p.__d3_makeFieldSetter(),
 			Instantiator:   p.__d3_makeInstantiator(),
 		},
 	}
@@ -87,12 +124,40 @@ func (p *profile) __d3_makeInstantiator() entity.Instantiator {
 	}
 }
 
+func (p *profile) __d3_makeFieldSetter() entity.FieldSetter {
+	return func(s interface{}, name string, val interface{}) error {
+		eTyped, ok := s.(*profile)
+		if !ok {
+			return fmt.Errorf("invalid entity type")
+		}
+
+		switch name {
+		case "Description":
+			eTyped.Description = val.(string)
+			return nil
+
+		case "Id":
+			if valuer, isValuer := val.(driver.Valuer); isValuer {
+				v, err := valuer.Value()
+				if err != nil {
+					return eTyped.Id.Scan(nil)
+				}
+				return eTyped.Id.Scan(v)
+			}
+			return eTyped.Id.Scan(val)
+		default:
+			return fmt.Errorf("field %s not found", name)
+		}
+	}
+}
+
 func (b *book) D3Token() entity.MetaToken {
 	return entity.MetaToken{
 		Tpl:       (*book)(nil),
 		TableName: "",
 		Tools: entity.InternalTools{
 			FieldExtractor: b.__d3_makeFieldExtractor(),
+			FieldSetter:    b.__d3_makeFieldSetter(),
 			Instantiator:   b.__d3_makeInstantiator(),
 		},
 	}
@@ -128,12 +193,43 @@ func (b *book) __d3_makeInstantiator() entity.Instantiator {
 	}
 }
 
+func (b *book) __d3_makeFieldSetter() entity.FieldSetter {
+	return func(s interface{}, name string, val interface{}) error {
+		eTyped, ok := s.(*book)
+		if !ok {
+			return fmt.Errorf("invalid entity type")
+		}
+
+		switch name {
+		case "Authors":
+			eTyped.Authors = val.(entity.Collection)
+			return nil
+		case "Name":
+			eTyped.Name = val.(string)
+			return nil
+
+		case "Id":
+			if valuer, isValuer := val.(driver.Valuer); isValuer {
+				v, err := valuer.Value()
+				if err != nil {
+					return eTyped.Id.Scan(nil)
+				}
+				return eTyped.Id.Scan(v)
+			}
+			return eTyped.Id.Scan(val)
+		default:
+			return fmt.Errorf("field %s not found", name)
+		}
+	}
+}
+
 func (a *author) D3Token() entity.MetaToken {
 	return entity.MetaToken{
 		Tpl:       (*author)(nil),
 		TableName: "",
 		Tools: entity.InternalTools{
 			FieldExtractor: a.__d3_makeFieldExtractor(),
+			FieldSetter:    a.__d3_makeFieldSetter(),
 			Instantiator:   a.__d3_makeInstantiator(),
 		},
 	}
@@ -166,12 +262,40 @@ func (a *author) __d3_makeInstantiator() entity.Instantiator {
 	}
 }
 
+func (a *author) __d3_makeFieldSetter() entity.FieldSetter {
+	return func(s interface{}, name string, val interface{}) error {
+		eTyped, ok := s.(*author)
+		if !ok {
+			return fmt.Errorf("invalid entity type")
+		}
+
+		switch name {
+		case "Name":
+			eTyped.Name = val.(string)
+			return nil
+
+		case "Id":
+			if valuer, isValuer := val.(driver.Valuer); isValuer {
+				v, err := valuer.Value()
+				if err != nil {
+					return eTyped.Id.Scan(nil)
+				}
+				return eTyped.Id.Scan(v)
+			}
+			return eTyped.Id.Scan(val)
+		default:
+			return fmt.Errorf("field %s not found", name)
+		}
+	}
+}
+
 func (a *allTypeStruct) D3Token() entity.MetaToken {
 	return entity.MetaToken{
 		Tpl:       (*allTypeStruct)(nil),
 		TableName: "",
 		Tools: entity.InternalTools{
 			FieldExtractor: a.__d3_makeFieldExtractor(),
+			FieldSetter:    a.__d3_makeFieldSetter(),
 			Instantiator:   a.__d3_makeInstantiator(),
 		},
 	}
@@ -240,5 +364,107 @@ func (a *allTypeStruct) __d3_makeFieldExtractor() entity.FieldExtractor {
 func (a *allTypeStruct) __d3_makeInstantiator() entity.Instantiator {
 	return func() interface{} {
 		return &allTypeStruct{}
+	}
+}
+
+func (a *allTypeStruct) __d3_makeFieldSetter() entity.FieldSetter {
+	return func(s interface{}, name string, val interface{}) error {
+		eTyped, ok := s.(*allTypeStruct)
+		if !ok {
+			return fmt.Errorf("invalid entity type")
+		}
+
+		switch name {
+		case "BoolField":
+			eTyped.BoolField = val.(bool)
+			return nil
+		case "IntField":
+			eTyped.IntField = val.(int)
+			return nil
+		case "Int32Field":
+			eTyped.Int32Field = val.(int32)
+			return nil
+		case "Int64Field":
+			eTyped.Int64Field = val.(int64)
+			return nil
+		case "Float32Field":
+			eTyped.Float32Field = val.(float32)
+			return nil
+		case "Float64Field":
+			eTyped.Float64Field = val.(float64)
+			return nil
+		case "StringField":
+			eTyped.StringField = val.(string)
+			return nil
+		case "TimeField":
+			eTyped.TimeField = val.(time.Time)
+			return nil
+
+		case "ID":
+			if valuer, isValuer := val.(driver.Valuer); isValuer {
+				v, err := valuer.Value()
+				if err != nil {
+					return eTyped.ID.Scan(nil)
+				}
+				return eTyped.ID.Scan(v)
+			}
+			return eTyped.ID.Scan(val)
+		case "NullBoolField":
+			if valuer, isValuer := val.(driver.Valuer); isValuer {
+				v, err := valuer.Value()
+				if err != nil {
+					return eTyped.NullBoolField.Scan(nil)
+				}
+				return eTyped.NullBoolField.Scan(v)
+			}
+			return eTyped.NullBoolField.Scan(val)
+		case "NullI32Field":
+			if valuer, isValuer := val.(driver.Valuer); isValuer {
+				v, err := valuer.Value()
+				if err != nil {
+					return eTyped.NullI32Field.Scan(nil)
+				}
+				return eTyped.NullI32Field.Scan(v)
+			}
+			return eTyped.NullI32Field.Scan(val)
+		case "NullI64Field":
+			if valuer, isValuer := val.(driver.Valuer); isValuer {
+				v, err := valuer.Value()
+				if err != nil {
+					return eTyped.NullI64Field.Scan(nil)
+				}
+				return eTyped.NullI64Field.Scan(v)
+			}
+			return eTyped.NullI64Field.Scan(val)
+		case "NullFloat64Field":
+			if valuer, isValuer := val.(driver.Valuer); isValuer {
+				v, err := valuer.Value()
+				if err != nil {
+					return eTyped.NullFloat64Field.Scan(nil)
+				}
+				return eTyped.NullFloat64Field.Scan(v)
+			}
+			return eTyped.NullFloat64Field.Scan(val)
+		case "NullStringField":
+			if valuer, isValuer := val.(driver.Valuer); isValuer {
+				v, err := valuer.Value()
+				if err != nil {
+					return eTyped.NullStringField.Scan(nil)
+				}
+				return eTyped.NullStringField.Scan(v)
+			}
+			return eTyped.NullStringField.Scan(val)
+		case "NullTimeField":
+			if valuer, isValuer := val.(driver.Valuer); isValuer {
+				v, err := valuer.Value()
+				if err != nil {
+					return eTyped.NullTimeField.Scan(nil)
+				}
+				return eTyped.NullTimeField.Scan(v)
+			}
+			return eTyped.NullTimeField.Scan(val)
+		default:
+			return fmt.Errorf("field %s not found", name)
+		}
 	}
 }

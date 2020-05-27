@@ -11,7 +11,7 @@ type instantiator struct {
 	out io.Writer
 }
 
-func (i *instantiator) run(t reflect.Type) {
+func (i *instantiator) handle(t reflect.Type) {
 	name := t.Name()
 
 	receiver := strings.ToLower(strings.Split(name, "")[0])

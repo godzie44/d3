@@ -37,7 +37,6 @@ func (p *Parser) needProcess(comments string) bool {
 func (p *Parser) Visit(n ast.Node) (w ast.Visitor) {
 	switch n := n.(type) {
 	case *ast.Package:
-		fmt.Println(n)
 		return p
 	case *ast.File:
 		p.PkgName = n.Name.String()

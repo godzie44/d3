@@ -4,6 +4,7 @@ package relation
 
 import "fmt"
 import "d3/orm/entity"
+import "database/sql/driver"
 
 func (s *ShopLL) D3Token() entity.MetaToken {
 	return entity.MetaToken{
@@ -11,6 +12,7 @@ func (s *ShopLL) D3Token() entity.MetaToken {
 		TableName: "",
 		Tools: entity.InternalTools{
 			FieldExtractor: s.__d3_makeFieldExtractor(),
+			FieldSetter:    s.__d3_makeFieldSetter(),
 			Instantiator:   s.__d3_makeInstantiator(),
 		},
 	}
@@ -46,12 +48,43 @@ func (s *ShopLL) __d3_makeInstantiator() entity.Instantiator {
 	}
 }
 
+func (s *ShopLL) __d3_makeFieldSetter() entity.FieldSetter {
+	return func(s interface{}, name string, val interface{}) error {
+		eTyped, ok := s.(*ShopLL)
+		if !ok {
+			return fmt.Errorf("invalid entity type")
+		}
+
+		switch name {
+		case "Profile":
+			eTyped.Profile = val.(entity.WrappedEntity)
+			return nil
+		case "Data":
+			eTyped.Data = val.(string)
+			return nil
+
+		case "ID":
+			if valuer, isValuer := val.(driver.Valuer); isValuer {
+				v, err := valuer.Value()
+				if err != nil {
+					return eTyped.ID.Scan(nil)
+				}
+				return eTyped.ID.Scan(v)
+			}
+			return eTyped.ID.Scan(val)
+		default:
+			return fmt.Errorf("field %s not found", name)
+		}
+	}
+}
+
 func (p *ProfileLL) D3Token() entity.MetaToken {
 	return entity.MetaToken{
 		Tpl:       (*ProfileLL)(nil),
 		TableName: "",
 		Tools: entity.InternalTools{
 			FieldExtractor: p.__d3_makeFieldExtractor(),
+			FieldSetter:    p.__d3_makeFieldSetter(),
 			Instantiator:   p.__d3_makeInstantiator(),
 		},
 	}
@@ -87,12 +120,37 @@ func (p *ProfileLL) __d3_makeInstantiator() entity.Instantiator {
 	}
 }
 
+func (p *ProfileLL) __d3_makeFieldSetter() entity.FieldSetter {
+	return func(s interface{}, name string, val interface{}) error {
+		eTyped, ok := s.(*ProfileLL)
+		if !ok {
+			return fmt.Errorf("invalid entity type")
+		}
+
+		switch name {
+		case "ID":
+			eTyped.ID = val.(int32)
+			return nil
+		case "Photo":
+			eTyped.Photo = val.(entity.WrappedEntity)
+			return nil
+		case "Data":
+			eTyped.Data = val.(string)
+			return nil
+
+		default:
+			return fmt.Errorf("field %s not found", name)
+		}
+	}
+}
+
 func (p *PhotoLL) D3Token() entity.MetaToken {
 	return entity.MetaToken{
 		Tpl:       (*PhotoLL)(nil),
 		TableName: "",
 		Tools: entity.InternalTools{
 			FieldExtractor: p.__d3_makeFieldExtractor(),
+			FieldSetter:    p.__d3_makeFieldSetter(),
 			Instantiator:   p.__d3_makeInstantiator(),
 		},
 	}
@@ -125,12 +183,34 @@ func (p *PhotoLL) __d3_makeInstantiator() entity.Instantiator {
 	}
 }
 
+func (p *PhotoLL) __d3_makeFieldSetter() entity.FieldSetter {
+	return func(s interface{}, name string, val interface{}) error {
+		eTyped, ok := s.(*PhotoLL)
+		if !ok {
+			return fmt.Errorf("invalid entity type")
+		}
+
+		switch name {
+		case "ID":
+			eTyped.ID = val.(int32)
+			return nil
+		case "Data":
+			eTyped.Data = val.(string)
+			return nil
+
+		default:
+			return fmt.Errorf("field %s not found", name)
+		}
+	}
+}
+
 func (s *ShopEL) D3Token() entity.MetaToken {
 	return entity.MetaToken{
 		Tpl:       (*ShopEL)(nil),
 		TableName: "",
 		Tools: entity.InternalTools{
 			FieldExtractor: s.__d3_makeFieldExtractor(),
+			FieldSetter:    s.__d3_makeFieldSetter(),
 			Instantiator:   s.__d3_makeInstantiator(),
 		},
 	}
@@ -163,5 +243,29 @@ func (s *ShopEL) __d3_makeFieldExtractor() entity.FieldExtractor {
 func (s *ShopEL) __d3_makeInstantiator() entity.Instantiator {
 	return func() interface{} {
 		return &ShopEL{}
+	}
+}
+
+func (s *ShopEL) __d3_makeFieldSetter() entity.FieldSetter {
+	return func(s interface{}, name string, val interface{}) error {
+		eTyped, ok := s.(*ShopEL)
+		if !ok {
+			return fmt.Errorf("invalid entity type")
+		}
+
+		switch name {
+		case "Id":
+			eTyped.Id = val.(int32)
+			return nil
+		case "Profile":
+			eTyped.Profile = val.(entity.WrappedEntity)
+			return nil
+		case "Data":
+			eTyped.Data = val.(string)
+			return nil
+
+		default:
+			return fmt.Errorf("field %s not found", name)
+		}
 	}
 }
