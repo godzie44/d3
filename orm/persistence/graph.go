@@ -104,7 +104,7 @@ func makeUpdateAction(box *persistBox) *UpdateAction {
 func makeInsertAction(box *persistBox) *InsertAction {
 	a := NewInsertAction(func(pk []interface{}) error {
 		//currently only 1 pk
-		return box.Meta.Tools.FieldSetter(box.Entity, box.Meta.Pk.Field.Name, pk[0])
+		return box.Meta.Tools.SetFieldVal(box.Entity, box.Meta.Pk.Field.Name, pk[0])
 	}, box)
 	a.setTableName(box.Meta.TableName)
 	return a
@@ -385,7 +385,7 @@ func extractSimpleFields(box *persistBox) ([]*actionField, error) {
 			continue
 		}
 
-		val, err := box.Meta.Tools.FieldExtractor(box.Entity, field.Name)
+		val, err := box.Meta.Tools.ExtractField(box.Entity, field.Name)
 		if err != nil {
 			return nil, err
 		}

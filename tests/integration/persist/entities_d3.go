@@ -11,11 +11,11 @@ func (s *Shop) D3Token() entity.MetaToken {
 		Tpl:       (*Shop)(nil),
 		TableName: "",
 		Tools: entity.InternalTools{
-			FieldExtractor: s.__d3_makeFieldExtractor(),
-			FieldSetter:    s.__d3_makeFieldSetter(),
-			CompareFields:  s.__d3_makeComparator(),
-			Instantiator:   s.__d3_makeInstantiator(),
-			Copier:         s.__d3_makeCopier(),
+			ExtractField:  s.__d3_makeFieldExtractor(),
+			SetFieldVal:   s.__d3_makeFieldSetter(),
+			CompareFields: s.__d3_makeComparator(),
+			NewInstance:   s.__d3_makeInstantiator(),
+			Copy:          s.__d3_makeCopier(),
 		},
 	}
 }
@@ -145,11 +145,11 @@ func (s *ShopProfile) D3Token() entity.MetaToken {
 		Tpl:       (*ShopProfile)(nil),
 		TableName: "",
 		Tools: entity.InternalTools{
-			FieldExtractor: s.__d3_makeFieldExtractor(),
-			FieldSetter:    s.__d3_makeFieldSetter(),
-			CompareFields:  s.__d3_makeComparator(),
-			Instantiator:   s.__d3_makeInstantiator(),
-			Copier:         s.__d3_makeCopier(),
+			ExtractField:  s.__d3_makeFieldExtractor(),
+			SetFieldVal:   s.__d3_makeFieldSetter(),
+			CompareFields: s.__d3_makeComparator(),
+			NewInstance:   s.__d3_makeInstantiator(),
+			Copy:          s.__d3_makeCopier(),
 		},
 	}
 }
@@ -256,11 +256,11 @@ func (b *Book) D3Token() entity.MetaToken {
 		Tpl:       (*Book)(nil),
 		TableName: "",
 		Tools: entity.InternalTools{
-			FieldExtractor: b.__d3_makeFieldExtractor(),
-			FieldSetter:    b.__d3_makeFieldSetter(),
-			CompareFields:  b.__d3_makeComparator(),
-			Instantiator:   b.__d3_makeInstantiator(),
-			Copier:         b.__d3_makeCopier(),
+			ExtractField:  b.__d3_makeFieldExtractor(),
+			SetFieldVal:   b.__d3_makeFieldSetter(),
+			CompareFields: b.__d3_makeComparator(),
+			NewInstance:   b.__d3_makeInstantiator(),
+			Copy:          b.__d3_makeCopier(),
 		},
 	}
 }
@@ -379,11 +379,11 @@ func (a *Author) D3Token() entity.MetaToken {
 		Tpl:       (*Author)(nil),
 		TableName: "",
 		Tools: entity.InternalTools{
-			FieldExtractor: a.__d3_makeFieldExtractor(),
-			FieldSetter:    a.__d3_makeFieldSetter(),
-			CompareFields:  a.__d3_makeComparator(),
-			Instantiator:   a.__d3_makeInstantiator(),
-			Copier:         a.__d3_makeCopier(),
+			ExtractField:  a.__d3_makeFieldExtractor(),
+			SetFieldVal:   a.__d3_makeFieldSetter(),
+			CompareFields: a.__d3_makeComparator(),
+			NewInstance:   a.__d3_makeInstantiator(),
+			Copy:          a.__d3_makeCopier(),
 		},
 	}
 }

@@ -2,9 +2,9 @@
 
 package schema
 
+import "database/sql/driver"
 import "fmt"
 import "d3/orm/entity"
-import "database/sql/driver"
 import "time"
 
 func (s *shop) D3Token() entity.MetaToken {
@@ -12,11 +12,11 @@ func (s *shop) D3Token() entity.MetaToken {
 		Tpl:       (*shop)(nil),
 		TableName: "",
 		Tools: entity.InternalTools{
-			FieldExtractor: s.__d3_makeFieldExtractor(),
-			FieldSetter:    s.__d3_makeFieldSetter(),
-			CompareFields:  s.__d3_makeComparator(),
-			Instantiator:   s.__d3_makeInstantiator(),
-			Copier:         s.__d3_makeCopier(),
+			ExtractField:  s.__d3_makeFieldExtractor(),
+			SetFieldVal:   s.__d3_makeFieldSetter(),
+			CompareFields: s.__d3_makeComparator(),
+			NewInstance:   s.__d3_makeInstantiator(),
+			Copy:          s.__d3_makeCopier(),
 		},
 	}
 }
@@ -146,11 +146,11 @@ func (p *profile) D3Token() entity.MetaToken {
 		Tpl:       (*profile)(nil),
 		TableName: "",
 		Tools: entity.InternalTools{
-			FieldExtractor: p.__d3_makeFieldExtractor(),
-			FieldSetter:    p.__d3_makeFieldSetter(),
-			CompareFields:  p.__d3_makeComparator(),
-			Instantiator:   p.__d3_makeInstantiator(),
-			Copier:         p.__d3_makeCopier(),
+			ExtractField:  p.__d3_makeFieldExtractor(),
+			SetFieldVal:   p.__d3_makeFieldSetter(),
+			CompareFields: p.__d3_makeComparator(),
+			NewInstance:   p.__d3_makeInstantiator(),
+			Copy:          p.__d3_makeCopier(),
 		},
 	}
 }
@@ -257,11 +257,11 @@ func (b *book) D3Token() entity.MetaToken {
 		Tpl:       (*book)(nil),
 		TableName: "",
 		Tools: entity.InternalTools{
-			FieldExtractor: b.__d3_makeFieldExtractor(),
-			FieldSetter:    b.__d3_makeFieldSetter(),
-			CompareFields:  b.__d3_makeComparator(),
-			Instantiator:   b.__d3_makeInstantiator(),
-			Copier:         b.__d3_makeCopier(),
+			ExtractField:  b.__d3_makeFieldExtractor(),
+			SetFieldVal:   b.__d3_makeFieldSetter(),
+			CompareFields: b.__d3_makeComparator(),
+			NewInstance:   b.__d3_makeInstantiator(),
+			Copy:          b.__d3_makeCopier(),
 		},
 	}
 }
@@ -380,11 +380,11 @@ func (a *author) D3Token() entity.MetaToken {
 		Tpl:       (*author)(nil),
 		TableName: "",
 		Tools: entity.InternalTools{
-			FieldExtractor: a.__d3_makeFieldExtractor(),
-			FieldSetter:    a.__d3_makeFieldSetter(),
-			CompareFields:  a.__d3_makeComparator(),
-			Instantiator:   a.__d3_makeInstantiator(),
-			Copier:         a.__d3_makeCopier(),
+			ExtractField:  a.__d3_makeFieldExtractor(),
+			SetFieldVal:   a.__d3_makeFieldSetter(),
+			CompareFields: a.__d3_makeComparator(),
+			NewInstance:   a.__d3_makeInstantiator(),
+			Copy:          a.__d3_makeCopier(),
 		},
 	}
 }
@@ -491,11 +491,11 @@ func (a *allTypeStruct) D3Token() entity.MetaToken {
 		Tpl:       (*allTypeStruct)(nil),
 		TableName: "",
 		Tools: entity.InternalTools{
-			FieldExtractor: a.__d3_makeFieldExtractor(),
-			FieldSetter:    a.__d3_makeFieldSetter(),
-			CompareFields:  a.__d3_makeComparator(),
-			Instantiator:   a.__d3_makeInstantiator(),
-			Copier:         a.__d3_makeCopier(),
+			ExtractField:  a.__d3_makeFieldExtractor(),
+			SetFieldVal:   a.__d3_makeFieldSetter(),
+			CompareFields: a.__d3_makeComparator(),
+			NewInstance:   a.__d3_makeInstantiator(),
+			Copy:          a.__d3_makeCopier(),
 		},
 	}
 }

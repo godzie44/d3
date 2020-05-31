@@ -2,20 +2,20 @@
 
 package persist
 
-import "fmt"
 import "d3/orm/entity"
 import "database/sql/driver"
+import "fmt"
 
 func (s *ShopCirc) D3Token() entity.MetaToken {
 	return entity.MetaToken{
 		Tpl:       (*ShopCirc)(nil),
 		TableName: "",
 		Tools: entity.InternalTools{
-			FieldExtractor: s.__d3_makeFieldExtractor(),
-			FieldSetter:    s.__d3_makeFieldSetter(),
-			CompareFields:  s.__d3_makeComparator(),
-			Instantiator:   s.__d3_makeInstantiator(),
-			Copier:         s.__d3_makeCopier(),
+			ExtractField:  s.__d3_makeFieldExtractor(),
+			SetFieldVal:   s.__d3_makeFieldSetter(),
+			CompareFields: s.__d3_makeComparator(),
+			NewInstance:   s.__d3_makeInstantiator(),
+			Copy:          s.__d3_makeCopier(),
 		},
 	}
 }
@@ -178,11 +178,11 @@ func (s *ShopProfileCirc) D3Token() entity.MetaToken {
 		Tpl:       (*ShopProfileCirc)(nil),
 		TableName: "",
 		Tools: entity.InternalTools{
-			FieldExtractor: s.__d3_makeFieldExtractor(),
-			FieldSetter:    s.__d3_makeFieldSetter(),
-			CompareFields:  s.__d3_makeComparator(),
-			Instantiator:   s.__d3_makeInstantiator(),
-			Copier:         s.__d3_makeCopier(),
+			ExtractField:  s.__d3_makeFieldExtractor(),
+			SetFieldVal:   s.__d3_makeFieldSetter(),
+			CompareFields: s.__d3_makeComparator(),
+			NewInstance:   s.__d3_makeInstantiator(),
+			Copy:          s.__d3_makeCopier(),
 		},
 	}
 }
@@ -301,11 +301,11 @@ func (s *SellerCirc) D3Token() entity.MetaToken {
 		Tpl:       (*SellerCirc)(nil),
 		TableName: "",
 		Tools: entity.InternalTools{
-			FieldExtractor: s.__d3_makeFieldExtractor(),
-			FieldSetter:    s.__d3_makeFieldSetter(),
-			CompareFields:  s.__d3_makeComparator(),
-			Instantiator:   s.__d3_makeInstantiator(),
-			Copier:         s.__d3_makeCopier(),
+			ExtractField:  s.__d3_makeFieldExtractor(),
+			SetFieldVal:   s.__d3_makeFieldSetter(),
+			CompareFields: s.__d3_makeComparator(),
+			NewInstance:   s.__d3_makeInstantiator(),
+			Copy:          s.__d3_makeCopier(),
 		},
 	}
 }

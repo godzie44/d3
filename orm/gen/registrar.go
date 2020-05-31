@@ -61,11 +61,11 @@ func ({{.receiver}} *{{.entity}}) D3Token() entity.MetaToken {
 		Tpl: (*{{.entity}})(nil),
 		TableName: "",
 		Tools: entity.InternalTools{
-			FieldExtractor: {{.receiver}}.__d3_makeFieldExtractor(),
-			FieldSetter: {{.receiver}}.__d3_makeFieldSetter(),
+			ExtractField: {{.receiver}}.__d3_makeFieldExtractor(),
+			SetFieldVal: {{.receiver}}.__d3_makeFieldSetter(),
 			CompareFields: {{.receiver}}.__d3_makeComparator(),
-			Instantiator: {{.receiver}}.__d3_makeInstantiator(),
-			Copier: {{.receiver}}.__d3_makeCopier(),
+			NewInstance: {{.receiver}}.__d3_makeInstantiator(),
+			Copy: {{.receiver}}.__d3_makeCopier(),
 		},
 	}
 }

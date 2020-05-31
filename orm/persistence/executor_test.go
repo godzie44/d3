@@ -199,7 +199,7 @@ type Order struct {
 func (o *Order) D3Token() entity.MetaToken {
 	return entity.MetaToken{
 		Tools: entity.InternalTools{
-			FieldExtractor: func(s interface{}, name string) (interface{}, error) {
+			ExtractField: func(s interface{}, name string) (interface{}, error) {
 				switch name {
 				case "ID":
 					return s.(*Order).ID, nil
@@ -239,7 +239,7 @@ type OrderItem struct {
 func (o *OrderItem) D3Token() entity.MetaToken {
 	return entity.MetaToken{
 		Tools: entity.InternalTools{
-			FieldExtractor: func(s interface{}, name string) (interface{}, error) {
+			ExtractField: func(s interface{}, name string) (interface{}, error) {
 				switch name {
 				case "ID":
 					return s.(*OrderItem).ID, nil

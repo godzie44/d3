@@ -32,7 +32,7 @@ func (h *Hydrator) Hydrate(fetchedData []map[string]interface{}, plan *query.Fet
 
 	var lastInsertedNum int
 	for _, entityData := range groupByEntityData {
-		newEntity := h.meta.Tools.Instantiator()
+		newEntity := h.meta.Tools.NewInstance()
 		err := h.hydrateOne(newEntity, entityData, plan)
 		if err != nil {
 			return nil, err
@@ -54,7 +54,7 @@ func (h *Hydrator) hydrateOne(entity interface{}, entityData []map[string]interf
 			continue
 		}
 
-		if err := h.meta.Tools.FieldSetter(entity, field.Name, h.rawMapper(fieldValue, field.AssociatedType.Kind())); err != nil {
+		if err := h.meta.Tools.SetFieldVal(entity, field.Name, h.rawMapper(fieldValue, field.AssociatedType.Kind())); err != nil {
 			return err
 		}
 	}
@@ -75,7 +75,7 @@ func (h *Hydrator) hydrateOne(entity interface{}, entityData []map[string]interf
 			return err
 		}
 
-		if err = h.meta.Tools.FieldSetter(entity, rel.Field().Name, fieldValue); err != nil {
+		if err = h.meta.Tools.SetFieldVal(entity, rel.Field().Name, fieldValue); err != nil {
 			return err
 		}
 	}
@@ -102,7 +102,7 @@ func (h *Hydrator) fetchRelation(relation d3entity.Relation, entityData []map[st
 			return d3entity.NewWrapEntity(nil), nil
 		}
 
-		entity = relationMeta.Tools.Instantiator()
+		entity = relationMeta.Tools.NewInstance()
 		err := relationHydrator.hydrateOne(entity, entityData, plan.GetChildPlan(relation))
 		if err != nil {
 			return nil, fmt.Errorf("hydration: %w", err)
@@ -126,7 +126,7 @@ func (h *Hydrator) fetchRelation(relation d3entity.Relation, entityData []map[st
 		}
 
 		for _, data := range groupByEntity {
-			entity := relationMeta.Tools.Instantiator()
+			entity := relationMeta.Tools.NewInstance()
 			err := relationHydrator.hydrateOne(entity, data, plan.GetChildPlan(relation))
 			if err != nil {
 				return nil, fmt.Errorf("hydration: %w", err)

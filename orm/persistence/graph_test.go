@@ -17,7 +17,7 @@ type Shop struct {
 func (s *Shop) D3Token() entity.MetaToken {
 	return entity.MetaToken{
 		Tools: entity.InternalTools{
-			FieldExtractor: func(s interface{}, name string) (interface{}, error) {
+			ExtractField: func(s interface{}, name string) (interface{}, error) {
 				switch name {
 				case "ID":
 					return s.(*Shop).ID, nil
@@ -57,7 +57,7 @@ type ShopProfile struct {
 func (s *ShopProfile) D3Token() entity.MetaToken {
 	return entity.MetaToken{
 		Tools: entity.InternalTools{
-			FieldExtractor: func(s interface{}, name string) (interface{}, error) {
+			ExtractField: func(s interface{}, name string) (interface{}, error) {
 				switch name {
 				case "ID":
 					return s.(*ShopProfile).ID, nil
@@ -90,7 +90,7 @@ type Book struct {
 func (b *Book) D3Token() entity.MetaToken {
 	return entity.MetaToken{
 		Tools: entity.InternalTools{
-			FieldExtractor: func(s interface{}, name string) (interface{}, error) {
+			ExtractField: func(s interface{}, name string) (interface{}, error) {
 				switch name {
 				case "ID":
 					return s.(*Book).ID, nil
@@ -126,7 +126,7 @@ type Author struct {
 func (a *Author) D3Token() entity.MetaToken {
 	return entity.MetaToken{
 		Tools: entity.InternalTools{
-			FieldExtractor: func(s interface{}, name string) (interface{}, error) {
+			ExtractField: func(s interface{}, name string) (interface{}, error) {
 				switch name {
 				case "ID":
 					return s.(*Author).ID, nil
@@ -487,7 +487,7 @@ type User struct {
 func (u *User) D3Token() entity.MetaToken {
 	return entity.MetaToken{
 		Tools: entity.InternalTools{
-			FieldExtractor: func(s interface{}, name string) (interface{}, error) {
+			ExtractField: func(s interface{}, name string) (interface{}, error) {
 				switch name {
 				case "ID":
 					return s.(*User).ID, nil
@@ -531,7 +531,7 @@ type Photo struct {
 func (p *Photo) D3Token() entity.MetaToken {
 	return entity.MetaToken{
 		Tools: entity.InternalTools{
-			FieldExtractor: func(s interface{}, name string) (interface{}, error) {
+			ExtractField: func(s interface{}, name string) (interface{}, error) {
 				switch name {
 				case "ID":
 					return s.(*Photo).ID, nil
@@ -635,7 +635,7 @@ type BookCirc struct {
 func (b *BookCirc) D3Token() entity.MetaToken {
 	return entity.MetaToken{
 		Tools: entity.InternalTools{
-			FieldExtractor: func(s interface{}, name string) (interface{}, error) {
+			ExtractField: func(s interface{}, name string) (interface{}, error) {
 				switch name {
 				case "ID":
 					return s.(*BookCirc).ID, nil
@@ -708,7 +708,7 @@ type shopCirc struct {
 func (s *shopCirc) D3Token() entity.MetaToken {
 	return entity.MetaToken{
 		Tools: entity.InternalTools{
-			FieldExtractor: func(s interface{}, name string) (interface{}, error) {
+			ExtractField: func(s interface{}, name string) (interface{}, error) {
 				switch name {
 				case "ID":
 					return s.(*shopCirc).ID, nil
@@ -753,7 +753,7 @@ type shopProfileCirc struct {
 func (s *shopProfileCirc) D3Token() entity.MetaToken {
 	return entity.MetaToken{
 		Tools: entity.InternalTools{
-			FieldExtractor: func(s interface{}, name string) (interface{}, error) {
+			ExtractField: func(s interface{}, name string) (interface{}, error) {
 				switch name {
 				case "ID":
 					return s.(*shopProfileCirc).ID, nil
@@ -790,7 +790,7 @@ type sellerCirc struct {
 func (s *sellerCirc) D3Token() entity.MetaToken {
 	return entity.MetaToken{
 		Tools: entity.InternalTools{
-			FieldExtractor: func(s interface{}, name string) (interface{}, error) {
+			ExtractField: func(s interface{}, name string) (interface{}, error) {
 				switch name {
 				case "ID":
 					return s.(*sellerCirc).ID, nil

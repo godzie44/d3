@@ -18,11 +18,11 @@ const (
 
 type (
 	InternalTools struct {
-		FieldExtractor FieldExtractor
-		FieldSetter    FieldSetter
-		Instantiator   Instantiator
-		Copier         Copier
-		CompareFields  FieldComparator
+		ExtractField  FieldExtractor
+		SetFieldVal   FieldSetter
+		NewInstance   Instantiator
+		Copy          Copier
+		CompareFields FieldComparator
 	}
 	FieldExtractor  func(e interface{}, name string) (interface{}, error)
 	FieldSetter     func(e interface{}, name string, val interface{}) error

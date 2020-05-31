@@ -14,7 +14,7 @@ type imTestEntity1 struct {
 func (i *imTestEntity1) D3Token() entity.MetaToken {
 	return entity.MetaToken{
 		Tools: entity.InternalTools{
-			FieldExtractor: func(s interface{}, name string) (interface{}, error) {
+			ExtractField: func(s interface{}, name string) (interface{}, error) {
 				switch name {
 				case "ID":
 					return s.(*imTestEntity1).ID, nil
@@ -36,7 +36,7 @@ type imTestEntity2 struct {
 func (i *imTestEntity2) D3Token() entity.MetaToken {
 	return entity.MetaToken{
 		Tools: entity.InternalTools{
-			FieldExtractor: func(s interface{}, name string) (interface{}, error) {
+			ExtractField: func(s interface{}, name string) (interface{}, error) {
 				switch name {
 				case "ID":
 					return s.(*imTestEntity2).ID, nil

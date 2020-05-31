@@ -64,7 +64,7 @@ func (uow *UnitOfWork) registerDirty(box *entity.Box) error {
 	uow.dirtyEntities[box.GetEName()][pkVal] = &dirtyEl{
 		box: box,
 		//original: d3reflect.Copy(box.Entity),
-		original: box.Meta.Tools.Copier(box.Entity),
+		original: box.Meta.Tools.Copy(box.Entity),
 	}
 
 	return nil
@@ -84,7 +84,7 @@ func (uow *UnitOfWork) updateFieldOfOriginal(box *entity.Box, fieldName string, 
 		return
 	}
 
-	_ = box.Meta.Tools.FieldSetter(uow.dirtyEntities[box.GetEName()][pkVal].original, fieldName, newVal.DeepCopy())
+	_ = box.Meta.Tools.SetFieldVal(uow.dirtyEntities[box.GetEName()][pkVal].original, fieldName, newVal.DeepCopy())
 }
 
 func (uow *UnitOfWork) registerRemove(box *entity.Box) error {

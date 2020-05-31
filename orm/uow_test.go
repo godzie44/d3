@@ -21,7 +21,7 @@ type uowTestEntity struct {
 func (u *uowTestEntity) D3Token() entity.MetaToken {
 	return entity.MetaToken{
 		Tools: entity.InternalTools{
-			FieldExtractor: func(s interface{}, name string) (interface{}, error) {
+			ExtractField: func(s interface{}, name string) (interface{}, error) {
 				switch name {
 				case "ID":
 					return s.(*uowTestEntity).ID, nil
@@ -33,7 +33,7 @@ func (u *uowTestEntity) D3Token() entity.MetaToken {
 					return nil, nil
 				}
 			},
-			Copier: func(src interface{}) interface{} {
+			Copy: func(src interface{}) interface{} {
 				return nil
 			},
 			CompareFields: func(e1, e2 interface{}, fName string) bool {

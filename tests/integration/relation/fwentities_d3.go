@@ -2,19 +2,19 @@
 
 package relation
 
-import "d3/orm/entity"
 import "fmt"
+import "d3/orm/entity"
 
 func (f *fwTestEntity1) D3Token() entity.MetaToken {
 	return entity.MetaToken{
 		Tpl:       (*fwTestEntity1)(nil),
 		TableName: "",
 		Tools: entity.InternalTools{
-			FieldExtractor: f.__d3_makeFieldExtractor(),
-			FieldSetter:    f.__d3_makeFieldSetter(),
-			CompareFields:  f.__d3_makeComparator(),
-			Instantiator:   f.__d3_makeInstantiator(),
-			Copier:         f.__d3_makeCopier(),
+			ExtractField:  f.__d3_makeFieldExtractor(),
+			SetFieldVal:   f.__d3_makeFieldSetter(),
+			CompareFields: f.__d3_makeComparator(),
+			NewInstance:   f.__d3_makeInstantiator(),
+			Copy:          f.__d3_makeCopier(),
 		},
 	}
 }
@@ -127,11 +127,11 @@ func (f *fwTestEntity2) D3Token() entity.MetaToken {
 		Tpl:       (*fwTestEntity2)(nil),
 		TableName: "",
 		Tools: entity.InternalTools{
-			FieldExtractor: f.__d3_makeFieldExtractor(),
-			FieldSetter:    f.__d3_makeFieldSetter(),
-			CompareFields:  f.__d3_makeComparator(),
-			Instantiator:   f.__d3_makeInstantiator(),
-			Copier:         f.__d3_makeCopier(),
+			ExtractField:  f.__d3_makeFieldExtractor(),
+			SetFieldVal:   f.__d3_makeFieldSetter(),
+			CompareFields: f.__d3_makeComparator(),
+			NewInstance:   f.__d3_makeInstantiator(),
+			Copy:          f.__d3_makeCopier(),
 		},
 	}
 }
@@ -244,11 +244,11 @@ func (f *fwTestEntity3) D3Token() entity.MetaToken {
 		Tpl:       (*fwTestEntity3)(nil),
 		TableName: "",
 		Tools: entity.InternalTools{
-			FieldExtractor: f.__d3_makeFieldExtractor(),
-			FieldSetter:    f.__d3_makeFieldSetter(),
-			CompareFields:  f.__d3_makeComparator(),
-			Instantiator:   f.__d3_makeInstantiator(),
-			Copier:         f.__d3_makeCopier(),
+			ExtractField:  f.__d3_makeFieldExtractor(),
+			SetFieldVal:   f.__d3_makeFieldSetter(),
+			CompareFields: f.__d3_makeComparator(),
+			NewInstance:   f.__d3_makeInstantiator(),
+			Copy:          f.__d3_makeCopier(),
 		},
 	}
 }
@@ -361,11 +361,11 @@ func (f *fwTestEntity4) D3Token() entity.MetaToken {
 		Tpl:       (*fwTestEntity4)(nil),
 		TableName: "",
 		Tools: entity.InternalTools{
-			FieldExtractor: f.__d3_makeFieldExtractor(),
-			FieldSetter:    f.__d3_makeFieldSetter(),
-			CompareFields:  f.__d3_makeComparator(),
-			Instantiator:   f.__d3_makeInstantiator(),
-			Copier:         f.__d3_makeCopier(),
+			ExtractField:  f.__d3_makeFieldExtractor(),
+			SetFieldVal:   f.__d3_makeFieldSetter(),
+			CompareFields: f.__d3_makeComparator(),
+			NewInstance:   f.__d3_makeInstantiator(),
+			Copy:          f.__d3_makeCopier(),
 		},
 	}
 }
