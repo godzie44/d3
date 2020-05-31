@@ -2,10 +2,10 @@
 
 package schema
 
-import "database/sql/driver"
-import "time"
 import "fmt"
 import "d3/orm/entity"
+import "database/sql/driver"
+import "time"
 
 func (s *shop) D3Token() entity.MetaToken {
 	return entity.MetaToken{
@@ -15,6 +15,7 @@ func (s *shop) D3Token() entity.MetaToken {
 			FieldExtractor: s.__d3_makeFieldExtractor(),
 			FieldSetter:    s.__d3_makeFieldSetter(),
 			Instantiator:   s.__d3_makeInstantiator(),
+			Copier:         s.__d3_makeCopier(),
 		},
 	}
 }
@@ -85,6 +86,29 @@ func (s *shop) __d3_makeFieldSetter() entity.FieldSetter {
 	}
 }
 
+func (s *shop) __d3_makeCopier() entity.Copier {
+	return func(src interface{}) interface{} {
+		srcTyped, ok := src.(*shop)
+		if !ok {
+			return fmt.Errorf("invalid entity type")
+		}
+
+		copy := &shop{}
+
+		copy.Id = srcTyped.Id
+		copy.Name = srcTyped.Name
+
+		if srcTyped.Books != nil {
+			copy.Books = srcTyped.Books.(entity.Copiable).DeepCopy().(entity.Collection)
+		}
+		if srcTyped.Profile != nil {
+			copy.Profile = srcTyped.Profile.(entity.Copiable).DeepCopy().(entity.WrappedEntity)
+		}
+
+		return copy
+	}
+}
+
 func (p *profile) D3Token() entity.MetaToken {
 	return entity.MetaToken{
 		Tpl:       (*profile)(nil),
@@ -93,6 +117,7 @@ func (p *profile) D3Token() entity.MetaToken {
 			FieldExtractor: p.__d3_makeFieldExtractor(),
 			FieldSetter:    p.__d3_makeFieldSetter(),
 			Instantiator:   p.__d3_makeInstantiator(),
+			Copier:         p.__d3_makeCopier(),
 		},
 	}
 }
@@ -151,6 +176,22 @@ func (p *profile) __d3_makeFieldSetter() entity.FieldSetter {
 	}
 }
 
+func (p *profile) __d3_makeCopier() entity.Copier {
+	return func(src interface{}) interface{} {
+		srcTyped, ok := src.(*profile)
+		if !ok {
+			return fmt.Errorf("invalid entity type")
+		}
+
+		copy := &profile{}
+
+		copy.Id = srcTyped.Id
+		copy.Description = srcTyped.Description
+
+		return copy
+	}
+}
+
 func (b *book) D3Token() entity.MetaToken {
 	return entity.MetaToken{
 		Tpl:       (*book)(nil),
@@ -159,6 +200,7 @@ func (b *book) D3Token() entity.MetaToken {
 			FieldExtractor: b.__d3_makeFieldExtractor(),
 			FieldSetter:    b.__d3_makeFieldSetter(),
 			Instantiator:   b.__d3_makeInstantiator(),
+			Copier:         b.__d3_makeCopier(),
 		},
 	}
 }
@@ -223,6 +265,26 @@ func (b *book) __d3_makeFieldSetter() entity.FieldSetter {
 	}
 }
 
+func (b *book) __d3_makeCopier() entity.Copier {
+	return func(src interface{}) interface{} {
+		srcTyped, ok := src.(*book)
+		if !ok {
+			return fmt.Errorf("invalid entity type")
+		}
+
+		copy := &book{}
+
+		copy.Id = srcTyped.Id
+		copy.Name = srcTyped.Name
+
+		if srcTyped.Authors != nil {
+			copy.Authors = srcTyped.Authors.(entity.Copiable).DeepCopy().(entity.Collection)
+		}
+
+		return copy
+	}
+}
+
 func (a *author) D3Token() entity.MetaToken {
 	return entity.MetaToken{
 		Tpl:       (*author)(nil),
@@ -231,6 +293,7 @@ func (a *author) D3Token() entity.MetaToken {
 			FieldExtractor: a.__d3_makeFieldExtractor(),
 			FieldSetter:    a.__d3_makeFieldSetter(),
 			Instantiator:   a.__d3_makeInstantiator(),
+			Copier:         a.__d3_makeCopier(),
 		},
 	}
 }
@@ -289,6 +352,22 @@ func (a *author) __d3_makeFieldSetter() entity.FieldSetter {
 	}
 }
 
+func (a *author) __d3_makeCopier() entity.Copier {
+	return func(src interface{}) interface{} {
+		srcTyped, ok := src.(*author)
+		if !ok {
+			return fmt.Errorf("invalid entity type")
+		}
+
+		copy := &author{}
+
+		copy.Id = srcTyped.Id
+		copy.Name = srcTyped.Name
+
+		return copy
+	}
+}
+
 func (a *allTypeStruct) D3Token() entity.MetaToken {
 	return entity.MetaToken{
 		Tpl:       (*allTypeStruct)(nil),
@@ -297,6 +376,7 @@ func (a *allTypeStruct) D3Token() entity.MetaToken {
 			FieldExtractor: a.__d3_makeFieldExtractor(),
 			FieldSetter:    a.__d3_makeFieldSetter(),
 			Instantiator:   a.__d3_makeInstantiator(),
+			Copier:         a.__d3_makeCopier(),
 		},
 	}
 }
@@ -466,5 +546,34 @@ func (a *allTypeStruct) __d3_makeFieldSetter() entity.FieldSetter {
 		default:
 			return fmt.Errorf("field %s not found", name)
 		}
+	}
+}
+
+func (a *allTypeStruct) __d3_makeCopier() entity.Copier {
+	return func(src interface{}) interface{} {
+		srcTyped, ok := src.(*allTypeStruct)
+		if !ok {
+			return fmt.Errorf("invalid entity type")
+		}
+
+		copy := &allTypeStruct{}
+
+		copy.ID = srcTyped.ID
+		copy.BoolField = srcTyped.BoolField
+		copy.IntField = srcTyped.IntField
+		copy.Int32Field = srcTyped.Int32Field
+		copy.Int64Field = srcTyped.Int64Field
+		copy.Float32Field = srcTyped.Float32Field
+		copy.Float64Field = srcTyped.Float64Field
+		copy.StringField = srcTyped.StringField
+		copy.TimeField = srcTyped.TimeField
+		copy.NullBoolField = srcTyped.NullBoolField
+		copy.NullI32Field = srcTyped.NullI32Field
+		copy.NullI64Field = srcTyped.NullI64Field
+		copy.NullFloat64Field = srcTyped.NullFloat64Field
+		copy.NullStringField = srcTyped.NullStringField
+		copy.NullTimeField = srcTyped.NullTimeField
+
+		return copy
 	}
 }

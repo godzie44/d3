@@ -2,7 +2,6 @@ package reflect
 
 import (
 	"errors"
-	"github.com/mohae/deepcopy"
 	"reflect"
 )
 
@@ -58,10 +57,6 @@ func FullName(t reflect.Type) string {
 	default:
 		return t.PkgPath() + "/" + t.Name()
 	}
-}
-
-func Copy(strctPtr interface{}) interface{} {
-	return deepcopy.Copy(strctPtr)
 }
 
 func IsFieldEquals(strctPtr1, strctPtr2 interface{}, field string) bool {

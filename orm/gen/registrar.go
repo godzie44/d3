@@ -15,6 +15,7 @@ type CodeGenerator struct {
 	extractGen      *extractor
 	instantiatorGen *instantiator
 	setterGen       *setter
+	copierGen       *copier
 	pkgPath         string
 }
 
@@ -26,6 +27,7 @@ func NewGenerator(out io.Writer, packagePath string) *CodeGenerator {
 		extractGen:      &extractor{tmpBuff},
 		instantiatorGen: &instantiator{tmpBuff},
 		setterGen:       &setter{out: tmpBuff, imports: map[string]struct{}{}, pkgPath: packagePath},
+		copierGen:       &copier{out: tmpBuff, imports: map[string]struct{}{}, pkgPath: packagePath},
 		pkgPath:         packagePath,
 	}
 }
@@ -60,6 +62,7 @@ func ({{.receiver}} *{{.entity}}) D3Token() entity.MetaToken {
 			FieldExtractor: {{.receiver}}.__d3_makeFieldExtractor(),
 			FieldSetter: {{.receiver}}.__d3_makeFieldSetter(),
 			Instantiator: {{.receiver}}.__d3_makeInstantiator(),
+			Copier: {{.receiver}}.__d3_makeCopier(),
 		},
 	}
 }
@@ -75,11 +78,12 @@ func ({{.receiver}} *{{.entity}}) D3Token() entity.MetaToken {
 	r.extractGen.handle(t)
 	r.instantiatorGen.handle(t)
 	r.setterGen.handle(t)
+	r.copierGen.handle(t)
 }
 
 func (r *CodeGenerator) Write() {
 	var imports = map[string]struct{}{}
-	for _, imp := range append(r.commonPreamble(), r.setterGen.preamble()...) {
+	for _, imp := range append(r.commonPreamble(), append(r.copierGen.preamble(), r.setterGen.preamble()...)...) {
 		if imp == r.pkgPath {
 			continue
 		}

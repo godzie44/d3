@@ -2,7 +2,12 @@ package entity
 
 import "d3/reflect"
 
+type Copiable interface {
+	DeepCopy() interface{}
+}
+
 type Collection interface {
+	Copiable
 	ToSlice() []interface{}
 	Add(el interface{})
 	Get(index int) interface{}

@@ -33,6 +33,9 @@ func (u *uowTestEntity) D3Token() entity.MetaToken {
 					return nil, nil
 				}
 			},
+			Copier: func(src interface{}) interface{} {
+				return nil
+			},
 		},
 	}
 }

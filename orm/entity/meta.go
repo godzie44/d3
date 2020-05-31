@@ -21,10 +21,12 @@ type (
 		FieldExtractor FieldExtractor
 		FieldSetter    FieldSetter
 		Instantiator   Instantiator
+		Copier         Copier
 	}
 	FieldExtractor func(e interface{}, name string) (interface{}, error)
 	FieldSetter    func(e interface{}, name string, val interface{}) error
 	Instantiator   func() interface{}
+	Copier         func(src interface{}) interface{}
 )
 
 type MetaToken struct {

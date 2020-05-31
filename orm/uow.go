@@ -3,7 +3,6 @@ package orm
 import (
 	"d3/orm/entity"
 	"d3/orm/persistence"
-	d3reflect "d3/reflect"
 	"fmt"
 )
 
@@ -63,14 +62,15 @@ func (uow *UnitOfWork) registerDirty(box *entity.Box) error {
 	}
 
 	uow.dirtyEntities[box.GetEName()][pkVal] = &dirtyEl{
-		box:      box,
-		original: d3reflect.Copy(box.Entity),
+		box: box,
+		//original: d3reflect.Copy(box.Entity),
+		original: box.Meta.Tools.Copier(box.Entity),
 	}
 
 	return nil
 }
 
-func (uow *UnitOfWork) updateFieldOfOriginal(box *entity.Box, fieldName string, newVal interface{}) {
+func (uow *UnitOfWork) updateFieldOfOriginal(box *entity.Box, fieldName string, newVal entity.Copiable) {
 	pkVal, err := box.ExtractPk()
 	if err != nil {
 		return
@@ -84,9 +84,7 @@ func (uow *UnitOfWork) updateFieldOfOriginal(box *entity.Box, fieldName string, 
 		return
 	}
 
-	cp := d3reflect.Copy(newVal)
-
-	_ = box.Meta.Tools.FieldSetter(uow.dirtyEntities[box.GetEName()][pkVal].original, fieldName, cp)
+	_ = box.Meta.Tools.FieldSetter(uow.dirtyEntities[box.GetEName()][pkVal].original, fieldName, newVal.DeepCopy())
 }
 
 func (uow *UnitOfWork) registerRemove(box *entity.Box) error {

@@ -13,6 +13,7 @@ func (b *BookLL) D3Token() entity.MetaToken {
 			FieldExtractor: b.__d3_makeFieldExtractor(),
 			FieldSetter:    b.__d3_makeFieldSetter(),
 			Instantiator:   b.__d3_makeInstantiator(),
+			Copier:         b.__d3_makeCopier(),
 		},
 	}
 }
@@ -71,6 +72,26 @@ func (b *BookLL) __d3_makeFieldSetter() entity.FieldSetter {
 	}
 }
 
+func (b *BookLL) __d3_makeCopier() entity.Copier {
+	return func(src interface{}) interface{} {
+		srcTyped, ok := src.(*BookLL)
+		if !ok {
+			return fmt.Errorf("invalid entity type")
+		}
+
+		copy := &BookLL{}
+
+		copy.ID = srcTyped.ID
+		copy.Name = srcTyped.Name
+
+		if srcTyped.Authors != nil {
+			copy.Authors = srcTyped.Authors.(entity.Copiable).DeepCopy().(entity.Collection)
+		}
+
+		return copy
+	}
+}
+
 func (a *AuthorLL) D3Token() entity.MetaToken {
 	return entity.MetaToken{
 		Tpl:       (*AuthorLL)(nil),
@@ -79,6 +100,7 @@ func (a *AuthorLL) D3Token() entity.MetaToken {
 			FieldExtractor: a.__d3_makeFieldExtractor(),
 			FieldSetter:    a.__d3_makeFieldSetter(),
 			Instantiator:   a.__d3_makeInstantiator(),
+			Copier:         a.__d3_makeCopier(),
 		},
 	}
 }
@@ -131,6 +153,22 @@ func (a *AuthorLL) __d3_makeFieldSetter() entity.FieldSetter {
 	}
 }
 
+func (a *AuthorLL) __d3_makeCopier() entity.Copier {
+	return func(src interface{}) interface{} {
+		srcTyped, ok := src.(*AuthorLL)
+		if !ok {
+			return fmt.Errorf("invalid entity type")
+		}
+
+		copy := &AuthorLL{}
+
+		copy.ID = srcTyped.ID
+		copy.Name = srcTyped.Name
+
+		return copy
+	}
+}
+
 func (b *BookEL) D3Token() entity.MetaToken {
 	return entity.MetaToken{
 		Tpl:       (*BookEL)(nil),
@@ -139,6 +177,7 @@ func (b *BookEL) D3Token() entity.MetaToken {
 			FieldExtractor: b.__d3_makeFieldExtractor(),
 			FieldSetter:    b.__d3_makeFieldSetter(),
 			Instantiator:   b.__d3_makeInstantiator(),
+			Copier:         b.__d3_makeCopier(),
 		},
 	}
 }
@@ -197,6 +236,26 @@ func (b *BookEL) __d3_makeFieldSetter() entity.FieldSetter {
 	}
 }
 
+func (b *BookEL) __d3_makeCopier() entity.Copier {
+	return func(src interface{}) interface{} {
+		srcTyped, ok := src.(*BookEL)
+		if !ok {
+			return fmt.Errorf("invalid entity type")
+		}
+
+		copy := &BookEL{}
+
+		copy.Id = srcTyped.Id
+		copy.Name = srcTyped.Name
+
+		if srcTyped.Rel != nil {
+			copy.Rel = srcTyped.Rel.(entity.Copiable).DeepCopy().(entity.Collection)
+		}
+
+		return copy
+	}
+}
+
 func (a *AuthorEL) D3Token() entity.MetaToken {
 	return entity.MetaToken{
 		Tpl:       (*AuthorEL)(nil),
@@ -205,6 +264,7 @@ func (a *AuthorEL) D3Token() entity.MetaToken {
 			FieldExtractor: a.__d3_makeFieldExtractor(),
 			FieldSetter:    a.__d3_makeFieldSetter(),
 			Instantiator:   a.__d3_makeInstantiator(),
+			Copier:         a.__d3_makeCopier(),
 		},
 	}
 }
@@ -263,6 +323,26 @@ func (a *AuthorEL) __d3_makeFieldSetter() entity.FieldSetter {
 	}
 }
 
+func (a *AuthorEL) __d3_makeCopier() entity.Copier {
+	return func(src interface{}) interface{} {
+		srcTyped, ok := src.(*AuthorEL)
+		if !ok {
+			return fmt.Errorf("invalid entity type")
+		}
+
+		copy := &AuthorEL{}
+
+		copy.Id = srcTyped.Id
+		copy.Name = srcTyped.Name
+
+		if srcTyped.Rel != nil {
+			copy.Rel = srcTyped.Rel.(entity.Copiable).DeepCopy().(entity.Collection)
+		}
+
+		return copy
+	}
+}
+
 func (r *Redactor) D3Token() entity.MetaToken {
 	return entity.MetaToken{
 		Tpl:       (*Redactor)(nil),
@@ -271,6 +351,7 @@ func (r *Redactor) D3Token() entity.MetaToken {
 			FieldExtractor: r.__d3_makeFieldExtractor(),
 			FieldSetter:    r.__d3_makeFieldSetter(),
 			Instantiator:   r.__d3_makeInstantiator(),
+			Copier:         r.__d3_makeCopier(),
 		},
 	}
 }
@@ -320,5 +401,21 @@ func (r *Redactor) __d3_makeFieldSetter() entity.FieldSetter {
 		default:
 			return fmt.Errorf("field %s not found", name)
 		}
+	}
+}
+
+func (r *Redactor) __d3_makeCopier() entity.Copier {
+	return func(src interface{}) interface{} {
+		srcTyped, ok := src.(*Redactor)
+		if !ok {
+			return fmt.Errorf("invalid entity type")
+		}
+
+		copy := &Redactor{}
+
+		copy.Id = srcTyped.Id
+		copy.Name = srcTyped.Name
+
+		return copy
 	}
 }

@@ -14,6 +14,7 @@ func (s *ShopLL) D3Token() entity.MetaToken {
 			FieldExtractor: s.__d3_makeFieldExtractor(),
 			FieldSetter:    s.__d3_makeFieldSetter(),
 			Instantiator:   s.__d3_makeInstantiator(),
+			Copier:         s.__d3_makeCopier(),
 		},
 	}
 }
@@ -78,6 +79,26 @@ func (s *ShopLL) __d3_makeFieldSetter() entity.FieldSetter {
 	}
 }
 
+func (s *ShopLL) __d3_makeCopier() entity.Copier {
+	return func(src interface{}) interface{} {
+		srcTyped, ok := src.(*ShopLL)
+		if !ok {
+			return fmt.Errorf("invalid entity type")
+		}
+
+		copy := &ShopLL{}
+
+		copy.ID = srcTyped.ID
+		copy.Data = srcTyped.Data
+
+		if srcTyped.Profile != nil {
+			copy.Profile = srcTyped.Profile.(entity.Copiable).DeepCopy().(entity.WrappedEntity)
+		}
+
+		return copy
+	}
+}
+
 func (p *ProfileLL) D3Token() entity.MetaToken {
 	return entity.MetaToken{
 		Tpl:       (*ProfileLL)(nil),
@@ -86,6 +107,7 @@ func (p *ProfileLL) D3Token() entity.MetaToken {
 			FieldExtractor: p.__d3_makeFieldExtractor(),
 			FieldSetter:    p.__d3_makeFieldSetter(),
 			Instantiator:   p.__d3_makeInstantiator(),
+			Copier:         p.__d3_makeCopier(),
 		},
 	}
 }
@@ -144,6 +166,26 @@ func (p *ProfileLL) __d3_makeFieldSetter() entity.FieldSetter {
 	}
 }
 
+func (p *ProfileLL) __d3_makeCopier() entity.Copier {
+	return func(src interface{}) interface{} {
+		srcTyped, ok := src.(*ProfileLL)
+		if !ok {
+			return fmt.Errorf("invalid entity type")
+		}
+
+		copy := &ProfileLL{}
+
+		copy.ID = srcTyped.ID
+		copy.Data = srcTyped.Data
+
+		if srcTyped.Photo != nil {
+			copy.Photo = srcTyped.Photo.(entity.Copiable).DeepCopy().(entity.WrappedEntity)
+		}
+
+		return copy
+	}
+}
+
 func (p *PhotoLL) D3Token() entity.MetaToken {
 	return entity.MetaToken{
 		Tpl:       (*PhotoLL)(nil),
@@ -152,6 +194,7 @@ func (p *PhotoLL) D3Token() entity.MetaToken {
 			FieldExtractor: p.__d3_makeFieldExtractor(),
 			FieldSetter:    p.__d3_makeFieldSetter(),
 			Instantiator:   p.__d3_makeInstantiator(),
+			Copier:         p.__d3_makeCopier(),
 		},
 	}
 }
@@ -204,6 +247,22 @@ func (p *PhotoLL) __d3_makeFieldSetter() entity.FieldSetter {
 	}
 }
 
+func (p *PhotoLL) __d3_makeCopier() entity.Copier {
+	return func(src interface{}) interface{} {
+		srcTyped, ok := src.(*PhotoLL)
+		if !ok {
+			return fmt.Errorf("invalid entity type")
+		}
+
+		copy := &PhotoLL{}
+
+		copy.ID = srcTyped.ID
+		copy.Data = srcTyped.Data
+
+		return copy
+	}
+}
+
 func (s *ShopEL) D3Token() entity.MetaToken {
 	return entity.MetaToken{
 		Tpl:       (*ShopEL)(nil),
@@ -212,6 +271,7 @@ func (s *ShopEL) D3Token() entity.MetaToken {
 			FieldExtractor: s.__d3_makeFieldExtractor(),
 			FieldSetter:    s.__d3_makeFieldSetter(),
 			Instantiator:   s.__d3_makeInstantiator(),
+			Copier:         s.__d3_makeCopier(),
 		},
 	}
 }
@@ -267,5 +327,25 @@ func (s *ShopEL) __d3_makeFieldSetter() entity.FieldSetter {
 		default:
 			return fmt.Errorf("field %s not found", name)
 		}
+	}
+}
+
+func (s *ShopEL) __d3_makeCopier() entity.Copier {
+	return func(src interface{}) interface{} {
+		srcTyped, ok := src.(*ShopEL)
+		if !ok {
+			return fmt.Errorf("invalid entity type")
+		}
+
+		copy := &ShopEL{}
+
+		copy.Id = srcTyped.Id
+		copy.Data = srcTyped.Data
+
+		if srcTyped.Profile != nil {
+			copy.Profile = srcTyped.Profile.(entity.Copiable).DeepCopy().(entity.WrappedEntity)
+		}
+
+		return copy
 	}
 }

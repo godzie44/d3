@@ -24,35 +24,6 @@ func TestGetFirstElementFromSlice(t *testing.T) {
 	assert.Equal(t, el.(int), 1)
 }
 
-type testCollection struct {
-	Data []interface{}
-}
-
-func newTestCollection(d []interface{}) *testCollection {
-	return &testCollection{Data: d}
-}
-
-type testEntity3 struct {
-	ID    string
-	Count int
-	Rel   interface{}
-}
-
-func TestCopy(t *testing.T) {
-	te := &testEntity3{ID: "1", Count: 1, Rel: newTestCollection([]interface{}{1, 2, 3})}
-
-	copyTe := Copy(te).(*testEntity3)
-	assert.Equal(t, te.ID, copyTe.ID)
-	assert.Equal(t, te.Count, copyTe.Count)
-	assert.Equal(t, te.Rel.(*testCollection).Data, copyTe.Rel.(*testCollection).Data)
-
-	te.Rel.(*testCollection).Data = te.Rel.(*testCollection).Data[1:]
-
-	assert.Equal(t, te.ID, copyTe.ID)
-	assert.Equal(t, te.Count, copyTe.Count)
-	assert.NotEqual(t, te.Rel.(*testCollection).Data, copyTe.Rel.(*testCollection).Data)
-}
-
 func TestIsFieldEquals(t *testing.T) {
 	te1 := &testEntity{ID: "1", Count: 1}
 	te2 := &testEntity{ID: "2", Count: 1}

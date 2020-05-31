@@ -67,28 +67,16 @@ func ({{.receiver}} *{{.entity}}) __d3_makeFieldSetter() entity.FieldSetter {
 	}
 	for i := 0; i < t.NumField(); i++ {
 		field := t.Field(i)
-		var fieldType = field.Type
-		if field.Type.Kind() == reflect.Ptr {
-			fieldType = field.Type.Elem()
-		}
-
-		var fType = fieldType.Name()
+		typeName, pkgName := extractTypeAndPackageName(t.Field(i).Type, s.pkgPath)
 
 		if reflect.PtrTo(field.Type).Implements(scannerType) {
-			scannerFields = append(scannerFields, struct{ FieldName, TypeName string }{FieldName: field.Name, TypeName: fType})
+			scannerFields = append(scannerFields, struct{ FieldName, TypeName string }{FieldName: field.Name, TypeName: typeName})
 		} else {
-			if pkgPath := fieldType.PkgPath(); pkgPath != "" && pkgPath != s.pkgPath {
-				s.imports[pkgPath] = struct{}{}
-
-				pkgNameAt := strings.LastIndex(pkgPath, "/")
-				fType = pkgPath[pkgNameAt+1:] + "." + fType
+			if pkgName != "" && pkgName != s.pkgPath {
+				s.imports[pkgName] = struct{}{}
 			}
 
-			if field.Type.Kind() == reflect.Ptr {
-				fType = "*" + fType
-			}
-
-			fields = append(fields, struct{ FieldName, TypeName string }{FieldName: field.Name, TypeName: fType})
+			fields = append(fields, struct{ FieldName, TypeName string }{FieldName: field.Name, TypeName: typeName})
 		}
 	}
 

@@ -13,6 +13,7 @@ func (e *entity1) D3Token() entity.MetaToken {
 			FieldExtractor: e.__d3_makeFieldExtractor(),
 			FieldSetter:    e.__d3_makeFieldSetter(),
 			Instantiator:   e.__d3_makeInstantiator(),
+			Copier:         e.__d3_makeCopier(),
 		},
 	}
 }
@@ -71,6 +72,26 @@ func (e *entity1) __d3_makeFieldSetter() entity.FieldSetter {
 	}
 }
 
+func (e *entity1) __d3_makeCopier() entity.Copier {
+	return func(src interface{}) interface{} {
+		srcTyped, ok := src.(*entity1)
+		if !ok {
+			return fmt.Errorf("invalid entity type")
+		}
+
+		copy := &entity1{}
+
+		copy.Id = srcTyped.Id
+		copy.Data = srcTyped.Data
+
+		if srcTyped.Rel != nil {
+			copy.Rel = srcTyped.Rel.(entity.Copiable).DeepCopy().(entity.Collection)
+		}
+
+		return copy
+	}
+}
+
 func (e *entity2) D3Token() entity.MetaToken {
 	return entity.MetaToken{
 		Tpl:       (*entity2)(nil),
@@ -79,6 +100,7 @@ func (e *entity2) D3Token() entity.MetaToken {
 			FieldExtractor: e.__d3_makeFieldExtractor(),
 			FieldSetter:    e.__d3_makeFieldSetter(),
 			Instantiator:   e.__d3_makeInstantiator(),
+			Copier:         e.__d3_makeCopier(),
 		},
 	}
 }
@@ -128,5 +150,21 @@ func (e *entity2) __d3_makeFieldSetter() entity.FieldSetter {
 		default:
 			return fmt.Errorf("field %s not found", name)
 		}
+	}
+}
+
+func (e *entity2) __d3_makeCopier() entity.Copier {
+	return func(src interface{}) interface{} {
+		srcTyped, ok := src.(*entity2)
+		if !ok {
+			return fmt.Errorf("invalid entity type")
+		}
+
+		copy := &entity2{}
+
+		copy.Id = srcTyped.Id
+		copy.Data = srcTyped.Data
+
+		return copy
 	}
 }

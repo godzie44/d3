@@ -1,6 +1,7 @@
 package entity
 
 type WrappedEntity interface {
+	Copiable
 	IsNil() bool
 	Unwrap() interface{}
 	Wrap(interface{})

@@ -14,6 +14,7 @@ func (s *ShopCirc) D3Token() entity.MetaToken {
 			FieldExtractor: s.__d3_makeFieldExtractor(),
 			FieldSetter:    s.__d3_makeFieldSetter(),
 			Instantiator:   s.__d3_makeInstantiator(),
+			Copier:         s.__d3_makeCopier(),
 		},
 	}
 }
@@ -102,6 +103,38 @@ func (s *ShopCirc) __d3_makeFieldSetter() entity.FieldSetter {
 	}
 }
 
+func (s *ShopCirc) __d3_makeCopier() entity.Copier {
+	return func(src interface{}) interface{} {
+		srcTyped, ok := src.(*ShopCirc)
+		if !ok {
+			return fmt.Errorf("invalid entity type")
+		}
+
+		copy := &ShopCirc{}
+
+		copy.Id = srcTyped.Id
+		copy.Name = srcTyped.Name
+
+		if srcTyped.Profile != nil {
+			copy.Profile = srcTyped.Profile.(entity.Copiable).DeepCopy().(entity.WrappedEntity)
+		}
+		if srcTyped.FriendShop != nil {
+			copy.FriendShop = srcTyped.FriendShop.(entity.Copiable).DeepCopy().(entity.WrappedEntity)
+		}
+		if srcTyped.TopSeller != nil {
+			copy.TopSeller = srcTyped.TopSeller.(entity.Copiable).DeepCopy().(entity.WrappedEntity)
+		}
+		if srcTyped.Sellers != nil {
+			copy.Sellers = srcTyped.Sellers.(entity.Copiable).DeepCopy().(entity.Collection)
+		}
+		if srcTyped.KnownSellers != nil {
+			copy.KnownSellers = srcTyped.KnownSellers.(entity.Copiable).DeepCopy().(entity.Collection)
+		}
+
+		return copy
+	}
+}
+
 func (s *ShopProfileCirc) D3Token() entity.MetaToken {
 	return entity.MetaToken{
 		Tpl:       (*ShopProfileCirc)(nil),
@@ -110,6 +143,7 @@ func (s *ShopProfileCirc) D3Token() entity.MetaToken {
 			FieldExtractor: s.__d3_makeFieldExtractor(),
 			FieldSetter:    s.__d3_makeFieldSetter(),
 			Instantiator:   s.__d3_makeInstantiator(),
+			Copier:         s.__d3_makeCopier(),
 		},
 	}
 }
@@ -174,6 +208,26 @@ func (s *ShopProfileCirc) __d3_makeFieldSetter() entity.FieldSetter {
 	}
 }
 
+func (s *ShopProfileCirc) __d3_makeCopier() entity.Copier {
+	return func(src interface{}) interface{} {
+		srcTyped, ok := src.(*ShopProfileCirc)
+		if !ok {
+			return fmt.Errorf("invalid entity type")
+		}
+
+		copy := &ShopProfileCirc{}
+
+		copy.Id = srcTyped.Id
+		copy.Description = srcTyped.Description
+
+		if srcTyped.Shop != nil {
+			copy.Shop = srcTyped.Shop.(entity.Copiable).DeepCopy().(entity.WrappedEntity)
+		}
+
+		return copy
+	}
+}
+
 func (s *SellerCirc) D3Token() entity.MetaToken {
 	return entity.MetaToken{
 		Tpl:       (*SellerCirc)(nil),
@@ -182,6 +236,7 @@ func (s *SellerCirc) D3Token() entity.MetaToken {
 			FieldExtractor: s.__d3_makeFieldExtractor(),
 			FieldSetter:    s.__d3_makeFieldSetter(),
 			Instantiator:   s.__d3_makeInstantiator(),
+			Copier:         s.__d3_makeCopier(),
 		},
 	}
 }
@@ -249,5 +304,28 @@ func (s *SellerCirc) __d3_makeFieldSetter() entity.FieldSetter {
 		default:
 			return fmt.Errorf("field %s not found", name)
 		}
+	}
+}
+
+func (s *SellerCirc) __d3_makeCopier() entity.Copier {
+	return func(src interface{}) interface{} {
+		srcTyped, ok := src.(*SellerCirc)
+		if !ok {
+			return fmt.Errorf("invalid entity type")
+		}
+
+		copy := &SellerCirc{}
+
+		copy.Id = srcTyped.Id
+		copy.Name = srcTyped.Name
+
+		if srcTyped.CurrentShop != nil {
+			copy.CurrentShop = srcTyped.CurrentShop.(entity.Copiable).DeepCopy().(entity.WrappedEntity)
+		}
+		if srcTyped.KnownShops != nil {
+			copy.KnownShops = srcTyped.KnownShops.(entity.Copiable).DeepCopy().(entity.Collection)
+		}
+
+		return copy
 	}
 }

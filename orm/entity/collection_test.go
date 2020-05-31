@@ -1,7 +1,6 @@
 package entity
 
 import (
-	"d3/reflect"
 	"github.com/stretchr/testify/assert"
 	"testing"
 )
@@ -82,20 +81,4 @@ func TestLazyCollectionToSlice(t *testing.T) {
 	collection.Add(3)
 
 	assert.Equal(t, []interface{}{1, 2, 3}, collection.ToSlice())
-}
-
-type copyEntity struct {
-	ID  int
-	Rel Collection
-}
-
-func TestCopy(t *testing.T) {
-	te := &copyEntity{ID: 1, Rel: NewCollection([]interface{}{1, 2, 3})}
-
-	copyTe := reflect.Copy(te).(*copyEntity)
-	assert.Equal(t, te.Rel.ToSlice(), copyTe.Rel.ToSlice())
-
-	te.Rel.Remove(1)
-
-	assert.NotEqual(t, te.Rel.ToSlice(), copyTe.Rel.ToSlice())
 }

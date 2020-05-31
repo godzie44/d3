@@ -13,6 +13,7 @@ func (s *ShopLR) D3Token() entity.MetaToken {
 			FieldExtractor: s.__d3_makeFieldExtractor(),
 			FieldSetter:    s.__d3_makeFieldSetter(),
 			Instantiator:   s.__d3_makeInstantiator(),
+			Copier:         s.__d3_makeCopier(),
 		},
 	}
 }
@@ -71,6 +72,26 @@ func (s *ShopLR) __d3_makeFieldSetter() entity.FieldSetter {
 	}
 }
 
+func (s *ShopLR) __d3_makeCopier() entity.Copier {
+	return func(src interface{}) interface{} {
+		srcTyped, ok := src.(*ShopLR)
+		if !ok {
+			return fmt.Errorf("invalid entity type")
+		}
+
+		copy := &ShopLR{}
+
+		copy.Id = srcTyped.Id
+		copy.Name = srcTyped.Name
+
+		if srcTyped.Books != nil {
+			copy.Books = srcTyped.Books.(entity.Copiable).DeepCopy().(entity.Collection)
+		}
+
+		return copy
+	}
+}
+
 func (b *BookLR) D3Token() entity.MetaToken {
 	return entity.MetaToken{
 		Tpl:       (*BookLR)(nil),
@@ -79,6 +100,7 @@ func (b *BookLR) D3Token() entity.MetaToken {
 			FieldExtractor: b.__d3_makeFieldExtractor(),
 			FieldSetter:    b.__d3_makeFieldSetter(),
 			Instantiator:   b.__d3_makeInstantiator(),
+			Copier:         b.__d3_makeCopier(),
 		},
 	}
 }
@@ -131,6 +153,22 @@ func (b *BookLR) __d3_makeFieldSetter() entity.FieldSetter {
 	}
 }
 
+func (b *BookLR) __d3_makeCopier() entity.Copier {
+	return func(src interface{}) interface{} {
+		srcTyped, ok := src.(*BookLR)
+		if !ok {
+			return fmt.Errorf("invalid entity type")
+		}
+
+		copy := &BookLR{}
+
+		copy.Id = srcTyped.Id
+		copy.Name = srcTyped.Name
+
+		return copy
+	}
+}
+
 func (s *ShopER) D3Token() entity.MetaToken {
 	return entity.MetaToken{
 		Tpl:       (*ShopER)(nil),
@@ -139,6 +177,7 @@ func (s *ShopER) D3Token() entity.MetaToken {
 			FieldExtractor: s.__d3_makeFieldExtractor(),
 			FieldSetter:    s.__d3_makeFieldSetter(),
 			Instantiator:   s.__d3_makeInstantiator(),
+			Copier:         s.__d3_makeCopier(),
 		},
 	}
 }
@@ -197,6 +236,26 @@ func (s *ShopER) __d3_makeFieldSetter() entity.FieldSetter {
 	}
 }
 
+func (s *ShopER) __d3_makeCopier() entity.Copier {
+	return func(src interface{}) interface{} {
+		srcTyped, ok := src.(*ShopER)
+		if !ok {
+			return fmt.Errorf("invalid entity type")
+		}
+
+		copy := &ShopER{}
+
+		copy.Id = srcTyped.Id
+		copy.Name = srcTyped.Name
+
+		if srcTyped.Books != nil {
+			copy.Books = srcTyped.Books.(entity.Copiable).DeepCopy().(entity.Collection)
+		}
+
+		return copy
+	}
+}
+
 func (b *BookER) D3Token() entity.MetaToken {
 	return entity.MetaToken{
 		Tpl:       (*BookER)(nil),
@@ -205,6 +264,7 @@ func (b *BookER) D3Token() entity.MetaToken {
 			FieldExtractor: b.__d3_makeFieldExtractor(),
 			FieldSetter:    b.__d3_makeFieldSetter(),
 			Instantiator:   b.__d3_makeInstantiator(),
+			Copier:         b.__d3_makeCopier(),
 		},
 	}
 }
@@ -263,6 +323,26 @@ func (b *BookER) __d3_makeFieldSetter() entity.FieldSetter {
 	}
 }
 
+func (b *BookER) __d3_makeCopier() entity.Copier {
+	return func(src interface{}) interface{} {
+		srcTyped, ok := src.(*BookER)
+		if !ok {
+			return fmt.Errorf("invalid entity type")
+		}
+
+		copy := &BookER{}
+
+		copy.Id = srcTyped.Id
+		copy.Name = srcTyped.Name
+
+		if srcTyped.Discounts != nil {
+			copy.Discounts = srcTyped.Discounts.(entity.Copiable).DeepCopy().(entity.Collection)
+		}
+
+		return copy
+	}
+}
+
 func (d *DiscountER) D3Token() entity.MetaToken {
 	return entity.MetaToken{
 		Tpl:       (*DiscountER)(nil),
@@ -271,6 +351,7 @@ func (d *DiscountER) D3Token() entity.MetaToken {
 			FieldExtractor: d.__d3_makeFieldExtractor(),
 			FieldSetter:    d.__d3_makeFieldSetter(),
 			Instantiator:   d.__d3_makeInstantiator(),
+			Copier:         d.__d3_makeCopier(),
 		},
 	}
 }
@@ -320,5 +401,21 @@ func (d *DiscountER) __d3_makeFieldSetter() entity.FieldSetter {
 		default:
 			return fmt.Errorf("field %s not found", name)
 		}
+	}
+}
+
+func (d *DiscountER) __d3_makeCopier() entity.Copier {
+	return func(src interface{}) interface{} {
+		srcTyped, ok := src.(*DiscountER)
+		if !ok {
+			return fmt.Errorf("invalid entity type")
+		}
+
+		copy := &DiscountER{}
+
+		copy.Id = srcTyped.Id
+		copy.Value = srcTyped.Value
+
+		return copy
 	}
 }
