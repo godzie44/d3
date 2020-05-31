@@ -1,7 +1,7 @@
 package entity
 
 import (
-	d3reflect "d3/reflect"
+	"errors"
 	"fmt"
 	"reflect"
 	"regexp"
@@ -61,10 +61,18 @@ type FieldInfo struct {
 	FullDbAlias    string
 }
 
+var (
+	ErrInvalidType = errors.New("invalid type, must be struct or pointer to struct")
+)
+
 func CreateMeta(mapping UserMapping) (*MetaInfo, error) {
-	eType, err := d3reflect.IntoStructType(reflect.TypeOf(mapping.Entity))
-	if err != nil {
-		return nil, err
+	eType := reflect.TypeOf(mapping.Entity)
+	if eType.Kind() == reflect.Ptr {
+		eType = eType.Elem()
+	}
+
+	if eType.Kind() != reflect.Struct {
+		return nil, ErrInvalidType
 	}
 
 	if _, hasToken := mapping.Entity.(D3Entity); !hasToken {
@@ -77,7 +85,7 @@ func CreateMeta(mapping UserMapping) (*MetaInfo, error) {
 		Fields:      make(map[string]*FieldInfo),
 		Relations:   make(map[string]Relation),
 		RelatedMeta: make(map[Name]*MetaInfo),
-		EntityName:  Name(d3reflect.FullName(eType)),
+		EntityName:  nameFromEntity(mapping.Entity),
 		Tools:       mapping.Entity.(D3Entity).D3Token().Tools,
 	}
 

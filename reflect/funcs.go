@@ -7,7 +7,6 @@ import (
 
 var (
 	errElementNofFound = errors.New("element not found")
-	ErrInvalidType     = errors.New("invalid type, must be struct or pointer to struct")
 )
 
 func GetFirstElementFromSlice(slice interface{}) (interface{}, error) {
@@ -36,25 +35,4 @@ func BreakUpSlice(slice interface{}) []interface{} {
 	}
 
 	return result
-}
-
-func IntoStructType(t reflect.Type) (reflect.Type, error) {
-	if t.Kind() == reflect.Ptr {
-		t = t.Elem()
-	}
-
-	if t.Kind() != reflect.Struct {
-		return nil, ErrInvalidType
-	}
-
-	return t, nil
-}
-
-func FullName(t reflect.Type) string {
-	switch t.Kind() {
-	case reflect.Ptr:
-		return t.Elem().PkgPath() + "/" + t.Elem().Name()
-	default:
-		return t.PkgPath() + "/" + t.Name()
-	}
 }
