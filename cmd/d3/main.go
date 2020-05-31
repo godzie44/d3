@@ -5,6 +5,7 @@ import (
 	"d3/orm/gen/bootstrap"
 	"flag"
 	"fmt"
+	"golang.org/x/sync/errgroup"
 	"os"
 	"path/filepath"
 	"strings"
@@ -15,15 +16,21 @@ var debug = flag.Bool("debug", false, "dont delete temporary files")
 func main() {
 	flag.Parse()
 
+	g := &errgroup.Group{}
 	for _, fileName := range flag.Args() {
-		if err := walkAndGenerate(fileName); err != nil {
+		if err := walkAndCreateTask(fileName, g); err != nil {
 			fmt.Fprintln(os.Stderr, err)
 			os.Exit(1)
 		}
 	}
+
+	if err := g.Wait(); err != nil {
+		fmt.Fprintln(os.Stderr, err)
+		os.Exit(1)
+	}
 }
 
-func walkAndGenerate(where string) error {
+func walkAndCreateTask(where string, taskPool *errgroup.Group) error {
 	return filepath.Walk(where,
 		func(path string, info os.FileInfo, err error) error {
 			if err != nil {
@@ -31,7 +38,10 @@ func walkAndGenerate(where string) error {
 			}
 
 			if !info.IsDir() && !strings.HasSuffix(path, "_test.go") {
-				return generate(path)
+				taskPool.Go(func() error {
+					return generate(path)
+				})
+				return nil
 			}
 
 			return nil
