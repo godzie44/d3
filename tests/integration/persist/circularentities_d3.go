@@ -13,6 +13,7 @@ func (s *ShopCirc) D3Token() entity.MetaToken {
 		Tools: entity.InternalTools{
 			FieldExtractor: s.__d3_makeFieldExtractor(),
 			FieldSetter:    s.__d3_makeFieldSetter(),
+			CompareFields:  s.__d3_makeComparator(),
 			Instantiator:   s.__d3_makeInstantiator(),
 			Copier:         s.__d3_makeCopier(),
 		},
@@ -135,6 +136,43 @@ func (s *ShopCirc) __d3_makeCopier() entity.Copier {
 	}
 }
 
+func (s *ShopCirc) __d3_makeComparator() entity.FieldComparator {
+	return func(e1, e2 interface{}, fName string) bool {
+		if e1 == nil || e2 == nil {
+			return e1 == e2
+		}
+
+		e1Typed, ok := e1.(*ShopCirc)
+		if !ok {
+			return false
+		}
+		e2Typed, ok := e2.(*ShopCirc)
+		if !ok {
+			return false
+		}
+
+		switch fName {
+
+		case "Id":
+			return e1Typed.Id == e2Typed.Id
+		case "Name":
+			return e1Typed.Name == e2Typed.Name
+		case "Profile":
+			return e1Typed.Profile == e2Typed.Profile
+		case "FriendShop":
+			return e1Typed.FriendShop == e2Typed.FriendShop
+		case "TopSeller":
+			return e1Typed.TopSeller == e2Typed.TopSeller
+		case "Sellers":
+			return e1Typed.Sellers == e2Typed.Sellers
+		case "KnownSellers":
+			return e1Typed.KnownSellers == e2Typed.KnownSellers
+		default:
+			return false
+		}
+	}
+}
+
 func (s *ShopProfileCirc) D3Token() entity.MetaToken {
 	return entity.MetaToken{
 		Tpl:       (*ShopProfileCirc)(nil),
@@ -142,6 +180,7 @@ func (s *ShopProfileCirc) D3Token() entity.MetaToken {
 		Tools: entity.InternalTools{
 			FieldExtractor: s.__d3_makeFieldExtractor(),
 			FieldSetter:    s.__d3_makeFieldSetter(),
+			CompareFields:  s.__d3_makeComparator(),
 			Instantiator:   s.__d3_makeInstantiator(),
 			Copier:         s.__d3_makeCopier(),
 		},
@@ -228,6 +267,35 @@ func (s *ShopProfileCirc) __d3_makeCopier() entity.Copier {
 	}
 }
 
+func (s *ShopProfileCirc) __d3_makeComparator() entity.FieldComparator {
+	return func(e1, e2 interface{}, fName string) bool {
+		if e1 == nil || e2 == nil {
+			return e1 == e2
+		}
+
+		e1Typed, ok := e1.(*ShopProfileCirc)
+		if !ok {
+			return false
+		}
+		e2Typed, ok := e2.(*ShopProfileCirc)
+		if !ok {
+			return false
+		}
+
+		switch fName {
+
+		case "Id":
+			return e1Typed.Id == e2Typed.Id
+		case "Shop":
+			return e1Typed.Shop == e2Typed.Shop
+		case "Description":
+			return e1Typed.Description == e2Typed.Description
+		default:
+			return false
+		}
+	}
+}
+
 func (s *SellerCirc) D3Token() entity.MetaToken {
 	return entity.MetaToken{
 		Tpl:       (*SellerCirc)(nil),
@@ -235,6 +303,7 @@ func (s *SellerCirc) D3Token() entity.MetaToken {
 		Tools: entity.InternalTools{
 			FieldExtractor: s.__d3_makeFieldExtractor(),
 			FieldSetter:    s.__d3_makeFieldSetter(),
+			CompareFields:  s.__d3_makeComparator(),
 			Instantiator:   s.__d3_makeInstantiator(),
 			Copier:         s.__d3_makeCopier(),
 		},
@@ -327,5 +396,36 @@ func (s *SellerCirc) __d3_makeCopier() entity.Copier {
 		}
 
 		return copy
+	}
+}
+
+func (s *SellerCirc) __d3_makeComparator() entity.FieldComparator {
+	return func(e1, e2 interface{}, fName string) bool {
+		if e1 == nil || e2 == nil {
+			return e1 == e2
+		}
+
+		e1Typed, ok := e1.(*SellerCirc)
+		if !ok {
+			return false
+		}
+		e2Typed, ok := e2.(*SellerCirc)
+		if !ok {
+			return false
+		}
+
+		switch fName {
+
+		case "Id":
+			return e1Typed.Id == e2Typed.Id
+		case "Name":
+			return e1Typed.Name == e2Typed.Name
+		case "CurrentShop":
+			return e1Typed.CurrentShop == e2Typed.CurrentShop
+		case "KnownShops":
+			return e1Typed.KnownShops == e2Typed.KnownShops
+		default:
+			return false
+		}
 	}
 }

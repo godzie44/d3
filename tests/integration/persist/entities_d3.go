@@ -2,9 +2,9 @@
 
 package persist
 
+import "database/sql/driver"
 import "fmt"
 import "d3/orm/entity"
-import "database/sql/driver"
 
 func (s *Shop) D3Token() entity.MetaToken {
 	return entity.MetaToken{
@@ -13,6 +13,7 @@ func (s *Shop) D3Token() entity.MetaToken {
 		Tools: entity.InternalTools{
 			FieldExtractor: s.__d3_makeFieldExtractor(),
 			FieldSetter:    s.__d3_makeFieldSetter(),
+			CompareFields:  s.__d3_makeComparator(),
 			Instantiator:   s.__d3_makeInstantiator(),
 			Copier:         s.__d3_makeCopier(),
 		},
@@ -108,6 +109,37 @@ func (s *Shop) __d3_makeCopier() entity.Copier {
 	}
 }
 
+func (s *Shop) __d3_makeComparator() entity.FieldComparator {
+	return func(e1, e2 interface{}, fName string) bool {
+		if e1 == nil || e2 == nil {
+			return e1 == e2
+		}
+
+		e1Typed, ok := e1.(*Shop)
+		if !ok {
+			return false
+		}
+		e2Typed, ok := e2.(*Shop)
+		if !ok {
+			return false
+		}
+
+		switch fName {
+
+		case "Id":
+			return e1Typed.Id == e2Typed.Id
+		case "Books":
+			return e1Typed.Books == e2Typed.Books
+		case "Profile":
+			return e1Typed.Profile == e2Typed.Profile
+		case "Name":
+			return e1Typed.Name == e2Typed.Name
+		default:
+			return false
+		}
+	}
+}
+
 func (s *ShopProfile) D3Token() entity.MetaToken {
 	return entity.MetaToken{
 		Tpl:       (*ShopProfile)(nil),
@@ -115,6 +147,7 @@ func (s *ShopProfile) D3Token() entity.MetaToken {
 		Tools: entity.InternalTools{
 			FieldExtractor: s.__d3_makeFieldExtractor(),
 			FieldSetter:    s.__d3_makeFieldSetter(),
+			CompareFields:  s.__d3_makeComparator(),
 			Instantiator:   s.__d3_makeInstantiator(),
 			Copier:         s.__d3_makeCopier(),
 		},
@@ -191,6 +224,33 @@ func (s *ShopProfile) __d3_makeCopier() entity.Copier {
 	}
 }
 
+func (s *ShopProfile) __d3_makeComparator() entity.FieldComparator {
+	return func(e1, e2 interface{}, fName string) bool {
+		if e1 == nil || e2 == nil {
+			return e1 == e2
+		}
+
+		e1Typed, ok := e1.(*ShopProfile)
+		if !ok {
+			return false
+		}
+		e2Typed, ok := e2.(*ShopProfile)
+		if !ok {
+			return false
+		}
+
+		switch fName {
+
+		case "Id":
+			return e1Typed.Id == e2Typed.Id
+		case "Description":
+			return e1Typed.Description == e2Typed.Description
+		default:
+			return false
+		}
+	}
+}
+
 func (b *Book) D3Token() entity.MetaToken {
 	return entity.MetaToken{
 		Tpl:       (*Book)(nil),
@@ -198,6 +258,7 @@ func (b *Book) D3Token() entity.MetaToken {
 		Tools: entity.InternalTools{
 			FieldExtractor: b.__d3_makeFieldExtractor(),
 			FieldSetter:    b.__d3_makeFieldSetter(),
+			CompareFields:  b.__d3_makeComparator(),
 			Instantiator:   b.__d3_makeInstantiator(),
 			Copier:         b.__d3_makeCopier(),
 		},
@@ -284,6 +345,35 @@ func (b *Book) __d3_makeCopier() entity.Copier {
 	}
 }
 
+func (b *Book) __d3_makeComparator() entity.FieldComparator {
+	return func(e1, e2 interface{}, fName string) bool {
+		if e1 == nil || e2 == nil {
+			return e1 == e2
+		}
+
+		e1Typed, ok := e1.(*Book)
+		if !ok {
+			return false
+		}
+		e2Typed, ok := e2.(*Book)
+		if !ok {
+			return false
+		}
+
+		switch fName {
+
+		case "Id":
+			return e1Typed.Id == e2Typed.Id
+		case "Authors":
+			return e1Typed.Authors == e2Typed.Authors
+		case "Name":
+			return e1Typed.Name == e2Typed.Name
+		default:
+			return false
+		}
+	}
+}
+
 func (a *Author) D3Token() entity.MetaToken {
 	return entity.MetaToken{
 		Tpl:       (*Author)(nil),
@@ -291,6 +381,7 @@ func (a *Author) D3Token() entity.MetaToken {
 		Tools: entity.InternalTools{
 			FieldExtractor: a.__d3_makeFieldExtractor(),
 			FieldSetter:    a.__d3_makeFieldSetter(),
+			CompareFields:  a.__d3_makeComparator(),
 			Instantiator:   a.__d3_makeInstantiator(),
 			Copier:         a.__d3_makeCopier(),
 		},
@@ -364,5 +455,32 @@ func (a *Author) __d3_makeCopier() entity.Copier {
 		copy.Name = srcTyped.Name
 
 		return copy
+	}
+}
+
+func (a *Author) __d3_makeComparator() entity.FieldComparator {
+	return func(e1, e2 interface{}, fName string) bool {
+		if e1 == nil || e2 == nil {
+			return e1 == e2
+		}
+
+		e1Typed, ok := e1.(*Author)
+		if !ok {
+			return false
+		}
+		e2Typed, ok := e2.(*Author)
+		if !ok {
+			return false
+		}
+
+		switch fName {
+
+		case "Id":
+			return e1Typed.Id == e2Typed.Id
+		case "Name":
+			return e1Typed.Name == e2Typed.Name
+		default:
+			return false
+		}
 	}
 }

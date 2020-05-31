@@ -14,6 +14,7 @@ func (s *shop) D3Token() entity.MetaToken {
 		Tools: entity.InternalTools{
 			FieldExtractor: s.__d3_makeFieldExtractor(),
 			FieldSetter:    s.__d3_makeFieldSetter(),
+			CompareFields:  s.__d3_makeComparator(),
 			Instantiator:   s.__d3_makeInstantiator(),
 			Copier:         s.__d3_makeCopier(),
 		},
@@ -109,6 +110,37 @@ func (s *shop) __d3_makeCopier() entity.Copier {
 	}
 }
 
+func (s *shop) __d3_makeComparator() entity.FieldComparator {
+	return func(e1, e2 interface{}, fName string) bool {
+		if e1 == nil || e2 == nil {
+			return e1 == e2
+		}
+
+		e1Typed, ok := e1.(*shop)
+		if !ok {
+			return false
+		}
+		e2Typed, ok := e2.(*shop)
+		if !ok {
+			return false
+		}
+
+		switch fName {
+
+		case "Id":
+			return e1Typed.Id == e2Typed.Id
+		case "Books":
+			return e1Typed.Books == e2Typed.Books
+		case "Profile":
+			return e1Typed.Profile == e2Typed.Profile
+		case "Name":
+			return e1Typed.Name == e2Typed.Name
+		default:
+			return false
+		}
+	}
+}
+
 func (p *profile) D3Token() entity.MetaToken {
 	return entity.MetaToken{
 		Tpl:       (*profile)(nil),
@@ -116,6 +148,7 @@ func (p *profile) D3Token() entity.MetaToken {
 		Tools: entity.InternalTools{
 			FieldExtractor: p.__d3_makeFieldExtractor(),
 			FieldSetter:    p.__d3_makeFieldSetter(),
+			CompareFields:  p.__d3_makeComparator(),
 			Instantiator:   p.__d3_makeInstantiator(),
 			Copier:         p.__d3_makeCopier(),
 		},
@@ -192,6 +225,33 @@ func (p *profile) __d3_makeCopier() entity.Copier {
 	}
 }
 
+func (p *profile) __d3_makeComparator() entity.FieldComparator {
+	return func(e1, e2 interface{}, fName string) bool {
+		if e1 == nil || e2 == nil {
+			return e1 == e2
+		}
+
+		e1Typed, ok := e1.(*profile)
+		if !ok {
+			return false
+		}
+		e2Typed, ok := e2.(*profile)
+		if !ok {
+			return false
+		}
+
+		switch fName {
+
+		case "Id":
+			return e1Typed.Id == e2Typed.Id
+		case "Description":
+			return e1Typed.Description == e2Typed.Description
+		default:
+			return false
+		}
+	}
+}
+
 func (b *book) D3Token() entity.MetaToken {
 	return entity.MetaToken{
 		Tpl:       (*book)(nil),
@@ -199,6 +259,7 @@ func (b *book) D3Token() entity.MetaToken {
 		Tools: entity.InternalTools{
 			FieldExtractor: b.__d3_makeFieldExtractor(),
 			FieldSetter:    b.__d3_makeFieldSetter(),
+			CompareFields:  b.__d3_makeComparator(),
 			Instantiator:   b.__d3_makeInstantiator(),
 			Copier:         b.__d3_makeCopier(),
 		},
@@ -285,6 +346,35 @@ func (b *book) __d3_makeCopier() entity.Copier {
 	}
 }
 
+func (b *book) __d3_makeComparator() entity.FieldComparator {
+	return func(e1, e2 interface{}, fName string) bool {
+		if e1 == nil || e2 == nil {
+			return e1 == e2
+		}
+
+		e1Typed, ok := e1.(*book)
+		if !ok {
+			return false
+		}
+		e2Typed, ok := e2.(*book)
+		if !ok {
+			return false
+		}
+
+		switch fName {
+
+		case "Id":
+			return e1Typed.Id == e2Typed.Id
+		case "Authors":
+			return e1Typed.Authors == e2Typed.Authors
+		case "Name":
+			return e1Typed.Name == e2Typed.Name
+		default:
+			return false
+		}
+	}
+}
+
 func (a *author) D3Token() entity.MetaToken {
 	return entity.MetaToken{
 		Tpl:       (*author)(nil),
@@ -292,6 +382,7 @@ func (a *author) D3Token() entity.MetaToken {
 		Tools: entity.InternalTools{
 			FieldExtractor: a.__d3_makeFieldExtractor(),
 			FieldSetter:    a.__d3_makeFieldSetter(),
+			CompareFields:  a.__d3_makeComparator(),
 			Instantiator:   a.__d3_makeInstantiator(),
 			Copier:         a.__d3_makeCopier(),
 		},
@@ -368,6 +459,33 @@ func (a *author) __d3_makeCopier() entity.Copier {
 	}
 }
 
+func (a *author) __d3_makeComparator() entity.FieldComparator {
+	return func(e1, e2 interface{}, fName string) bool {
+		if e1 == nil || e2 == nil {
+			return e1 == e2
+		}
+
+		e1Typed, ok := e1.(*author)
+		if !ok {
+			return false
+		}
+		e2Typed, ok := e2.(*author)
+		if !ok {
+			return false
+		}
+
+		switch fName {
+
+		case "Id":
+			return e1Typed.Id == e2Typed.Id
+		case "Name":
+			return e1Typed.Name == e2Typed.Name
+		default:
+			return false
+		}
+	}
+}
+
 func (a *allTypeStruct) D3Token() entity.MetaToken {
 	return entity.MetaToken{
 		Tpl:       (*allTypeStruct)(nil),
@@ -375,6 +493,7 @@ func (a *allTypeStruct) D3Token() entity.MetaToken {
 		Tools: entity.InternalTools{
 			FieldExtractor: a.__d3_makeFieldExtractor(),
 			FieldSetter:    a.__d3_makeFieldSetter(),
+			CompareFields:  a.__d3_makeComparator(),
 			Instantiator:   a.__d3_makeInstantiator(),
 			Copier:         a.__d3_makeCopier(),
 		},
@@ -575,5 +694,58 @@ func (a *allTypeStruct) __d3_makeCopier() entity.Copier {
 		copy.NullTimeField = srcTyped.NullTimeField
 
 		return copy
+	}
+}
+
+func (a *allTypeStruct) __d3_makeComparator() entity.FieldComparator {
+	return func(e1, e2 interface{}, fName string) bool {
+		if e1 == nil || e2 == nil {
+			return e1 == e2
+		}
+
+		e1Typed, ok := e1.(*allTypeStruct)
+		if !ok {
+			return false
+		}
+		e2Typed, ok := e2.(*allTypeStruct)
+		if !ok {
+			return false
+		}
+
+		switch fName {
+
+		case "ID":
+			return e1Typed.ID == e2Typed.ID
+		case "BoolField":
+			return e1Typed.BoolField == e2Typed.BoolField
+		case "IntField":
+			return e1Typed.IntField == e2Typed.IntField
+		case "Int32Field":
+			return e1Typed.Int32Field == e2Typed.Int32Field
+		case "Int64Field":
+			return e1Typed.Int64Field == e2Typed.Int64Field
+		case "Float32Field":
+			return e1Typed.Float32Field == e2Typed.Float32Field
+		case "Float64Field":
+			return e1Typed.Float64Field == e2Typed.Float64Field
+		case "StringField":
+			return e1Typed.StringField == e2Typed.StringField
+		case "TimeField":
+			return e1Typed.TimeField == e2Typed.TimeField
+		case "NullBoolField":
+			return e1Typed.NullBoolField == e2Typed.NullBoolField
+		case "NullI32Field":
+			return e1Typed.NullI32Field == e2Typed.NullI32Field
+		case "NullI64Field":
+			return e1Typed.NullI64Field == e2Typed.NullI64Field
+		case "NullFloat64Field":
+			return e1Typed.NullFloat64Field == e2Typed.NullFloat64Field
+		case "NullStringField":
+			return e1Typed.NullStringField == e2Typed.NullStringField
+		case "NullTimeField":
+			return e1Typed.NullTimeField == e2Typed.NullTimeField
+		default:
+			return false
+		}
 	}
 }

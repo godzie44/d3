@@ -13,6 +13,7 @@ func (s *ShopLL) D3Token() entity.MetaToken {
 		Tools: entity.InternalTools{
 			FieldExtractor: s.__d3_makeFieldExtractor(),
 			FieldSetter:    s.__d3_makeFieldSetter(),
+			CompareFields:  s.__d3_makeComparator(),
 			Instantiator:   s.__d3_makeInstantiator(),
 			Copier:         s.__d3_makeCopier(),
 		},
@@ -99,6 +100,35 @@ func (s *ShopLL) __d3_makeCopier() entity.Copier {
 	}
 }
 
+func (s *ShopLL) __d3_makeComparator() entity.FieldComparator {
+	return func(e1, e2 interface{}, fName string) bool {
+		if e1 == nil || e2 == nil {
+			return e1 == e2
+		}
+
+		e1Typed, ok := e1.(*ShopLL)
+		if !ok {
+			return false
+		}
+		e2Typed, ok := e2.(*ShopLL)
+		if !ok {
+			return false
+		}
+
+		switch fName {
+
+		case "ID":
+			return e1Typed.ID == e2Typed.ID
+		case "Profile":
+			return e1Typed.Profile == e2Typed.Profile
+		case "Data":
+			return e1Typed.Data == e2Typed.Data
+		default:
+			return false
+		}
+	}
+}
+
 func (p *ProfileLL) D3Token() entity.MetaToken {
 	return entity.MetaToken{
 		Tpl:       (*ProfileLL)(nil),
@@ -106,6 +136,7 @@ func (p *ProfileLL) D3Token() entity.MetaToken {
 		Tools: entity.InternalTools{
 			FieldExtractor: p.__d3_makeFieldExtractor(),
 			FieldSetter:    p.__d3_makeFieldSetter(),
+			CompareFields:  p.__d3_makeComparator(),
 			Instantiator:   p.__d3_makeInstantiator(),
 			Copier:         p.__d3_makeCopier(),
 		},
@@ -186,6 +217,35 @@ func (p *ProfileLL) __d3_makeCopier() entity.Copier {
 	}
 }
 
+func (p *ProfileLL) __d3_makeComparator() entity.FieldComparator {
+	return func(e1, e2 interface{}, fName string) bool {
+		if e1 == nil || e2 == nil {
+			return e1 == e2
+		}
+
+		e1Typed, ok := e1.(*ProfileLL)
+		if !ok {
+			return false
+		}
+		e2Typed, ok := e2.(*ProfileLL)
+		if !ok {
+			return false
+		}
+
+		switch fName {
+
+		case "ID":
+			return e1Typed.ID == e2Typed.ID
+		case "Photo":
+			return e1Typed.Photo == e2Typed.Photo
+		case "Data":
+			return e1Typed.Data == e2Typed.Data
+		default:
+			return false
+		}
+	}
+}
+
 func (p *PhotoLL) D3Token() entity.MetaToken {
 	return entity.MetaToken{
 		Tpl:       (*PhotoLL)(nil),
@@ -193,6 +253,7 @@ func (p *PhotoLL) D3Token() entity.MetaToken {
 		Tools: entity.InternalTools{
 			FieldExtractor: p.__d3_makeFieldExtractor(),
 			FieldSetter:    p.__d3_makeFieldSetter(),
+			CompareFields:  p.__d3_makeComparator(),
 			Instantiator:   p.__d3_makeInstantiator(),
 			Copier:         p.__d3_makeCopier(),
 		},
@@ -263,6 +324,33 @@ func (p *PhotoLL) __d3_makeCopier() entity.Copier {
 	}
 }
 
+func (p *PhotoLL) __d3_makeComparator() entity.FieldComparator {
+	return func(e1, e2 interface{}, fName string) bool {
+		if e1 == nil || e2 == nil {
+			return e1 == e2
+		}
+
+		e1Typed, ok := e1.(*PhotoLL)
+		if !ok {
+			return false
+		}
+		e2Typed, ok := e2.(*PhotoLL)
+		if !ok {
+			return false
+		}
+
+		switch fName {
+
+		case "ID":
+			return e1Typed.ID == e2Typed.ID
+		case "Data":
+			return e1Typed.Data == e2Typed.Data
+		default:
+			return false
+		}
+	}
+}
+
 func (s *ShopEL) D3Token() entity.MetaToken {
 	return entity.MetaToken{
 		Tpl:       (*ShopEL)(nil),
@@ -270,6 +358,7 @@ func (s *ShopEL) D3Token() entity.MetaToken {
 		Tools: entity.InternalTools{
 			FieldExtractor: s.__d3_makeFieldExtractor(),
 			FieldSetter:    s.__d3_makeFieldSetter(),
+			CompareFields:  s.__d3_makeComparator(),
 			Instantiator:   s.__d3_makeInstantiator(),
 			Copier:         s.__d3_makeCopier(),
 		},
@@ -347,5 +436,34 @@ func (s *ShopEL) __d3_makeCopier() entity.Copier {
 		}
 
 		return copy
+	}
+}
+
+func (s *ShopEL) __d3_makeComparator() entity.FieldComparator {
+	return func(e1, e2 interface{}, fName string) bool {
+		if e1 == nil || e2 == nil {
+			return e1 == e2
+		}
+
+		e1Typed, ok := e1.(*ShopEL)
+		if !ok {
+			return false
+		}
+		e2Typed, ok := e2.(*ShopEL)
+		if !ok {
+			return false
+		}
+
+		switch fName {
+
+		case "Id":
+			return e1Typed.Id == e2Typed.Id
+		case "Profile":
+			return e1Typed.Profile == e2Typed.Profile
+		case "Data":
+			return e1Typed.Data == e2Typed.Data
+		default:
+			return false
+		}
 	}
 }

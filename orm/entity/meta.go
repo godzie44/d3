@@ -22,11 +22,13 @@ type (
 		FieldSetter    FieldSetter
 		Instantiator   Instantiator
 		Copier         Copier
+		CompareFields  FieldComparator
 	}
-	FieldExtractor func(e interface{}, name string) (interface{}, error)
-	FieldSetter    func(e interface{}, name string, val interface{}) error
-	Instantiator   func() interface{}
-	Copier         func(src interface{}) interface{}
+	FieldExtractor  func(e interface{}, name string) (interface{}, error)
+	FieldSetter     func(e interface{}, name string, val interface{}) error
+	Instantiator    func() interface{}
+	Copier          func(src interface{}) interface{}
+	FieldComparator func(e1, e2 interface{}, fName string) bool
 )
 
 type MetaToken struct {

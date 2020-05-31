@@ -23,11 +23,3 @@ func TestGetFirstElementFromSlice(t *testing.T) {
 	assert.NoError(t, err)
 	assert.Equal(t, el.(int), 1)
 }
-
-func TestIsFieldEquals(t *testing.T) {
-	te1 := &testEntity{ID: "1", Count: 1}
-	te2 := &testEntity{ID: "2", Count: 1}
-
-	assert.True(t, IsFieldEquals(te1, te2, "Count"))
-	assert.False(t, IsFieldEquals(te1, te2, "ID"))
-}

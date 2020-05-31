@@ -36,6 +36,23 @@ func (u *uowTestEntity) D3Token() entity.MetaToken {
 			Copier: func(src interface{}) interface{} {
 				return nil
 			},
+			CompareFields: func(e1, e2 interface{}, fName string) bool {
+				if e1 == nil || e2 == nil {
+					return e1 == e2
+				}
+				e1T := e1.(*uowTestEntity)
+				e2T := e2.(*uowTestEntity)
+				switch fName {
+				case "ID":
+					return e1T.ID == e2T.ID
+				case "Field1":
+					return e1T.Field1 == e2T.Field1
+				case "Field2":
+					return e1T.Field2 == e2T.Field2
+				default:
+					return false
+				}
+			},
 		},
 	}
 }

@@ -2,7 +2,6 @@ package persistence
 
 import (
 	d3entity "d3/orm/entity"
-	"d3/reflect"
 	"fmt"
 	"math"
 )
@@ -254,7 +253,7 @@ func (p *PersistGraph) persistOneToOneRel(ownerBox *persistBox, relation *d3enti
 				return err
 			}
 			relatedBox.action.addChild(ownerBox.action)
-			if !reflect.IsFieldEquals(relatedBox.original, relatedBox.Entity, relatedBox.Meta.Pk.Field.Name) {
+			if !relatedBox.Meta.Tools.CompareFields(relatedBox.original, relatedBox.Entity, relatedBox.Meta.Pk.Field.Name) {
 				ownerBox.action.mergeFields(ActionField(relation.JoinColumn, createIDPromise(relatedBox)))
 			}
 		}
@@ -382,7 +381,7 @@ func (p *PersistGraph) persistManyToManyRel(ownerBox *persistBox, relation *d3en
 func extractSimpleFields(box *persistBox) ([]*actionField, error) {
 	fields := make([]*actionField, 0, len(box.Meta.Fields))
 	for _, field := range box.Meta.Fields {
-		if reflect.IsFieldEquals(box.Entity, box.original, field.Name) {
+		if box.Meta.Tools.CompareFields(box.Entity, box.original, field.Name) {
 			continue
 		}
 

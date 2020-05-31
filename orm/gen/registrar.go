@@ -16,6 +16,7 @@ type CodeGenerator struct {
 	instantiatorGen *instantiator
 	setterGen       *setter
 	copierGen       *copier
+	comparatorGen   *comparator
 	pkgPath         string
 }
 
@@ -28,6 +29,7 @@ func NewGenerator(out io.Writer, packagePath string) *CodeGenerator {
 		instantiatorGen: &instantiator{tmpBuff},
 		setterGen:       &setter{out: tmpBuff, imports: map[string]struct{}{}, pkgPath: packagePath},
 		copierGen:       &copier{out: tmpBuff, imports: map[string]struct{}{}, pkgPath: packagePath},
+		comparatorGen:   &comparator{out: tmpBuff},
 		pkgPath:         packagePath,
 	}
 }
@@ -61,6 +63,7 @@ func ({{.receiver}} *{{.entity}}) D3Token() entity.MetaToken {
 		Tools: entity.InternalTools{
 			FieldExtractor: {{.receiver}}.__d3_makeFieldExtractor(),
 			FieldSetter: {{.receiver}}.__d3_makeFieldSetter(),
+			CompareFields: {{.receiver}}.__d3_makeComparator(),
 			Instantiator: {{.receiver}}.__d3_makeInstantiator(),
 			Copier: {{.receiver}}.__d3_makeCopier(),
 		},
@@ -79,6 +82,7 @@ func ({{.receiver}} *{{.entity}}) D3Token() entity.MetaToken {
 	r.instantiatorGen.handle(t)
 	r.setterGen.handle(t)
 	r.copierGen.handle(t)
+	r.comparatorGen.handle(t)
 }
 
 func (r *CodeGenerator) Write() {

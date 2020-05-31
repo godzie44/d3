@@ -12,6 +12,7 @@ func (e *entity1) D3Token() entity.MetaToken {
 		Tools: entity.InternalTools{
 			FieldExtractor: e.__d3_makeFieldExtractor(),
 			FieldSetter:    e.__d3_makeFieldSetter(),
+			CompareFields:  e.__d3_makeComparator(),
 			Instantiator:   e.__d3_makeInstantiator(),
 			Copier:         e.__d3_makeCopier(),
 		},
@@ -92,6 +93,35 @@ func (e *entity1) __d3_makeCopier() entity.Copier {
 	}
 }
 
+func (e *entity1) __d3_makeComparator() entity.FieldComparator {
+	return func(e1, e2 interface{}, fName string) bool {
+		if e1 == nil || e2 == nil {
+			return e1 == e2
+		}
+
+		e1Typed, ok := e1.(*entity1)
+		if !ok {
+			return false
+		}
+		e2Typed, ok := e2.(*entity1)
+		if !ok {
+			return false
+		}
+
+		switch fName {
+
+		case "Id":
+			return e1Typed.Id == e2Typed.Id
+		case "Rel":
+			return e1Typed.Rel == e2Typed.Rel
+		case "Data":
+			return e1Typed.Data == e2Typed.Data
+		default:
+			return false
+		}
+	}
+}
+
 func (e *entity2) D3Token() entity.MetaToken {
 	return entity.MetaToken{
 		Tpl:       (*entity2)(nil),
@@ -99,6 +129,7 @@ func (e *entity2) D3Token() entity.MetaToken {
 		Tools: entity.InternalTools{
 			FieldExtractor: e.__d3_makeFieldExtractor(),
 			FieldSetter:    e.__d3_makeFieldSetter(),
+			CompareFields:  e.__d3_makeComparator(),
 			Instantiator:   e.__d3_makeInstantiator(),
 			Copier:         e.__d3_makeCopier(),
 		},
@@ -166,5 +197,32 @@ func (e *entity2) __d3_makeCopier() entity.Copier {
 		copy.Data = srcTyped.Data
 
 		return copy
+	}
+}
+
+func (e *entity2) __d3_makeComparator() entity.FieldComparator {
+	return func(e1, e2 interface{}, fName string) bool {
+		if e1 == nil || e2 == nil {
+			return e1 == e2
+		}
+
+		e1Typed, ok := e1.(*entity2)
+		if !ok {
+			return false
+		}
+		e2Typed, ok := e2.(*entity2)
+		if !ok {
+			return false
+		}
+
+		switch fName {
+
+		case "Id":
+			return e1Typed.Id == e2Typed.Id
+		case "Data":
+			return e1Typed.Data == e2Typed.Data
+		default:
+			return false
+		}
 	}
 }

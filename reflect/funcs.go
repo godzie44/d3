@@ -58,14 +58,3 @@ func FullName(t reflect.Type) string {
 		return t.PkgPath() + "/" + t.Name()
 	}
 }
-
-func IsFieldEquals(strctPtr1, strctPtr2 interface{}, field string) bool {
-	if strctPtr1 == nil || strctPtr2 == nil {
-		return false
-	}
-
-	reflectVal1 := reflect.ValueOf(strctPtr1).Elem()
-	reflectVal2 := reflect.ValueOf(strctPtr2).Elem()
-
-	return reflect.DeepEqual(reflectVal1.FieldByName(field).Interface(), reflectVal2.FieldByName(field).Interface())
-}

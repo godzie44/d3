@@ -2,8 +2,8 @@
 
 package relation
 
-import "fmt"
 import "d3/orm/entity"
+import "fmt"
 
 func (f *fwTestEntity1) D3Token() entity.MetaToken {
 	return entity.MetaToken{
@@ -12,6 +12,7 @@ func (f *fwTestEntity1) D3Token() entity.MetaToken {
 		Tools: entity.InternalTools{
 			FieldExtractor: f.__d3_makeFieldExtractor(),
 			FieldSetter:    f.__d3_makeFieldSetter(),
+			CompareFields:  f.__d3_makeComparator(),
 			Instantiator:   f.__d3_makeInstantiator(),
 			Copier:         f.__d3_makeCopier(),
 		},
@@ -92,6 +93,35 @@ func (f *fwTestEntity1) __d3_makeCopier() entity.Copier {
 	}
 }
 
+func (f *fwTestEntity1) __d3_makeComparator() entity.FieldComparator {
+	return func(e1, e2 interface{}, fName string) bool {
+		if e1 == nil || e2 == nil {
+			return e1 == e2
+		}
+
+		e1Typed, ok := e1.(*fwTestEntity1)
+		if !ok {
+			return false
+		}
+		e2Typed, ok := e2.(*fwTestEntity1)
+		if !ok {
+			return false
+		}
+
+		switch fName {
+
+		case "Id":
+			return e1Typed.Id == e2Typed.Id
+		case "Rel":
+			return e1Typed.Rel == e2Typed.Rel
+		case "Data":
+			return e1Typed.Data == e2Typed.Data
+		default:
+			return false
+		}
+	}
+}
+
 func (f *fwTestEntity2) D3Token() entity.MetaToken {
 	return entity.MetaToken{
 		Tpl:       (*fwTestEntity2)(nil),
@@ -99,6 +129,7 @@ func (f *fwTestEntity2) D3Token() entity.MetaToken {
 		Tools: entity.InternalTools{
 			FieldExtractor: f.__d3_makeFieldExtractor(),
 			FieldSetter:    f.__d3_makeFieldSetter(),
+			CompareFields:  f.__d3_makeComparator(),
 			Instantiator:   f.__d3_makeInstantiator(),
 			Copier:         f.__d3_makeCopier(),
 		},
@@ -179,6 +210,35 @@ func (f *fwTestEntity2) __d3_makeCopier() entity.Copier {
 	}
 }
 
+func (f *fwTestEntity2) __d3_makeComparator() entity.FieldComparator {
+	return func(e1, e2 interface{}, fName string) bool {
+		if e1 == nil || e2 == nil {
+			return e1 == e2
+		}
+
+		e1Typed, ok := e1.(*fwTestEntity2)
+		if !ok {
+			return false
+		}
+		e2Typed, ok := e2.(*fwTestEntity2)
+		if !ok {
+			return false
+		}
+
+		switch fName {
+
+		case "Id":
+			return e1Typed.Id == e2Typed.Id
+		case "Rel":
+			return e1Typed.Rel == e2Typed.Rel
+		case "Data":
+			return e1Typed.Data == e2Typed.Data
+		default:
+			return false
+		}
+	}
+}
+
 func (f *fwTestEntity3) D3Token() entity.MetaToken {
 	return entity.MetaToken{
 		Tpl:       (*fwTestEntity3)(nil),
@@ -186,6 +246,7 @@ func (f *fwTestEntity3) D3Token() entity.MetaToken {
 		Tools: entity.InternalTools{
 			FieldExtractor: f.__d3_makeFieldExtractor(),
 			FieldSetter:    f.__d3_makeFieldSetter(),
+			CompareFields:  f.__d3_makeComparator(),
 			Instantiator:   f.__d3_makeInstantiator(),
 			Copier:         f.__d3_makeCopier(),
 		},
@@ -266,6 +327,35 @@ func (f *fwTestEntity3) __d3_makeCopier() entity.Copier {
 	}
 }
 
+func (f *fwTestEntity3) __d3_makeComparator() entity.FieldComparator {
+	return func(e1, e2 interface{}, fName string) bool {
+		if e1 == nil || e2 == nil {
+			return e1 == e2
+		}
+
+		e1Typed, ok := e1.(*fwTestEntity3)
+		if !ok {
+			return false
+		}
+		e2Typed, ok := e2.(*fwTestEntity3)
+		if !ok {
+			return false
+		}
+
+		switch fName {
+
+		case "Id":
+			return e1Typed.Id == e2Typed.Id
+		case "Rel":
+			return e1Typed.Rel == e2Typed.Rel
+		case "Data":
+			return e1Typed.Data == e2Typed.Data
+		default:
+			return false
+		}
+	}
+}
+
 func (f *fwTestEntity4) D3Token() entity.MetaToken {
 	return entity.MetaToken{
 		Tpl:       (*fwTestEntity4)(nil),
@@ -273,6 +363,7 @@ func (f *fwTestEntity4) D3Token() entity.MetaToken {
 		Tools: entity.InternalTools{
 			FieldExtractor: f.__d3_makeFieldExtractor(),
 			FieldSetter:    f.__d3_makeFieldSetter(),
+			CompareFields:  f.__d3_makeComparator(),
 			Instantiator:   f.__d3_makeInstantiator(),
 			Copier:         f.__d3_makeCopier(),
 		},
@@ -340,5 +431,32 @@ func (f *fwTestEntity4) __d3_makeCopier() entity.Copier {
 		copy.Data = srcTyped.Data
 
 		return copy
+	}
+}
+
+func (f *fwTestEntity4) __d3_makeComparator() entity.FieldComparator {
+	return func(e1, e2 interface{}, fName string) bool {
+		if e1 == nil || e2 == nil {
+			return e1 == e2
+		}
+
+		e1Typed, ok := e1.(*fwTestEntity4)
+		if !ok {
+			return false
+		}
+		e2Typed, ok := e2.(*fwTestEntity4)
+		if !ok {
+			return false
+		}
+
+		switch fName {
+
+		case "Id":
+			return e1Typed.Id == e2Typed.Id
+		case "Data":
+			return e1Typed.Data == e2Typed.Data
+		default:
+			return false
+		}
 	}
 }

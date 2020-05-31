@@ -29,6 +29,23 @@ func (s *Shop) D3Token() entity.MetaToken {
 					return nil, nil
 				}
 			},
+			CompareFields: func(e1, e2 interface{}, fName string) bool {
+				if e1 == nil || e2 == nil {
+					return e1 == e2
+				}
+				e1T := e1.(*Shop)
+				e2T := e2.(*Shop)
+				switch fName {
+				case "ID":
+					return e1T.ID == e2T.ID
+				case "Books":
+					return e1T.Books == e2T.Books
+				case "Profile":
+					return e1T.Profile == e2T.Profile
+				default:
+					return false
+				}
+			},
 		},
 	}
 }
@@ -46,6 +63,19 @@ func (s *ShopProfile) D3Token() entity.MetaToken {
 					return s.(*ShopProfile).ID, nil
 				default:
 					return nil, nil
+				}
+			},
+			CompareFields: func(e1, e2 interface{}, fName string) bool {
+				if e1 == nil || e2 == nil {
+					return e1 == e2
+				}
+				e1T := e1.(*ShopProfile)
+				e2T := e2.(*ShopProfile)
+				switch fName {
+				case "ID":
+					return e1T.ID == e2T.ID
+				default:
+					return false
 				}
 			},
 		},
@@ -70,6 +100,21 @@ func (b *Book) D3Token() entity.MetaToken {
 					return nil, nil
 				}
 			},
+			CompareFields: func(e1, e2 interface{}, fName string) bool {
+				if e1 == nil || e2 == nil {
+					return e1 == e2
+				}
+				e1T := e1.(*Book)
+				e2T := e2.(*Book)
+				switch fName {
+				case "ID":
+					return e1T.ID == e2T.ID
+				case "Authors":
+					return e1T.Authors == e2T.Authors
+				default:
+					return false
+				}
+			},
 		},
 	}
 }
@@ -87,6 +132,19 @@ func (a *Author) D3Token() entity.MetaToken {
 					return s.(*Author).ID, nil
 				default:
 					return nil, nil
+				}
+			},
+			CompareFields: func(e1, e2 interface{}, fName string) bool {
+				if e1 == nil || e2 == nil {
+					return e1 == e2
+				}
+				e1T := e1.(*Author)
+				e2T := e2.(*Author)
+				switch fName {
+				case "ID":
+					return e1T.ID == e2T.ID
+				default:
+					return false
 				}
 			},
 		},
@@ -443,6 +501,25 @@ func (u *User) D3Token() entity.MetaToken {
 					return nil, nil
 				}
 			},
+			CompareFields: func(e1, e2 interface{}, fName string) bool {
+				if e1 == nil || e2 == nil {
+					return e1 == e2
+				}
+				e1T := e1.(*User)
+				e2T := e2.(*User)
+				switch fName {
+				case "ID":
+					return e1T.ID == e2T.ID
+				case "Avatar":
+					return e1T.Avatar == e2T.Avatar
+				case "GoodPhotos":
+					return e1T.GoodPhotos == e2T.GoodPhotos
+				case "PrettyPhotos":
+					return e1T.PrettyPhotos == e2T.PrettyPhotos
+				default:
+					return false
+				}
+			},
 		},
 	}
 }
@@ -460,6 +537,19 @@ func (p *Photo) D3Token() entity.MetaToken {
 					return s.(*Photo).ID, nil
 				default:
 					return nil, nil
+				}
+			},
+			CompareFields: func(e1, e2 interface{}, fName string) bool {
+				if e1 == nil || e2 == nil {
+					return e1 == e2
+				}
+				e1T := e1.(*Photo)
+				e2T := e2.(*Photo)
+				switch fName {
+				case "ID":
+					return e1T.ID == e2T.ID
+				default:
+					return false
 				}
 			},
 		},
@@ -557,6 +647,23 @@ func (b *BookCirc) D3Token() entity.MetaToken {
 					return nil, nil
 				}
 			},
+			CompareFields: func(e1, e2 interface{}, fName string) bool {
+				if e1 == nil || e2 == nil {
+					return e1 == e2
+				}
+				e1T := e1.(*BookCirc)
+				e2T := e2.(*BookCirc)
+				switch fName {
+				case "ID":
+					return e1T.ID == e2T.ID
+				case "Authors":
+					return e1T.Authors == e2T.Authors
+				case "MainAuthor":
+					return e1T.MainAuthor == e2T.MainAuthor
+				default:
+					return false
+				}
+			},
 		},
 	}
 }
@@ -615,6 +722,25 @@ func (s *shopCirc) D3Token() entity.MetaToken {
 					return nil, nil
 				}
 			},
+			CompareFields: func(e1, e2 interface{}, fName string) bool {
+				if e1 == nil || e2 == nil {
+					return e1 == e2
+				}
+				e1T := e1.(*shopCirc)
+				e2T := e2.(*shopCirc)
+				switch fName {
+				case "ID":
+					return e1T.ID == e2T.ID
+				case "Profile":
+					return e1T.Profile == e2T.Profile
+				case "Sellers":
+					return e1T.Sellers == e2T.Sellers
+				case "Name":
+					return e1T.Name == e2T.Name
+				default:
+					return false
+				}
+			},
 		},
 	}
 }
@@ -637,6 +763,21 @@ func (s *shopProfileCirc) D3Token() entity.MetaToken {
 					return nil, nil
 				}
 			},
+			CompareFields: func(e1, e2 interface{}, fName string) bool {
+				if e1 == nil || e2 == nil {
+					return e1 == e2
+				}
+				e1T := e1.(*shopProfileCirc)
+				e2T := e2.(*shopProfileCirc)
+				switch fName {
+				case "ID":
+					return e1T.ID == e2T.ID
+				case "Shop":
+					return e1T.Shop == e2T.Shop
+				default:
+					return false
+				}
+			},
 		},
 	}
 }
@@ -657,6 +798,21 @@ func (s *sellerCirc) D3Token() entity.MetaToken {
 					return s.(*sellerCirc).Shop, nil
 				default:
 					return nil, nil
+				}
+			},
+			CompareFields: func(e1, e2 interface{}, fName string) bool {
+				if e1 == nil || e2 == nil {
+					return e1 == e2
+				}
+				e1T := e1.(*sellerCirc)
+				e2T := e2.(*sellerCirc)
+				switch fName {
+				case "ID":
+					return e1T.ID == e2T.ID
+				case "Shop":
+					return e1T.Shop == e2T.Shop
+				default:
+					return false
 				}
 			},
 		},

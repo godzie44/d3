@@ -211,6 +211,23 @@ func (o *Order) D3Token() entity.MetaToken {
 					return nil, nil
 				}
 			},
+			CompareFields: func(e1, e2 interface{}, fName string) bool {
+				if e1 == nil || e2 == nil {
+					return e1 == e2
+				}
+				e1T := e1.(*Order)
+				e2T := e2.(*Order)
+				switch fName {
+				case "ID":
+					return e1T.ID == e2T.ID
+				case "Items":
+					return e1T.Items == e2T.Items
+				case "BestItem":
+					return e1T.BestItem == e2T.BestItem
+				default:
+					return false
+				}
+			},
 		},
 	}
 }
@@ -228,6 +245,19 @@ func (o *OrderItem) D3Token() entity.MetaToken {
 					return s.(*OrderItem).ID, nil
 				default:
 					return nil, nil
+				}
+			},
+			CompareFields: func(e1, e2 interface{}, fName string) bool {
+				if e1 == nil || e2 == nil {
+					return e1 == e2
+				}
+				e1T := e1.(*OrderItem)
+				e2T := e2.(*OrderItem)
+				switch fName {
+				case "ID":
+					return e1T.ID == e2T.ID
+				default:
+					return false
 				}
 			},
 		},
