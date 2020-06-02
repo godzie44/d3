@@ -9,17 +9,17 @@ import (
 	"time"
 )
 
-type copierTestStruct2 struct {
+type copierTestStruct2 struct { //nolint
 }
 
 type copierTestStruct struct {
-	int     int
-	intPtr  *int
-	string  string
-	setter2 *copierTestStruct2
-	t       time.Time
-	wrap    entity.WrappedEntity
-	coll    entity.Collection
+	int     int                  //nolint
+	intPtr  *int                 //nolint
+	string  string               //nolint
+	setter2 *copierTestStruct2   //nolint
+	t       time.Time            //nolint
+	wrap    entity.WrappedEntity //nolint
+	coll    entity.Collection    //nolint
 }
 
 var expectedCopierCode = `func (c *copierTestStruct) __d3_makeCopier() entity.Copier {

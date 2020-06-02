@@ -9,9 +9,9 @@ import (
 )
 
 type testStruct struct {
-	num64   int64
-	str     string
-	nullInt sql.NullInt64
+	num64   int64         //nolint
+	str     string        //nolint
+	nullInt sql.NullInt64 //nolint
 }
 
 var expectedComparatorCode = `func (t *testStruct) __d3_makeComparator() entity.FieldComparator {

@@ -12,20 +12,20 @@ import (
 	"time"
 )
 
-type setterTestStruct2 struct {
+type setterTestStruct2 struct { //nolint
 }
 
 type setterTestStruct struct {
-	int        int
-	intPtr     *int
-	string     string
-	setter2    *setterTestStruct2
-	closer     io.Closer
-	nullInt    sql.NullInt64
-	nullString sql.NullString
-	t          time.Time
-	tPtr       *time.Time
-	q          query.Query
+	int        int                //nolint
+	intPtr     *int               //nolint
+	string     string             //nolint
+	setter2    *setterTestStruct2 //nolint
+	closer     io.Closer          //nolint
+	nullInt    sql.NullInt64      //nolint
+	nullString sql.NullString     //nolint
+	t          time.Time          //nolint
+	tPtr       *time.Time         //nolint
+	q          query.Query        //nolint
 }
 
 var expectedSetter = `func (s *setterTestStruct) __d3_makeFieldSetter() entity.FieldSetter {
