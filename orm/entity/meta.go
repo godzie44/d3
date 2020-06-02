@@ -85,17 +85,17 @@ func CreateMeta(mapping UserMapping) (*MetaInfo, error) {
 		Fields:      make(map[string]*FieldInfo),
 		Relations:   make(map[string]Relation),
 		RelatedMeta: make(map[Name]*MetaInfo),
-		EntityName:  nameFromEntity(mapping.Entity),
+		EntityName:  NameFromEntity(mapping.Entity),
 		Tools:       mapping.Entity.(D3Entity).D3Token().Tools,
 	}
 
 	for i := 0; i < eType.NumField(); i++ {
 		fieldReflection := eType.Field(i)
 
-		// skip unexported fields
-		if fieldReflection.PkgPath != "" {
-			continue
-		}
+		//// skip unexported fields
+		//if fieldReflection.PkgPath != "" {
+		//	continue
+		//}
 
 		tag := parseTag(fieldReflection.Tag)
 

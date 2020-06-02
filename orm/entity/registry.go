@@ -61,7 +61,7 @@ func (r *MetaRegistry) Add(mappings ...UserMapping) error {
 }
 
 func (r *MetaRegistry) GetMeta(entity interface{}) (MetaInfo, error) {
-	return r.GetMetaByName(nameFromEntity(entity))
+	return r.GetMetaByName(NameFromEntity(entity))
 }
 
 func (r *MetaRegistry) GetMetaByName(entityName Name) (MetaInfo, error) {

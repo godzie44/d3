@@ -99,7 +99,7 @@ func (l *lazyEntity) IsInitialized() bool {
 
 type Name string
 
-func nameFromEntity(e interface{}) Name {
+func NameFromEntity(e interface{}) Name {
 	t := reflect.TypeOf(e)
 	switch t.Kind() {
 	case reflect.Ptr:

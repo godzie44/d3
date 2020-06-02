@@ -12,7 +12,7 @@ type ShopLR struct {
 //d3:entity
 type BookLR struct {
 	Id int32 `d3:"pk:auto"`
-	//Profile    entity.WrappedEntity `d3:"one_to_one:<target_entity:d3/tests/integration/relation/PhotoLL,join_on:t3_id,reference_on:id>,type:eager"`
+	//profile    entity.WrappedEntity `d3:"one_to_one:<target_entity:d3/tests/integration/relation/PhotoLL,join_on:t3_id,reference_on:id>,type:eager"`
 	Name string
 }
 

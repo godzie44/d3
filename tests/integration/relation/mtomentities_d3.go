@@ -2,8 +2,8 @@
 
 package relation
 
-import "fmt"
 import "d3/orm/entity"
+import "fmt"
 
 func (b *BookLL) D3Token() entity.MetaToken {
 	return entity.MetaToken{
