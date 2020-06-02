@@ -1,9 +1,7 @@
 package entity
 
 import (
-	d3reflect "d3/reflect"
 	"fmt"
-	"reflect"
 	"sync"
 )
 
@@ -63,9 +61,7 @@ func (r *MetaRegistry) Add(mappings ...UserMapping) error {
 }
 
 func (r *MetaRegistry) GetMeta(entity interface{}) (MetaInfo, error) {
-	key := Name(d3reflect.FullName(reflect.TypeOf(entity)))
-
-	return r.GetMetaByName(key)
+	return r.GetMetaByName(NameFromEntity(entity))
 }
 
 func (r *MetaRegistry) GetMetaByName(entityName Name) (MetaInfo, error) {

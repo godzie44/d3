@@ -4,7 +4,6 @@ import (
 	"context"
 	"d3/adapter"
 	"d3/orm"
-	entity2 "d3/orm/entity"
 	"github.com/jackc/pgx/v4"
 	"github.com/stretchr/testify/suite"
 	"os"
@@ -71,18 +70,6 @@ DROP TABLE discount;
 	o.Assert().NoError(err)
 }
 
-type ShopLR struct {
-	Id    int32              `d3:"pk:auto"`
-	Books entity2.Collection `d3:"one_to_many:<target_entity:d3/tests/integration/relation/BookLR,join_on:t1_id>,type:lazy"`
-	Name  string
-}
-
-type BookLR struct {
-	Id int32 `d3:"pk:auto"`
-	//Profile    entity.WrappedEntity `d3:"one_to_one:<target_entity:d3/tests/integration/relation/PhotoLL,join_on:t3_id,reference_on:id>,type:eager"`
-	Name string
-}
-
 func TestRunOneToManyTestSuite(t *testing.T) {
 	suite.Run(t, new(OneToManyRelationTS))
 }
@@ -105,23 +92,6 @@ func (o *OneToManyRelationTS) TestLazyRelation() {
 		[]string{"Antic Hay", "An Evil Cradling", "Arms and the Man"},
 		[]string{relatedEntities.Get(0).(*BookLR).Name, relatedEntities.Get(1).(*BookLR).Name, relatedEntities.Get(2).(*BookLR).Name},
 	)
-}
-
-type ShopER struct {
-	Id    int32              `d3:"pk:auto"`
-	Books entity2.Collection `d3:"one_to_many:<target_entity:d3/tests/integration/relation/BookER,join_on:t1_id,reference_on:id>,type:eager"`
-	Name  string
-}
-
-type BookER struct {
-	Id        int32              `d3:"pk:auto"`
-	Discounts entity2.Collection `d3:"one_to_many:<target_entity:d3/tests/integration/relation/DiscountER,join_on:t2_id,reference_on:id>,type:eager"`
-	Name      string
-}
-
-type DiscountER struct {
-	Id    int32 `d3:"pk:auto"`
-	Value int32
 }
 
 func (o *OneToManyRelationTS) TestEagerRelation() {

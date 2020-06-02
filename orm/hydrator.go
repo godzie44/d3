@@ -32,16 +32,15 @@ func (h *Hydrator) Hydrate(fetchedData []map[string]interface{}, plan *query.Fet
 
 	var lastInsertedNum int
 	for _, entityData := range groupByEntityData {
-		newEntity := reflect.New(entityType.Elem())
-
-		err := h.hydrateOne(newEntity.Interface(), entityData, plan)
+		newEntity := h.meta.Tools.NewInstance()
+		err := h.hydrateOne(newEntity, entityData, plan)
 		if err != nil {
 			return nil, err
 		}
 
-		h.afterHydrateEntity(d3entity.NewBox(newEntity.Interface(), h.meta))
+		h.afterHydrateEntity(d3entity.NewBox(newEntity, h.meta))
 
-		sliceVal.Index(lastInsertedNum).Set(newEntity)
+		sliceVal.Index(lastInsertedNum).Set(reflect.ValueOf(newEntity))
 		lastInsertedNum++
 	}
 
@@ -49,39 +48,36 @@ func (h *Hydrator) Hydrate(fetchedData []map[string]interface{}, plan *query.Fet
 }
 
 func (h *Hydrator) hydrateOne(entity interface{}, entityData []map[string]interface{}, plan *query.FetchPlan) error {
-	modelReflectVal := reflect.ValueOf(entity).Elem()
-	modelType := modelReflectVal.Type()
-	for i := 0; i < modelReflectVal.NumField(); i++ {
-		f := modelReflectVal.Field(i)
-		if err := d3reflect.ValidateField(&f); err != nil {
+	for _, field := range h.meta.Fields {
+		fieldValue, exists := entityData[0][field.FullDbAlias]
+		if !exists {
 			continue
 		}
 
+		if err := h.meta.Tools.SetFieldVal(entity, field.Name, h.rawMapper(fieldValue, field.AssociatedType.Kind())); err != nil {
+			return err
+		}
+	}
+
+	for _, rel := range h.meta.Relations {
 		var fieldValue interface{}
-
-		if fieldInfo, exists := h.meta.Fields[modelType.Field(i).Name]; exists {
-			fieldValue, exists = entityData[0][fieldInfo.FullDbAlias]
-			if !exists {
-				continue
-			}
-		} else if relation, exists := h.meta.Relations[modelType.Field(i).Name]; exists {
-			var err error
-			if plan.CanFetchRelation(relation) {
-				if entityData[0][h.meta.Pk.FullDbAlias()] == nil {
-					fieldValue = nil
-				} else {
-					fieldValue, err = h.fetchRelation(relation, entityData, plan)
-				}
+		var err error
+		if plan.CanFetchRelation(rel) {
+			if entityData[0][h.meta.Pk.FullDbAlias()] == nil {
+				fieldValue = nil
 			} else {
-				fieldValue, err = h.createRelation(entity, relation, entityData[0])
+				fieldValue, err = h.fetchRelation(rel, entityData, plan)
 			}
-
-			if err != nil {
-				return err
-			}
+		} else {
+			fieldValue, err = h.createRelation(entity, rel, entityData[0])
+		}
+		if err != nil {
+			return err
 		}
 
-		d3reflect.SetField(&f, h.rawMapper(fieldValue, f.Kind()))
+		if err = h.meta.Tools.SetFieldVal(entity, rel.Field().Name, fieldValue); err != nil {
+			return err
+		}
 	}
 
 	return nil
@@ -106,7 +102,7 @@ func (h *Hydrator) fetchRelation(relation d3entity.Relation, entityData []map[st
 			return d3entity.NewWrapEntity(nil), nil
 		}
 
-		entity = d3reflect.CreateEmptyEntity(relationMeta.Tpl)
+		entity = relationMeta.Tools.NewInstance()
 		err := relationHydrator.hydrateOne(entity, entityData, plan.GetChildPlan(relation))
 		if err != nil {
 			return nil, fmt.Errorf("hydration: %w", err)
@@ -130,7 +126,7 @@ func (h *Hydrator) fetchRelation(relation d3entity.Relation, entityData []map[st
 		}
 
 		for _, data := range groupByEntity {
-			entity := d3reflect.CreateEmptyEntity(relationMeta.Tpl)
+			entity := relationMeta.Tools.NewInstance()
 			err := relationHydrator.hydrateOne(entity, data, plan.GetChildPlan(relation))
 			if err != nil {
 				return nil, fmt.Errorf("hydration: %w", err)

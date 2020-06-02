@@ -1,7 +1,8 @@
 package entity
 
 import (
-	d3reflect "d3/reflect"
+	"errors"
+	"fmt"
 	"reflect"
 	"regexp"
 	"strings"
@@ -15,6 +16,31 @@ const (
 	Manual
 )
 
+type (
+	InternalTools struct {
+		ExtractField  FieldExtractor
+		SetFieldVal   FieldSetter
+		NewInstance   Instantiator
+		Copy          Copier
+		CompareFields FieldComparator
+	}
+	FieldExtractor  func(e interface{}, name string) (interface{}, error)
+	FieldSetter     func(e interface{}, name string, val interface{}) error
+	Instantiator    func() interface{}
+	Copier          func(src interface{}) interface{}
+	FieldComparator func(e1, e2 interface{}, fName string) bool
+)
+
+type MetaToken struct {
+	Tools     InternalTools
+	Tpl       interface{}
+	TableName string
+}
+
+type D3Entity interface {
+	D3Token() MetaToken
+}
+
 type MetaInfo struct {
 	Tpl        interface{}
 	EntityName Name
@@ -25,6 +51,7 @@ type MetaInfo struct {
 	Pk        *pk
 
 	RelatedMeta map[Name]*MetaInfo
+	Tools       InternalTools
 }
 
 type FieldInfo struct {
@@ -34,10 +61,22 @@ type FieldInfo struct {
 	FullDbAlias    string
 }
 
+var (
+	ErrInvalidType = errors.New("invalid type, must be struct or pointer to struct")
+)
+
 func CreateMeta(mapping UserMapping) (*MetaInfo, error) {
-	eType, err := d3reflect.IntoStructType(reflect.TypeOf(mapping.Entity))
-	if err != nil {
-		return nil, err
+	eType := reflect.TypeOf(mapping.Entity)
+	if eType.Kind() == reflect.Ptr {
+		eType = eType.Elem()
+	}
+
+	if eType.Kind() != reflect.Struct {
+		return nil, ErrInvalidType
+	}
+
+	if _, hasToken := mapping.Entity.(D3Entity); !hasToken {
+		return nil, fmt.Errorf("entity %s must implement D3Entity interface (use codegeneration instead)", eType.Name())
 	}
 
 	meta := &MetaInfo{
@@ -46,16 +85,17 @@ func CreateMeta(mapping UserMapping) (*MetaInfo, error) {
 		Fields:      make(map[string]*FieldInfo),
 		Relations:   make(map[string]Relation),
 		RelatedMeta: make(map[Name]*MetaInfo),
-		EntityName:  Name(d3reflect.FullName(eType)),
+		EntityName:  NameFromEntity(mapping.Entity),
+		Tools:       mapping.Entity.(D3Entity).D3Token().Tools,
 	}
 
 	for i := 0; i < eType.NumField(); i++ {
 		fieldReflection := eType.Field(i)
 
-		// skip unexported fields
-		if fieldReflection.PkgPath != "" {
-			continue
-		}
+		//// skip unexported fields
+		//if fieldReflection.PkgPath != "" {
+		//	continue
+		//}
 
 		tag := parseTag(fieldReflection.Tag)
 

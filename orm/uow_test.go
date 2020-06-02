@@ -13,9 +13,48 @@ import (
 )
 
 type uowTestEntity struct {
-	Id     int `d3:"pk:manual"`
+	ID     int `d3:"pk:manual"`
 	Field1 int
 	Field2 string
+}
+
+func (u *uowTestEntity) D3Token() entity.MetaToken {
+	return entity.MetaToken{
+		Tools: entity.InternalTools{
+			ExtractField: func(s interface{}, name string) (interface{}, error) {
+				switch name {
+				case "ID":
+					return s.(*uowTestEntity).ID, nil
+				case "Field1":
+					return s.(*uowTestEntity).Field1, nil
+				case "Field2":
+					return s.(*uowTestEntity).Field2, nil
+				default:
+					return nil, nil
+				}
+			},
+			Copy: func(src interface{}) interface{} {
+				return nil
+			},
+			CompareFields: func(e1, e2 interface{}, fName string) bool {
+				if e1 == nil || e2 == nil {
+					return e1 == e2
+				}
+				e1T := e1.(*uowTestEntity)
+				e2T := e2.(*uowTestEntity)
+				switch fName {
+				case "ID":
+					return e1T.ID == e2T.ID
+				case "Field1":
+					return e1T.Field1 == e2T.Field1
+				case "Field2":
+					return e1T.Field2 == e2T.Field2
+				default:
+					return false
+				}
+			},
+		},
+	}
 }
 
 var testEntityMeta, _ = entity.CreateMeta(entity.UserMapping{
@@ -26,8 +65,8 @@ var testEntityMeta, _ = entity.CreateMeta(entity.UserMapping{
 func TestRegisterNewEntity(t *testing.T) {
 	uow := NewUOW(nil)
 
-	te1 := &uowTestEntity{Id: 1}
-	te2 := &uowTestEntity{Id: 2}
+	te1 := &uowTestEntity{ID: 1}
+	te2 := &uowTestEntity{ID: 2}
 	err := uow.registerNew(entity.NewBox(te1, testEntityMeta))
 	assert.NoError(t, err)
 	err = uow.registerNew(entity.NewBox(te2, testEntityMeta))
@@ -44,7 +83,7 @@ func TestRegisterNewEntity(t *testing.T) {
 func TestRegisterNewEntityIfEntityInDirty(t *testing.T) {
 	uow := NewUOW(nil)
 
-	te1 := &uowTestEntity{Id: 1}
+	te1 := &uowTestEntity{ID: 1}
 
 	box := entity.NewBox(te1, testEntityMeta)
 	err := uow.registerDirty(box)

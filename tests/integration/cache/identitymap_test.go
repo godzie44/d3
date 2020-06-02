@@ -4,7 +4,6 @@ import (
 	"context"
 	"d3/adapter"
 	"d3/orm"
-	entity3 "d3/orm/entity"
 	"d3/tests/helpers"
 	"github.com/jackc/pgx/v4"
 	"github.com/stretchr/testify/suite"
@@ -53,17 +52,6 @@ DROP TABLE im_test_entity_2;
 	o.Assert().NoError(err)
 }
 
-type entity1 struct {
-	Id   int32              `d3:"pk:auto"`
-	Rel  entity3.Collection `d3:"one_to_many:<target_entity:d3/tests/integration/cache/entity2,join_on:t1_id>,type:eager"`
-	Data string
-}
-
-type entity2 struct {
-	Id   int32 `d3:"pk:auto"`
-	Data string
-}
-
 func TestIdentityMapCacheSuite(t *testing.T) {
 	suite.Run(t, new(IMCacheTS))
 }
@@ -71,7 +59,7 @@ func TestIdentityMapCacheSuite(t *testing.T) {
 func (o *IMCacheTS) TestNoQueryCreateForCachedEntities() {
 	wrappedDbAdapter := helpers.NewDbAdapterWithQueryCounter(adapter.NewGoPgXAdapter(o.pgDb, &adapter.SquirrelAdapter{}))
 	d3Orm := orm.NewOrm(wrappedDbAdapter)
-	_ = d3Orm.Register(
+	err := d3Orm.Register(
 		orm.Mapping{
 			Table:  "im_test_entity_1",
 			Entity: (*entity1)(nil),
@@ -81,10 +69,11 @@ func (o *IMCacheTS) TestNoQueryCreateForCachedEntities() {
 			Entity: (*entity2)(nil),
 		},
 	)
+	o.NoError(err)
 
 	session := d3Orm.MakeSession()
 	repository, _ := session.MakeRepository((*entity1)(nil))
-	_, err := repository.FindOne(repository.CreateQuery().AndWhere("im_test_entity_1.id = ?", 1))
+	_, err = repository.FindOne(repository.CreateQuery().AndWhere("im_test_entity_1.id = ?", 1))
 	o.Assert().NoError(err)
 
 	o.Assert().Equal(2, wrappedDbAdapter.QueryCounter())

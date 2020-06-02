@@ -1,7 +1,6 @@
 package entity
 
 import (
-	d3reflect "d3/reflect"
 	"database/sql/driver"
 	"reflect"
 )
@@ -34,7 +33,7 @@ func (k *KeyTpl) Key() []interface{} {
 }
 
 func (m *MetaInfo) ExtractPkValue(entity interface{}) (interface{}, error) {
-	val, err := d3reflect.ExtractStructField(entity, m.Pk.Field.Name)
+	val, err := m.Tools.ExtractField(entity, m.Pk.Field.Name)
 	if err != nil {
 		return nil, err
 	}

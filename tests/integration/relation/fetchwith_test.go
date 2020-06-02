@@ -4,7 +4,6 @@ import (
 	"context"
 	"d3/adapter"
 	"d3/orm"
-	d3entity "d3/orm/entity"
 	"d3/tests/helpers"
 	"github.com/jackc/pgx/v4"
 	"github.com/stretchr/testify/suite"
@@ -106,18 +105,6 @@ func TestFetchWithRelationTestSuite(t *testing.T) {
 	suite.Run(t, new(FetchWithRelationTS))
 }
 
-type fwTestEntity1 struct {
-	Id   int32                  `d3:"pk:auto"`
-	Rel  d3entity.WrappedEntity `d3:"one_to_one:<target_entity:d3/tests/integration/relation/fwTestEntity2,join_on:e2_id,reference_on:id>,type:lazy"`
-	Data string
-}
-
-type fwTestEntity2 struct {
-	Id   int32               `d3:"pk:auto"`
-	Rel  d3entity.Collection `d3:"one_to_many:<target_entity:d3/tests/integration/relation/fwTestEntity3,join_on:e2_id>,type:lazy"`
-	Data string
-}
-
 func (o *FetchWithRelationTS) TestFetchWithOneToOne() {
 	session := o.orm.MakeSession()
 	repository, _ := session.MakeRepository((*fwTestEntity1)(nil))
@@ -136,12 +123,6 @@ func (o *FetchWithRelationTS) TestFetchWithOneToOne() {
 	)
 
 	o.Assert().Equal(1, o.dbAdapter.QueryCounter())
-}
-
-type fwTestEntity3 struct {
-	Id   int32               `d3:"pk:auto"`
-	Rel  d3entity.Collection `d3:"many_to_many:<target_entity:d3/tests/integration/relation/fwTestEntity4,join_on:t3_id,reference_on:t4_id,join_table:t3_t4>,type:lazy"`
-	Data string
 }
 
 func (o *FetchWithRelationTS) TestFetchWithOneToMany() {
@@ -163,11 +144,6 @@ func (o *FetchWithRelationTS) TestFetchWithOneToMany() {
 	)
 
 	o.Assert().Equal(1, o.dbAdapter.QueryCounter())
-}
-
-type fwTestEntity4 struct {
-	Id   int32 `d3:"pk:auto"`
-	Data string
 }
 
 func (o *FetchWithRelationTS) TestFetchWithManyToMany() {

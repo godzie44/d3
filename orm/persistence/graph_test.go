@@ -14,8 +14,72 @@ type Shop struct {
 	Profile entity.WrappedEntity `d3:"one_to_one:<target_entity:d3/orm/persistence/ShopProfile,join_on:profile_id>,type:lazy"`
 }
 
+func (s *Shop) D3Token() entity.MetaToken {
+	return entity.MetaToken{
+		Tools: entity.InternalTools{
+			ExtractField: func(s interface{}, name string) (interface{}, error) {
+				switch name {
+				case "ID":
+					return s.(*Shop).ID, nil
+				case "Books":
+					return s.(*Shop).Books, nil
+				case "Profile":
+					return s.(*Shop).Profile, nil
+				default:
+					return nil, nil
+				}
+			},
+			CompareFields: func(e1, e2 interface{}, fName string) bool {
+				if e1 == nil || e2 == nil {
+					return e1 == e2
+				}
+				e1T := e1.(*Shop)
+				e2T := e2.(*Shop)
+				switch fName {
+				case "ID":
+					return e1T.ID == e2T.ID
+				case "Books":
+					return e1T.Books == e2T.Books
+				case "Profile":
+					return e1T.Profile == e2T.Profile
+				default:
+					return false
+				}
+			},
+		},
+	}
+}
+
 type ShopProfile struct {
 	ID int `d3:"pk:manual"`
+}
+
+func (s *ShopProfile) D3Token() entity.MetaToken {
+	return entity.MetaToken{
+		Tools: entity.InternalTools{
+			ExtractField: func(s interface{}, name string) (interface{}, error) {
+				switch name {
+				case "ID":
+					return s.(*ShopProfile).ID, nil
+				default:
+					return nil, nil
+				}
+			},
+			CompareFields: func(e1, e2 interface{}, fName string) bool {
+				if e1 == nil || e2 == nil {
+					return e1 == e2
+				}
+				e1T := e1.(*ShopProfile)
+				e2T := e2.(*ShopProfile)
+				switch fName {
+				case "ID":
+					return e1T.ID == e2T.ID
+				default:
+					return false
+				}
+			},
+		},
+	}
 }
 
 type Book struct {
@@ -23,8 +87,68 @@ type Book struct {
 	Authors entity.Collection `d3:"many_to_many:<target_entity:d3/orm/persistence/Author,join_on:book_id,reference_on:author_id,join_table:book_author>,type:lazy"`
 }
 
+func (b *Book) D3Token() entity.MetaToken {
+	return entity.MetaToken{
+		Tools: entity.InternalTools{
+			ExtractField: func(s interface{}, name string) (interface{}, error) {
+				switch name {
+				case "ID":
+					return s.(*Book).ID, nil
+				case "Authors":
+					return s.(*Book).Authors, nil
+				default:
+					return nil, nil
+				}
+			},
+			CompareFields: func(e1, e2 interface{}, fName string) bool {
+				if e1 == nil || e2 == nil {
+					return e1 == e2
+				}
+				e1T := e1.(*Book)
+				e2T := e2.(*Book)
+				switch fName {
+				case "ID":
+					return e1T.ID == e2T.ID
+				case "Authors":
+					return e1T.Authors == e2T.Authors
+				default:
+					return false
+				}
+			},
+		},
+	}
+}
+
 type Author struct {
 	ID int `d3:"pk:manual"`
+}
+
+func (a *Author) D3Token() entity.MetaToken {
+	return entity.MetaToken{
+		Tools: entity.InternalTools{
+			ExtractField: func(s interface{}, name string) (interface{}, error) {
+				switch name {
+				case "ID":
+					return s.(*Author).ID, nil
+				default:
+					return nil, nil
+				}
+			},
+			CompareFields: func(e1, e2 interface{}, fName string) bool {
+				if e1 == nil || e2 == nil {
+					return e1 == e2
+				}
+				e1T := e1.(*Author)
+				e2T := e2.(*Author)
+				switch fName {
+				case "ID":
+					return e1T.ID == e2T.ID
+				default:
+					return false
+				}
+			},
+		},
+	}
 }
 
 func initMetaRegistry() *entity.MetaRegistry {
@@ -354,14 +478,82 @@ func TestDoublePersistNotAffectGraph(t *testing.T) {
 }
 
 type User struct {
-	Id           int                  `d3:"pk:auto"`
+	ID           int                  `d3:"pk:auto"`
 	Avatar       entity.WrappedEntity `d3:"one_to_one:<target_entity:d3/orm/persistence/Photo,join_on:avatar_id>,type:lazy"`
 	GoodPhotos   entity.Collection    `d3:"one_to_many:<target_entity:d3/orm/persistence/Photo,join_on:user_good_id>,type:lazy"`
 	PrettyPhotos entity.Collection    `d3:"one_to_many:<target_entity:d3/orm/persistence/Photo,join_on:user_pretty_id>,type:lazy"`
 }
 
+func (u *User) D3Token() entity.MetaToken {
+	return entity.MetaToken{
+		Tools: entity.InternalTools{
+			ExtractField: func(s interface{}, name string) (interface{}, error) {
+				switch name {
+				case "ID":
+					return s.(*User).ID, nil
+				case "Avatar":
+					return s.(*User).Avatar, nil
+				case "GoodPhotos":
+					return s.(*User).GoodPhotos, nil
+				case "PrettyPhotos":
+					return s.(*User).PrettyPhotos, nil
+				default:
+					return nil, nil
+				}
+			},
+			CompareFields: func(e1, e2 interface{}, fName string) bool {
+				if e1 == nil || e2 == nil {
+					return e1 == e2
+				}
+				e1T := e1.(*User)
+				e2T := e2.(*User)
+				switch fName {
+				case "ID":
+					return e1T.ID == e2T.ID
+				case "Avatar":
+					return e1T.Avatar == e2T.Avatar
+				case "GoodPhotos":
+					return e1T.GoodPhotos == e2T.GoodPhotos
+				case "PrettyPhotos":
+					return e1T.PrettyPhotos == e2T.PrettyPhotos
+				default:
+					return false
+				}
+			},
+		},
+	}
+}
+
 type Photo struct {
-	Id int `d3:"pk:auto"`
+	ID int `d3:"pk:auto"`
+}
+
+func (p *Photo) D3Token() entity.MetaToken {
+	return entity.MetaToken{
+		Tools: entity.InternalTools{
+			ExtractField: func(s interface{}, name string) (interface{}, error) {
+				switch name {
+				case "ID":
+					return s.(*Photo).ID, nil
+				default:
+					return nil, nil
+				}
+			},
+			CompareFields: func(e1, e2 interface{}, fName string) bool {
+				if e1 == nil || e2 == nil {
+					return e1 == e2
+				}
+				e1T := e1.(*Photo)
+				e2T := e2.(*Photo)
+				switch fName {
+				case "ID":
+					return e1T.ID == e2T.ID
+				default:
+					return false
+				}
+			},
+		},
+	}
 }
 
 func TestGenerationTwoOneToManyOnOneEntity(t *testing.T) {
@@ -375,11 +567,11 @@ func TestGenerationTwoOneToManyOnOneEntity(t *testing.T) {
 		})
 	meta, _ := metaRegistry.GetMeta((*User)(nil))
 
-	goodAndPrettyPhoto := &Photo{Id: 1}
+	goodAndPrettyPhoto := &Photo{ID: 1}
 
-	user := &User{Id: 1,
-		GoodPhotos:   entity.NewCollection([]interface{}{goodAndPrettyPhoto, &Photo{Id: 2}}),
-		PrettyPhotos: entity.NewCollection([]interface{}{goodAndPrettyPhoto, &Photo{Id: 3}}),
+	user := &User{ID: 1,
+		GoodPhotos:   entity.NewCollection([]interface{}{goodAndPrettyPhoto, &Photo{ID: 2}}),
+		PrettyPhotos: entity.NewCollection([]interface{}{goodAndPrettyPhoto, &Photo{ID: 3}}),
 	}
 
 	graph := createNewGraph()
@@ -419,9 +611,9 @@ func TestNoCycleOneToOneToMany(t *testing.T) {
 		})
 	meta, _ := metaRegistry.GetMeta((*User)(nil))
 
-	goodAndAvatarPhoto := &Photo{Id: 1}
+	goodAndAvatarPhoto := &Photo{ID: 1}
 
-	user := &User{Id: 1,
+	user := &User{ID: 1,
 		GoodPhotos: entity.NewCollection([]interface{}{goodAndAvatarPhoto}),
 		Avatar:     entity.NewWrapEntity(goodAndAvatarPhoto),
 	}
@@ -435,9 +627,45 @@ func TestNoCycleOneToOneToMany(t *testing.T) {
 }
 
 type BookCirc struct {
-	Id         int                  `d3:"pk:auto"`
+	ID         int                  `d3:"pk:auto"`
 	Authors    entity.Collection    `d3:"many_to_many:<target_entity:d3/orm/persistence/Author,join_on:book_id,reference_on:author_id,join_table:book_author>,type:lazy"`
 	MainAuthor entity.WrappedEntity `d3:"one_to_one:<target_entity:d3/orm/persistence/Author,join_on:m_author_id>,type:lazy"`
+}
+
+func (b *BookCirc) D3Token() entity.MetaToken {
+	return entity.MetaToken{
+		Tools: entity.InternalTools{
+			ExtractField: func(s interface{}, name string) (interface{}, error) {
+				switch name {
+				case "ID":
+					return s.(*BookCirc).ID, nil
+				case "Authors":
+					return s.(*BookCirc).Authors, nil
+				case "MainAuthor":
+					return s.(*BookCirc).MainAuthor, nil
+				default:
+					return nil, nil
+				}
+			},
+			CompareFields: func(e1, e2 interface{}, fName string) bool {
+				if e1 == nil || e2 == nil {
+					return e1 == e2
+				}
+				e1T := e1.(*BookCirc)
+				e2T := e2.(*BookCirc)
+				switch fName {
+				case "ID":
+					return e1T.ID == e2T.ID
+				case "Authors":
+					return e1T.Authors == e2T.Authors
+				case "MainAuthor":
+					return e1T.MainAuthor == e2T.MainAuthor
+				default:
+					return false
+				}
+			},
+		},
+	}
 }
 
 func TestNoCycleManyToManyToOne(t *testing.T) {
@@ -453,7 +681,7 @@ func TestNoCycleManyToManyToOne(t *testing.T) {
 
 	mainAuthor := &Author{ID: 1}
 	book := &BookCirc{
-		Id: 1,
+		ID: 1,
 		Authors: entity.NewCollection([]interface{}{
 			mainAuthor, &Author{ID: 2},
 		}),
@@ -471,20 +699,124 @@ func TestNoCycleManyToManyToOne(t *testing.T) {
 }
 
 type shopCirc struct {
-	Id      sql.NullInt32        `d3:"pk:auto"`
+	ID      sql.NullInt32        `d3:"pk:auto"`
 	Profile entity.WrappedEntity `d3:"one_to_one:<target_entity:d3/orm/persistence/shopProfileCirc,join_on:profile_id>"`
 	Sellers entity.Collection    `d3:"one_to_many:<target_entity:d3/orm/persistence/sellerCirc,join_on:shop_id>"`
 	Name    string
 }
 
+func (s *shopCirc) D3Token() entity.MetaToken {
+	return entity.MetaToken{
+		Tools: entity.InternalTools{
+			ExtractField: func(s interface{}, name string) (interface{}, error) {
+				switch name {
+				case "ID":
+					return s.(*shopCirc).ID, nil
+				case "Profile":
+					return s.(*shopCirc).Profile, nil
+				case "Sellers":
+					return s.(*shopCirc).Sellers, nil
+				case "Name":
+					return s.(*shopCirc).Name, nil
+				default:
+					return nil, nil
+				}
+			},
+			CompareFields: func(e1, e2 interface{}, fName string) bool {
+				if e1 == nil || e2 == nil {
+					return e1 == e2
+				}
+				e1T := e1.(*shopCirc)
+				e2T := e2.(*shopCirc)
+				switch fName {
+				case "ID":
+					return e1T.ID == e2T.ID
+				case "Profile":
+					return e1T.Profile == e2T.Profile
+				case "Sellers":
+					return e1T.Sellers == e2T.Sellers
+				case "Name":
+					return e1T.Name == e2T.Name
+				default:
+					return false
+				}
+			},
+		},
+	}
+}
+
 type shopProfileCirc struct {
-	Id   sql.NullInt32        `d3:"pk:auto"`
+	ID   sql.NullInt32        `d3:"pk:auto"`
 	Shop entity.WrappedEntity `d3:"one_to_one:<target_entity:d3/orm/persistence/shopCirc,join_on:shop_id>"`
 }
 
+func (s *shopProfileCirc) D3Token() entity.MetaToken {
+	return entity.MetaToken{
+		Tools: entity.InternalTools{
+			ExtractField: func(s interface{}, name string) (interface{}, error) {
+				switch name {
+				case "ID":
+					return s.(*shopProfileCirc).ID, nil
+				case "Shop":
+					return s.(*shopProfileCirc).Shop, nil
+				default:
+					return nil, nil
+				}
+			},
+			CompareFields: func(e1, e2 interface{}, fName string) bool {
+				if e1 == nil || e2 == nil {
+					return e1 == e2
+				}
+				e1T := e1.(*shopProfileCirc)
+				e2T := e2.(*shopProfileCirc)
+				switch fName {
+				case "ID":
+					return e1T.ID == e2T.ID
+				case "Shop":
+					return e1T.Shop == e2T.Shop
+				default:
+					return false
+				}
+			},
+		},
+	}
+}
+
 type sellerCirc struct {
-	Id   sql.NullInt32        `d3:"pk:auto"`
+	ID   sql.NullInt32        `d3:"pk:auto"`
 	Shop entity.WrappedEntity `d3:"one_to_one:<target_entity:d3/orm/persistence/shopCirc,join_on:shop_id>"`
+}
+
+func (s *sellerCirc) D3Token() entity.MetaToken {
+	return entity.MetaToken{
+		Tools: entity.InternalTools{
+			ExtractField: func(s interface{}, name string) (interface{}, error) {
+				switch name {
+				case "ID":
+					return s.(*sellerCirc).ID, nil
+				case "Shop":
+					return s.(*sellerCirc).Shop, nil
+				default:
+					return nil, nil
+				}
+			},
+			CompareFields: func(e1, e2 interface{}, fName string) bool {
+				if e1 == nil || e2 == nil {
+					return e1 == e2
+				}
+				e1T := e1.(*sellerCirc)
+				e2T := e2.(*sellerCirc)
+				switch fName {
+				case "ID":
+					return e1T.ID == e2T.ID
+				case "Shop":
+					return e1T.Shop == e2T.Shop
+				default:
+					return false
+				}
+			},
+		},
+	}
 }
 
 func TestNoCycleOneToOne(t *testing.T) {
@@ -541,11 +873,11 @@ func TestNoCycleOneToMany(t *testing.T) {
 	seller2 := &sellerCirc{}
 	seller3 := &sellerCirc{}
 	shop1 := &shopCirc{
-		Id:      sql.NullInt32{Int32: 1, Valid: true},
+		ID:      sql.NullInt32{Int32: 1, Valid: true},
 		Sellers: entity.NewCollection([]interface{}{seller1}),
 	}
 	shop2 := &shopCirc{
-		Id:      sql.NullInt32{Int32: 2, Valid: true},
+		ID:      sql.NullInt32{Int32: 2, Valid: true},
 		Sellers: entity.NewCollection([]interface{}{seller2, seller3}),
 	}
 	seller1.Shop = entity.NewWrapEntity(shop1)

@@ -10,6 +10,12 @@ type testEntity struct {
 	ID int `d3:"pk:auto"`
 }
 
+var testMetaToken = MetaToken{}
+
+func (t *testEntity) D3Token() MetaToken {
+	return testMetaToken
+}
+
 func TestRegistryAdd(t *testing.T) {
 	registry := NewMetaRegistry()
 	_ = registry.Add(
@@ -39,6 +45,10 @@ func TestRegistryGet(t *testing.T) {
 
 type testEntity2 struct {
 	Id int `d3:"pk:auto"`
+}
+
+func (t *testEntity2) D3Token() MetaToken {
+	return MetaToken{}
 }
 
 func TestRegistryGetMetaParallel(t *testing.T) {

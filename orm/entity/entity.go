@@ -1,6 +1,9 @@
 package entity
 
+import "reflect"
+
 type WrappedEntity interface {
+	Copiable
 	IsNil() bool
 	Unwrap() interface{}
 	Wrap(interface{})
@@ -96,10 +99,20 @@ func (l *lazyEntity) IsInitialized() bool {
 
 type Name string
 
-func (e Name) Short() string {
-	return string(e)
+func NameFromEntity(e interface{}) Name {
+	t := reflect.TypeOf(e)
+	switch t.Kind() {
+	case reflect.Ptr:
+		return Name(t.Elem().PkgPath() + "/" + t.Elem().Name())
+	default:
+		return Name(t.PkgPath() + "/" + t.Name())
+	}
 }
 
-func (e Name) Equal(name Name) bool {
-	return e == name || e.Short() == name.Short()
+func (n Name) Short() string {
+	return string(n)
+}
+
+func (n Name) Equal(name Name) bool {
+	return n == name || n.Short() == name.Short()
 }

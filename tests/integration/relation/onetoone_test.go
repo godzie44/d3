@@ -4,8 +4,6 @@ import (
 	"context"
 	"d3/adapter"
 	"d3/orm"
-	"d3/orm/entity"
-	"database/sql"
 	"github.com/jackc/pgx/v4"
 	"github.com/stretchr/testify/suite"
 	"os"
@@ -74,23 +72,6 @@ func TestOneToOneRunTestSuite(t *testing.T) {
 	suite.Run(t, new(OneToOneRelationTS))
 }
 
-type ShopLL struct {
-	ID      sql.NullInt32        `d3:"pk:auto"`
-	Profile entity.WrappedEntity `d3:"one_to_one:<target_entity:d3/tests/integration/relation/ProfileLL,join_on:t2_id>,type:lazy"`
-	Data    string
-}
-
-type ProfileLL struct {
-	ID    int32                `d3:"pk:auto"`
-	Photo entity.WrappedEntity `d3:"one_to_one:<target_entity:d3/tests/integration/relation/PhotoLL,join_on:t3_id,reference_on:id>,type:eager"`
-	Data  string
-}
-
-type PhotoLL struct {
-	ID   int32 `d3:"pk:auto"`
-	Data string
-}
-
 func (o *OneToOneRelationTS) TestLazyRelation() {
 	session := o.orm.MakeSession()
 	repository, err := session.MakeRepository((*ShopLL)(nil))
@@ -107,12 +88,6 @@ func (o *OneToOneRelationTS) TestLazyRelation() {
 	o.Assert().IsType(&ProfileLL{}, relatedEntity)
 	o.Assert().Equal(int32(1), relatedEntity.ID)
 	o.Assert().Equal("entity_2_data", relatedEntity.Data)
-}
-
-type ShopEL struct {
-	Id      int32                `d3:"pk:auto"`
-	Profile entity.WrappedEntity `d3:"one_to_one:<target_entity:d3/tests/integration/relation/ProfileLL,join_on:t2_id,reference_on:id>,type:eager"`
-	Data    string
 }
 
 func (o *OneToOneRelationTS) TestEagerRelation() {
