@@ -79,10 +79,10 @@ INSERT INTO t3_t4(t3_id, t4_id) VALUES (2, 2);
 	o.dbAdapter = helpers.NewDbAdapterWithQueryCounter(adapter.NewGoPgXAdapter(o.pgDb, &adapter.SquirrelAdapter{}))
 	o.orm = orm.NewOrm(o.dbAdapter)
 	o.Assert().NoError(o.orm.Register(
-		orm.NewMapping("test_entity_1", (*fwTestEntity1)(nil)),
-		orm.NewMapping("test_entity_2", (*fwTestEntity2)(nil)),
-		orm.NewMapping("test_entity_3", (*fwTestEntity3)(nil)),
-		orm.NewMapping("test_entity_4", (*fwTestEntity4)(nil)),
+		(*fwTestEntity1)(nil),
+		(*fwTestEntity2)(nil),
+		(*fwTestEntity3)(nil),
+		(*fwTestEntity4)(nil),
 	))
 }
 

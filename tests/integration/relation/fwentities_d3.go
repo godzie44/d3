@@ -8,7 +8,7 @@ import "fmt"
 func (f *fwTestEntity1) D3Token() entity.MetaToken {
 	return entity.MetaToken{
 		Tpl:       (*fwTestEntity1)(nil),
-		TableName: "",
+		TableName: "test_entity_1",
 		Tools: entity.InternalTools{
 			ExtractField:  f.__d3_makeFieldExtractor(),
 			SetFieldVal:   f.__d3_makeFieldSetter(),
@@ -125,7 +125,7 @@ func (f *fwTestEntity1) __d3_makeComparator() entity.FieldComparator {
 func (f *fwTestEntity2) D3Token() entity.MetaToken {
 	return entity.MetaToken{
 		Tpl:       (*fwTestEntity2)(nil),
-		TableName: "",
+		TableName: "test_entity_2",
 		Tools: entity.InternalTools{
 			ExtractField:  f.__d3_makeFieldExtractor(),
 			SetFieldVal:   f.__d3_makeFieldSetter(),
@@ -242,7 +242,7 @@ func (f *fwTestEntity2) __d3_makeComparator() entity.FieldComparator {
 func (f *fwTestEntity3) D3Token() entity.MetaToken {
 	return entity.MetaToken{
 		Tpl:       (*fwTestEntity3)(nil),
-		TableName: "",
+		TableName: "test_entity_3",
 		Tools: entity.InternalTools{
 			ExtractField:  f.__d3_makeFieldExtractor(),
 			SetFieldVal:   f.__d3_makeFieldSetter(),
@@ -359,7 +359,7 @@ func (f *fwTestEntity3) __d3_makeComparator() entity.FieldComparator {
 func (f *fwTestEntity4) D3Token() entity.MetaToken {
 	return entity.MetaToken{
 		Tpl:       (*fwTestEntity4)(nil),
-		TableName: "",
+		TableName: "test_entity_4",
 		Tools: entity.InternalTools{
 			ExtractField:  f.__d3_makeFieldExtractor(),
 			SetFieldVal:   f.__d3_makeFieldSetter(),

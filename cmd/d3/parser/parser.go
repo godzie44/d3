@@ -17,12 +17,18 @@ import (
 
 const (
 	entityAnnotation = "d3:entity"
+	tableAnnotation  = "d3_table:"
 )
 
 type Parser struct {
-	PkgPath     string
-	PkgName     string
-	EntityNames []string
+	PkgPath string
+	PkgName string
+	Metas   []EntityMeta
+}
+
+type EntityMeta struct {
+	Name      string
+	TableName string
 }
 
 func (p *Parser) needProcess(comments string) bool {
@@ -32,6 +38,15 @@ func (p *Parser) needProcess(comments string) bool {
 		}
 	}
 	return false
+}
+
+func (p *Parser) extractTableName(comments string) string {
+	for _, v := range strings.Split(comments, "\n") {
+		if strings.HasPrefix(v, tableAnnotation) {
+			return strings.TrimSpace(strings.TrimPrefix(v, tableAnnotation))
+		}
+	}
+	return ""
 }
 
 func (p *Parser) Visit(n ast.Node) (w ast.Visitor) {
@@ -58,8 +73,10 @@ func (p *Parser) Visit(n ast.Node) (w ast.Visitor) {
 			return nil
 		}
 
-		p.EntityNames = append(p.EntityNames, n.Name.String())
-
+		p.Metas = append(p.Metas, EntityMeta{
+			Name:      n.Name.String(),
+			TableName: p.extractTableName(n.Doc.Text()),
+		})
 		return nil
 	}
 	return nil

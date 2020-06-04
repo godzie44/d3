@@ -53,11 +53,11 @@ INSERT INTO discount(id, value, t2_id) VALUES (1, 33, 1);
 
 	o.orm = orm.NewOrm(adapter.NewGoPgXAdapter(o.pgDb, &adapter.SquirrelAdapter{}))
 	o.NoError(o.orm.Register(
-		orm.NewMapping("shop", (*ShopLR)(nil)),
-		orm.NewMapping("book", (*BookLR)(nil)),
-		orm.NewMapping("shop", (*ShopER)(nil)),
-		orm.NewMapping("book", (*BookER)(nil)),
-		orm.NewMapping("discount", (*DiscountER)(nil)),
+		(*ShopLR)(nil),
+		(*BookLR)(nil),
+		(*ShopER)(nil),
+		(*BookER)(nil),
+		(*DiscountER)(nil),
 	))
 }
 

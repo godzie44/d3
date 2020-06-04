@@ -9,20 +9,15 @@ import (
 
 func TestCreateSimpleMeta(t *testing.T) {
 	meta, _ := CreateMeta(
-		UserMapping{
-			Entity: (*testEntity)(nil),
-		})
+		(*testEntity)(nil),
+	)
 
 	assert.Equal(t, meta.EntityName, Name("d3/orm/entity/testEntity"))
 }
 
 func TestCreateMetaFromVariousReflectionsOfOneEntity(t *testing.T) {
-	meta1, _ := CreateMeta(UserMapping{
-		Entity: (*testEntity)(nil),
-	})
-	meta2, _ := CreateMeta(UserMapping{
-		Entity: &testEntity{},
-	})
+	meta1, _ := CreateMeta((*testEntity)(nil))
+	meta2, _ := CreateMeta(&testEntity{})
 
 	//cause (*testEntity)(nil) != &testEntity{} do this
 	meta2.Tpl = meta1.Tpl
@@ -41,10 +36,7 @@ func (s *shop) D3Token() MetaToken {
 }
 
 func TestCreateMetaWithRelations(t *testing.T) {
-	meta, err := CreateMeta(UserMapping{
-		TableName: "shop",
-		Entity:    (*shop)(nil),
-	})
+	meta, err := CreateMeta((*shop)(nil))
 	assert.NoError(t, err)
 
 	assert.Equal(t, Name("d3/orm/entity/shop"), meta.EntityName)
@@ -94,10 +86,7 @@ func (a *author) D3Token() MetaToken {
 }
 
 func TestCreateMetaWithFieldAlias(t *testing.T) {
-	meta, _ := CreateMeta(UserMapping{
-		TableName: "author",
-		Entity:    (*author)(nil),
-	})
+	meta, _ := CreateMeta((*author)(nil))
 
 	assert.Equal(t, FieldInfo{
 		Name:           "Name",

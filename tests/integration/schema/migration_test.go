@@ -22,10 +22,10 @@ func (m *MigrationTestSuite) SetupSuite() {
 
 	m.orm = orm.NewOrm(adapter.NewGoPgXAdapter(m.pgDb, &adapter.SquirrelAdapter{}))
 	m.Assert().NoError(m.orm.Register(
-		orm.NewMapping("shop_m", (*shop)(nil)),
-		orm.NewMapping("profile_m", (*profile)(nil)),
-		orm.NewMapping("book_m", (*book)(nil)),
-		orm.NewMapping("author_m", (*author)(nil)),
+		(*shop)(nil),
+		(*profile)(nil),
+		(*book)(nil),
+		(*author)(nil),
 	))
 }
 

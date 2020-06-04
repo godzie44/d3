@@ -9,7 +9,7 @@ import "database/sql/driver"
 func (s *Shop) D3Token() entity.MetaToken {
 	return entity.MetaToken{
 		Tpl:       (*Shop)(nil),
-		TableName: "",
+		TableName: "shop_p",
 		Tools: entity.InternalTools{
 			ExtractField:  s.__d3_makeFieldExtractor(),
 			SetFieldVal:   s.__d3_makeFieldSetter(),
@@ -143,7 +143,7 @@ func (s *Shop) __d3_makeComparator() entity.FieldComparator {
 func (s *ShopProfile) D3Token() entity.MetaToken {
 	return entity.MetaToken{
 		Tpl:       (*ShopProfile)(nil),
-		TableName: "",
+		TableName: "profile_p",
 		Tools: entity.InternalTools{
 			ExtractField:  s.__d3_makeFieldExtractor(),
 			SetFieldVal:   s.__d3_makeFieldSetter(),
@@ -254,7 +254,7 @@ func (s *ShopProfile) __d3_makeComparator() entity.FieldComparator {
 func (b *Book) D3Token() entity.MetaToken {
 	return entity.MetaToken{
 		Tpl:       (*Book)(nil),
-		TableName: "",
+		TableName: "book_p",
 		Tools: entity.InternalTools{
 			ExtractField:  b.__d3_makeFieldExtractor(),
 			SetFieldVal:   b.__d3_makeFieldSetter(),
@@ -377,7 +377,7 @@ func (b *Book) __d3_makeComparator() entity.FieldComparator {
 func (a *Author) D3Token() entity.MetaToken {
 	return entity.MetaToken{
 		Tpl:       (*Author)(nil),
-		TableName: "",
+		TableName: "author_p",
 		Tools: entity.InternalTools{
 			ExtractField:  a.__d3_makeFieldExtractor(),
 			SetFieldVal:   a.__d3_makeFieldSetter(),

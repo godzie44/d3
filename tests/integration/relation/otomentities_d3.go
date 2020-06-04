@@ -8,7 +8,7 @@ import "d3/orm/entity"
 func (s *ShopLR) D3Token() entity.MetaToken {
 	return entity.MetaToken{
 		Tpl:       (*ShopLR)(nil),
-		TableName: "",
+		TableName: "shop",
 		Tools: entity.InternalTools{
 			ExtractField:  s.__d3_makeFieldExtractor(),
 			SetFieldVal:   s.__d3_makeFieldSetter(),
@@ -125,7 +125,7 @@ func (s *ShopLR) __d3_makeComparator() entity.FieldComparator {
 func (b *BookLR) D3Token() entity.MetaToken {
 	return entity.MetaToken{
 		Tpl:       (*BookLR)(nil),
-		TableName: "",
+		TableName: "book",
 		Tools: entity.InternalTools{
 			ExtractField:  b.__d3_makeFieldExtractor(),
 			SetFieldVal:   b.__d3_makeFieldSetter(),
@@ -230,7 +230,7 @@ func (b *BookLR) __d3_makeComparator() entity.FieldComparator {
 func (s *ShopER) D3Token() entity.MetaToken {
 	return entity.MetaToken{
 		Tpl:       (*ShopER)(nil),
-		TableName: "",
+		TableName: "shop",
 		Tools: entity.InternalTools{
 			ExtractField:  s.__d3_makeFieldExtractor(),
 			SetFieldVal:   s.__d3_makeFieldSetter(),
@@ -347,7 +347,7 @@ func (s *ShopER) __d3_makeComparator() entity.FieldComparator {
 func (b *BookER) D3Token() entity.MetaToken {
 	return entity.MetaToken{
 		Tpl:       (*BookER)(nil),
-		TableName: "",
+		TableName: "book",
 		Tools: entity.InternalTools{
 			ExtractField:  b.__d3_makeFieldExtractor(),
 			SetFieldVal:   b.__d3_makeFieldSetter(),
@@ -464,7 +464,7 @@ func (b *BookER) __d3_makeComparator() entity.FieldComparator {
 func (d *DiscountER) D3Token() entity.MetaToken {
 	return entity.MetaToken{
 		Tpl:       (*DiscountER)(nil),
-		TableName: "",
+		TableName: "discount",
 		Tools: entity.InternalTools{
 			ExtractField:  d.__d3_makeFieldExtractor(),
 			SetFieldVal:   d.__d3_makeFieldSetter(),

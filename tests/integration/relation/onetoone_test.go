@@ -52,10 +52,10 @@ INSERT INTO photo(id, data) VALUES (1, 'entity_3_data');
 
 	o.orm = orm.NewOrm(adapter.NewGoPgXAdapter(o.pgDb, &adapter.SquirrelAdapter{}))
 	o.NoError(o.orm.Register(
-		orm.NewMapping("shop", (*ShopLL)(nil)),
-		orm.NewMapping("profile", (*ProfileLL)(nil)),
-		orm.NewMapping("photo", (*PhotoLL)(nil)),
-		orm.NewMapping("shop", (*ShopEL)(nil)),
+		(*ShopLL)(nil),
+		(*ProfileLL)(nil),
+		(*PhotoLL)(nil),
+		(*ShopEL)(nil),
 	))
 }
 

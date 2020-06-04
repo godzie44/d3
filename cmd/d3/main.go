@@ -54,7 +54,7 @@ func generate(fileName string) error {
 		return fmt.Errorf("file parse error %s: %w", fileName, err)
 	}
 
-	if len(p.EntityNames) == 0 {
+	if len(p.Metas) == 0 {
 		return nil
 	}
 
@@ -63,7 +63,7 @@ func generate(fileName string) error {
 	boot := bootstrap.Generator{
 		PkgPath:   p.PkgPath,
 		PkgName:   p.PkgName,
-		Entities:  p.EntityNames,
+		Metas:     p.Metas,
 		OutName:   outName,
 		BuildTags: "",
 		Debug:     *debug,

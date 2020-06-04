@@ -154,22 +154,11 @@ func (a *Author) D3Token() entity.MetaToken {
 func initMetaRegistry() *entity.MetaRegistry {
 	metaRegistry := entity.NewMetaRegistry()
 	_ = metaRegistry.Add(
-		entity.UserMapping{
-			Entity:    (*ShopProfile)(nil),
-			TableName: "profile",
-		},
-		entity.UserMapping{
-			Entity:    (*Shop)(nil),
-			TableName: "shop",
-		},
-		entity.UserMapping{
-			Entity:    (*Book)(nil),
-			TableName: "book",
-		},
-		entity.UserMapping{
-			Entity:    (*Author)(nil),
-			TableName: "author",
-		})
+		(*ShopProfile)(nil),
+		(*Shop)(nil),
+		(*Book)(nil),
+		(*Author)(nil),
+	)
 	return metaRegistry
 }
 
@@ -213,7 +202,7 @@ func TestGenerationOneToOneEntity(t *testing.T) {
 	aggRoots := graph.filterRoots()
 	assert.Len(t, aggRoots, 1)
 	shopAction := aggRoots[0].(*InsertAction)
-	assertTableName(t, "profile", shopAction)
+	assertTableName(t, "shopprofile", shopAction)
 	assertChildrenAndSubs(t, 1, 0, shopAction)
 	assertTableName(t, "shop", shopAction.children()[0])
 	assertChildrenAndSubs(t, 0, 1, shopAction.children()[0])
@@ -343,9 +332,9 @@ func TestGenerationBigGraph(t *testing.T) {
 	for _, root := range aggRoots {
 		action := root.(*InsertAction)
 		switch {
-		case action.TableName == "profile" && action.Values["id"] == 1:
+		case action.TableName == "shopprofile" && action.Values["id"] == 1:
 			profileAction1 = action
-		case action.TableName == "profile" && action.Values["id"] == 2:
+		case action.TableName == "shopprofile" && action.Values["id"] == 2:
 			profileAction2 = action
 		case action.TableName == "author" && action.Values["id"] == 1:
 			authorAction1 = action
@@ -354,7 +343,7 @@ func TestGenerationBigGraph(t *testing.T) {
 		}
 	}
 
-	assertTableName(t, "profile", profileAction1)
+	assertTableName(t, "shopprofile", profileAction1)
 	assertChildrenAndSubs(t, 1, 0, profileAction1)
 
 	shopAction1 := profileAction1.children()[0]
@@ -383,7 +372,7 @@ func TestGenerationBigGraph(t *testing.T) {
 	assertTableName(t, "book_author", authorAction2.children()[0])
 	assertChildrenAndSubs(t, 0, 2, authorAction2.children()[0])
 
-	assertTableName(t, "profile", profileAction2)
+	assertTableName(t, "shopprofile", profileAction2)
 	assertChildrenAndSubs(t, 1, 0, profileAction2)
 	assertTableName(t, "shop", profileAction2.children()[0])
 	assertChildrenAndSubs(t, 1, 1, profileAction2.children()[0])
@@ -558,13 +547,9 @@ func (p *Photo) D3Token() entity.MetaToken {
 
 func TestGenerationTwoOneToManyOnOneEntity(t *testing.T) {
 	_ = metaRegistry.Add(
-		entity.UserMapping{
-			Entity:    (*User)(nil),
-			TableName: "user",
-		}, entity.UserMapping{
-			Entity:    (*Photo)(nil),
-			TableName: "photo",
-		})
+		(*User)(nil),
+		(*Photo)(nil),
+	)
 	meta, _ := metaRegistry.GetMeta((*User)(nil))
 
 	goodAndPrettyPhoto := &Photo{ID: 1}
@@ -602,13 +587,9 @@ func TestGenerationTwoOneToManyOnOneEntity(t *testing.T) {
 
 func TestNoCycleOneToOneToMany(t *testing.T) {
 	_ = metaRegistry.Add(
-		entity.UserMapping{
-			Entity:    (*User)(nil),
-			TableName: "user",
-		}, entity.UserMapping{
-			Entity:    (*Photo)(nil),
-			TableName: "photo",
-		})
+		(*User)(nil),
+		(*Photo)(nil),
+	)
 	meta, _ := metaRegistry.GetMeta((*User)(nil))
 
 	goodAndAvatarPhoto := &Photo{ID: 1}
@@ -670,13 +651,9 @@ func (b *BookCirc) D3Token() entity.MetaToken {
 
 func TestNoCycleManyToManyToOne(t *testing.T) {
 	_ = metaRegistry.Add(
-		entity.UserMapping{
-			Entity:    (*Author)(nil),
-			TableName: "author",
-		}, entity.UserMapping{
-			Entity:    (*BookCirc)(nil),
-			TableName: "book2",
-		})
+		(*Author)(nil),
+		(*BookCirc)(nil),
+	)
 	meta, _ := metaRegistry.GetMeta((*BookCirc)(nil))
 
 	mainAuthor := &Author{ID: 1}
@@ -821,16 +798,10 @@ func (s *sellerCirc) D3Token() entity.MetaToken {
 
 func TestNoCycleOneToOne(t *testing.T) {
 	_ = metaRegistry.Add(
-		entity.UserMapping{
-			Entity:    (*shopCirc)(nil),
-			TableName: "shop",
-		}, entity.UserMapping{
-			Entity:    (*shopProfileCirc)(nil),
-			TableName: "profile",
-		}, entity.UserMapping{
-			Entity:    (*sellerCirc)(nil),
-			TableName: "seller",
-		})
+		(*shopCirc)(nil),
+		(*shopProfileCirc)(nil),
+		(*sellerCirc)(nil),
+	)
 
 	meta, _ := metaRegistry.GetMeta((*shopCirc)(nil))
 
@@ -857,16 +828,10 @@ func assertNoCycle(t *testing.T, graph *PersistGraph) {
 
 func TestNoCycleOneToMany(t *testing.T) {
 	_ = metaRegistry.Add(
-		entity.UserMapping{
-			Entity:    (*shopCirc)(nil),
-			TableName: "shop",
-		}, entity.UserMapping{
-			Entity:    (*shopProfileCirc)(nil),
-			TableName: "profile",
-		}, entity.UserMapping{
-			Entity:    (*sellerCirc)(nil),
-			TableName: "seller",
-		})
+		(*shopCirc)(nil),
+		(*shopProfileCirc)(nil),
+		(*sellerCirc)(nil),
+	)
 	meta, _ := metaRegistry.GetMeta((*shopCirc)(nil))
 
 	seller1 := &sellerCirc{}
@@ -898,26 +863,26 @@ func TestNoCycleOneToMany(t *testing.T) {
 	for _, root := range aggRoots {
 		action := root.(*InsertAction)
 		switch {
-		case action.TableName == "shop" && action.Values["id"].(sql.NullInt32).Int32 == 1:
+		case action.TableName == "shopcirc" && action.Values["id"].(sql.NullInt32).Int32 == 1:
 			shopAction1 = action
-		case action.TableName == "shop" && action.Values["id"].(sql.NullInt32).Int32 == 2:
+		case action.TableName == "shopcirc" && action.Values["id"].(sql.NullInt32).Int32 == 2:
 			shopAction2 = action
 		}
 	}
 
-	assertTableName(t, "shop", shopAction1)
+	assertTableName(t, "shopcirc", shopAction1)
 	assertChildrenAndSubs(t, 2, 0, shopAction1)
 
 	assert.IsType(t, (*UpdateAction)(nil), shopAction1.children()[0])
-	assertTableName(t, "seller", shopAction1.children()[0])
+	assertTableName(t, "sellercirc", shopAction1.children()[0])
 	assertChildrenAndSubs(t, 0, 2, shopAction1.children()[0])
 
-	assertTableName(t, "seller", shopAction1.children()[1])
+	assertTableName(t, "sellercirc", shopAction1.children()[1])
 	assertChildrenAndSubs(t, 1, 1, shopAction1.children()[1])
 
 	assertOwnership(t, shopAction1.children()[1], shopAction1.children()[0])
 
-	assertTableName(t, "shop", shopAction2)
+	assertTableName(t, "shopcirc", shopAction2)
 	assertChildrenAndSubs(t, 4, 0, shopAction2)
 	assert.IsType(t, (*UpdateAction)(nil), shopAction2.children()[0])
 	assert.IsType(t, (*UpdateAction)(nil), shopAction2.children()[2])

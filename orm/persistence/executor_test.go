@@ -116,7 +116,7 @@ func TestExecuteSimpleGraph(t *testing.T) {
 		tableName: "shop",
 		values:    map[string]interface{}{"id": 1, "profile_id": 1},
 	}, queryStub{
-		tableName: "profile",
+		tableName: "shopprofile",
 		values:    map[string]interface{}{"id": 1},
 	})
 }
@@ -167,7 +167,7 @@ func TestExecuteComplexGraph(t *testing.T) {
 	assert.NoError(t, err)
 
 	testStorage.assertQueryAfter(t, queryStub{tableName: "shop", values: map[string]interface{}{"id": 1, "profile_id": 1}},
-		queryStub{tableName: "profile", values: map[string]interface{}{"id": 1}})
+		queryStub{tableName: "shopprofile", values: map[string]interface{}{"id": 1}})
 
 	testStorage.assertQueryAfter(t, queryStub{tableName: "book", values: map[string]interface{}{"id": 1, "shop_id": 1}},
 		queryStub{tableName: "shop", values: map[string]interface{}{"id": 1, "profile_id": 1}})
@@ -185,7 +185,7 @@ func TestExecuteComplexGraph(t *testing.T) {
 	testStorage.assertQueryAfter(t, queryStub{tableName: "book_author", values: map[string]interface{}{"book_id": 1, "author_id": 1}},
 		queryStub{tableName: "book", values: map[string]interface{}{"id": 1, "shop_id": 1}})
 
-	testStorage.assertQueryAfter(t, queryStub{tableName: "shop", values: map[string]interface{}{"id": 2, "profile_id": 2}}, queryStub{tableName: "profile", values: map[string]interface{}{"id": 2}})
+	testStorage.assertQueryAfter(t, queryStub{tableName: "shop", values: map[string]interface{}{"id": 2, "profile_id": 2}}, queryStub{tableName: "shopprofile", values: map[string]interface{}{"id": 2}})
 	testStorage.assertQueryAfter(t, queryStub{tableName: "book", values: map[string]interface{}{"id": 2, "shop_id": 2}},
 		queryStub{tableName: "shop", values: map[string]interface{}{"id": 2, "profile_id": 2}})
 }
@@ -266,14 +266,9 @@ func (o *OrderItem) D3Token() entity.MetaToken {
 
 func TestExecuteWithCircularReference(t *testing.T) {
 	_ = metaRegistry.Add(
-		entity.UserMapping{
-			Entity:    (*Order)(nil),
-			TableName: "order",
-		},
-		entity.UserMapping{
-			Entity:    (*OrderItem)(nil),
-			TableName: "order_item",
-		})
+		(*Order)(nil),
+		(*OrderItem)(nil),
+	)
 
 	bestItem := &OrderItem{ID: 1}
 	orderItems := []interface{}{

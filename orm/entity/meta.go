@@ -65,8 +65,8 @@ var (
 	ErrInvalidType = errors.New("invalid type, must be struct or pointer to struct")
 )
 
-func CreateMeta(mapping UserMapping) (*MetaInfo, error) {
-	eType := reflect.TypeOf(mapping.Entity)
+func CreateMeta(e interface{}) (*MetaInfo, error) {
+	eType := reflect.TypeOf(e)
 	if eType.Kind() == reflect.Ptr {
 		eType = eType.Elem()
 	}
@@ -75,18 +75,24 @@ func CreateMeta(mapping UserMapping) (*MetaInfo, error) {
 		return nil, ErrInvalidType
 	}
 
-	if _, hasToken := mapping.Entity.(D3Entity); !hasToken {
+	if _, hasToken := e.(D3Entity); !hasToken {
 		return nil, fmt.Errorf("entity %s must implement D3Entity interface (use codegeneration instead)", eType.Name())
 	}
 
+	entityName := NameFromEntity(e)
+	tableName := e.(D3Entity).D3Token().TableName
+	if tableName == "" {
+		tableName = strings.ToLower(entityName.Short())
+	}
+
 	meta := &MetaInfo{
-		Tpl:         mapping.Entity,
-		TableName:   mapping.TableName,
+		Tpl:         e,
+		TableName:   tableName,
 		Fields:      make(map[string]*FieldInfo),
 		Relations:   make(map[string]Relation),
 		RelatedMeta: make(map[Name]*MetaInfo),
-		EntityName:  NameFromEntity(mapping.Entity),
-		Tools:       mapping.Entity.(D3Entity).D3Token().Tools,
+		EntityName:  entityName,
+		Tools:       e.(D3Entity).D3Token().Tools,
 	}
 
 	for i := 0; i < eType.NumField(); i++ {

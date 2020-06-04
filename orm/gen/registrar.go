@@ -41,7 +41,7 @@ func (r *CodeGenerator) commonPreamble() []string {
 	}
 }
 
-func (r *CodeGenerator) Prepare(t reflect.Type) {
+func (r *CodeGenerator) Prepare(t reflect.Type, tableName string) {
 	if t.Kind() == reflect.Ptr {
 		t = t.Elem()
 	}
@@ -59,7 +59,7 @@ func (r *CodeGenerator) Prepare(t reflect.Type) {
 func ({{.receiver}} *{{.entity}}) D3Token() entity.MetaToken {
 	return entity.MetaToken{
 		Tpl: (*{{.entity}})(nil),
-		TableName: "",
+		TableName: "{{.table}}",
 		Tools: entity.InternalTools{
 			ExtractField: {{.receiver}}.__d3_makeFieldExtractor(),
 			SetFieldVal: {{.receiver}}.__d3_makeFieldSetter(),
@@ -74,7 +74,11 @@ func ({{.receiver}} *{{.entity}}) D3Token() entity.MetaToken {
 		return
 	}
 
-	if err := tpl.Execute(r.tempBuffer, map[string]interface{}{"receiver": receiverName, "entity": name}); err != nil {
+	if err := tpl.Execute(r.tempBuffer, map[string]interface{}{
+		"receiver": receiverName,
+		"entity":   name,
+		"table":    tableName,
+	}); err != nil {
 		return
 	}
 

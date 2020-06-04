@@ -113,22 +113,10 @@ func (a *author) D3Token() entity.MetaToken {
 func TestCreateTables(t *testing.T) {
 	registry := entity.NewMetaRegistry()
 	assert.NoError(t, registry.Add(
-		entity.UserMapping{
-			Entity:    &shop{},
-			TableName: "shop",
-		},
-		entity.UserMapping{
-			Entity:    &profile{},
-			TableName: "profile",
-		},
-		entity.UserMapping{
-			Entity:    &book{},
-			TableName: "book",
-		},
-		entity.UserMapping{
-			Entity:    &author{},
-			TableName: "author",
-		},
+		&shop{},
+		&profile{},
+		&book{},
+		&author{},
 	))
 
 	builder := &Builder{}

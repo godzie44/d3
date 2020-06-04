@@ -19,12 +19,9 @@ func (t *testEntity) D3Token() MetaToken {
 func TestRegistryAdd(t *testing.T) {
 	registry := NewMetaRegistry()
 	_ = registry.Add(
-		UserMapping{
-			Entity: (*testEntity)(nil),
-		},
-		UserMapping{
-			Entity: (*testEntity)(nil),
-		})
+		(*testEntity)(nil),
+		(*testEntity)(nil),
+	)
 
 	assert.Len(t, registry.metaMap, 1)
 }
@@ -32,9 +29,7 @@ func TestRegistryAdd(t *testing.T) {
 func TestRegistryGet(t *testing.T) {
 	registry := NewMetaRegistry()
 
-	_ = registry.Add(UserMapping{
-		Entity: (*testEntity)(nil),
-	})
+	_ = registry.Add((*testEntity)(nil))
 
 	meta, _ := registry.GetMeta((*testEntity)(nil))
 	assert.NotEmpty(t, meta)
@@ -54,11 +49,9 @@ func (t *testEntity2) D3Token() MetaToken {
 func TestRegistryGetMetaParallel(t *testing.T) {
 	registry := NewMetaRegistry()
 
-	_ = registry.Add(UserMapping{
-		Entity: (*testEntity)(nil),
-	}, UserMapping{
-		Entity: (*testEntity2)(nil),
-	})
+	_ = registry.Add((*testEntity)(nil),
+		(*testEntity2)(nil),
+	)
 
 	var meta1, meta2 MetaInfo
 	wg := &sync.WaitGroup{}

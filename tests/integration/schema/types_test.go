@@ -55,7 +55,7 @@ func initDb(t *testing.T) (*pgx.Conn, *orm.Orm) {
 	pgDb, _ := pgx.Connect(context.Background(), os.Getenv("D3_PG_TEST_DB"))
 
 	d3orm := orm.NewOrm(adapter.NewGoPgXAdapter(pgDb, &adapter.SquirrelAdapter{}))
-	assert.NoError(t, d3orm.Register(orm.NewMapping("all_types", (*allTypeStruct)(nil))))
+	assert.NoError(t, d3orm.Register((*allTypeStruct)(nil)))
 
 	sql, err := d3orm.GenerateSchema()
 	assert.NoError(t, err)

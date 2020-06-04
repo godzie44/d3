@@ -8,7 +8,7 @@ import "fmt"
 func (b *BookLL) D3Token() entity.MetaToken {
 	return entity.MetaToken{
 		Tpl:       (*BookLL)(nil),
-		TableName: "",
+		TableName: "book",
 		Tools: entity.InternalTools{
 			ExtractField:  b.__d3_makeFieldExtractor(),
 			SetFieldVal:   b.__d3_makeFieldSetter(),
@@ -125,7 +125,7 @@ func (b *BookLL) __d3_makeComparator() entity.FieldComparator {
 func (a *AuthorLL) D3Token() entity.MetaToken {
 	return entity.MetaToken{
 		Tpl:       (*AuthorLL)(nil),
-		TableName: "",
+		TableName: "author",
 		Tools: entity.InternalTools{
 			ExtractField:  a.__d3_makeFieldExtractor(),
 			SetFieldVal:   a.__d3_makeFieldSetter(),
@@ -230,7 +230,7 @@ func (a *AuthorLL) __d3_makeComparator() entity.FieldComparator {
 func (b *BookEL) D3Token() entity.MetaToken {
 	return entity.MetaToken{
 		Tpl:       (*BookEL)(nil),
-		TableName: "",
+		TableName: "book",
 		Tools: entity.InternalTools{
 			ExtractField:  b.__d3_makeFieldExtractor(),
 			SetFieldVal:   b.__d3_makeFieldSetter(),
@@ -347,7 +347,7 @@ func (b *BookEL) __d3_makeComparator() entity.FieldComparator {
 func (a *AuthorEL) D3Token() entity.MetaToken {
 	return entity.MetaToken{
 		Tpl:       (*AuthorEL)(nil),
-		TableName: "",
+		TableName: "author",
 		Tools: entity.InternalTools{
 			ExtractField:  a.__d3_makeFieldExtractor(),
 			SetFieldVal:   a.__d3_makeFieldSetter(),
@@ -464,7 +464,7 @@ func (a *AuthorEL) __d3_makeComparator() entity.FieldComparator {
 func (r *Redactor) D3Token() entity.MetaToken {
 	return entity.MetaToken{
 		Tpl:       (*Redactor)(nil),
-		TableName: "",
+		TableName: "redactor",
 		Tools: entity.InternalTools{
 			ExtractField:  r.__d3_makeFieldExtractor(),
 			SetFieldVal:   r.__d3_makeFieldSetter(),

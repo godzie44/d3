@@ -54,9 +54,9 @@ func (o *PersistsCircularTS) SetupSuite() {
 	o.dbAdapter = helpers.NewDbAdapterWithQueryCounter(adapter.NewGoPgXAdapter(o.pgDb, &adapter.SquirrelAdapter{}))
 	o.orm = orm.NewOrm(o.dbAdapter)
 	o.Assert().NoError(o.orm.Register(
-		orm.NewMapping("shop_c", (*ShopCirc)(nil)),
-		orm.NewMapping("profile_c", (*ShopProfileCirc)(nil)),
-		orm.NewMapping("seller_c", (*SellerCirc)(nil)),
+		(*ShopCirc)(nil),
+		(*ShopProfileCirc)(nil),
+		(*SellerCirc)(nil),
 	))
 }
 

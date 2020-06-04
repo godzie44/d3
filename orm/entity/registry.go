@@ -17,11 +17,6 @@ func NewMetaRegistry() *MetaRegistry {
 	}
 }
 
-type UserMapping struct {
-	Entity    interface{}
-	TableName string
-}
-
 type promise func() error
 
 func (r *MetaRegistry) makeDepInstaller(meta *MetaInfo, depName Name) promise {
@@ -34,13 +29,13 @@ func (r *MetaRegistry) makeDepInstaller(meta *MetaInfo, depName Name) promise {
 	}
 }
 
-func (r *MetaRegistry) Add(mappings ...UserMapping) error {
+func (r *MetaRegistry) Add(entities ...interface{}) error {
 	var dependencyInstallers []promise
 
 	r.mutex.Lock()
 	defer r.mutex.Unlock()
-	for _, mapping := range mappings {
-		meta, err := CreateMeta(mapping)
+	for _, entity := range entities {
+		meta, err := CreateMeta(entity)
 		if err != nil {
 			return err
 		}

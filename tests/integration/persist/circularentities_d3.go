@@ -9,7 +9,7 @@ import "database/sql/driver"
 func (s *ShopCirc) D3Token() entity.MetaToken {
 	return entity.MetaToken{
 		Tpl:       (*ShopCirc)(nil),
-		TableName: "",
+		TableName: "shop_c",
 		Tools: entity.InternalTools{
 			ExtractField:  s.__d3_makeFieldExtractor(),
 			SetFieldVal:   s.__d3_makeFieldSetter(),
@@ -176,7 +176,7 @@ func (s *ShopCirc) __d3_makeComparator() entity.FieldComparator {
 func (s *ShopProfileCirc) D3Token() entity.MetaToken {
 	return entity.MetaToken{
 		Tpl:       (*ShopProfileCirc)(nil),
-		TableName: "",
+		TableName: "profile_c",
 		Tools: entity.InternalTools{
 			ExtractField:  s.__d3_makeFieldExtractor(),
 			SetFieldVal:   s.__d3_makeFieldSetter(),
@@ -299,7 +299,7 @@ func (s *ShopProfileCirc) __d3_makeComparator() entity.FieldComparator {
 func (s *SellerCirc) D3Token() entity.MetaToken {
 	return entity.MetaToken{
 		Tpl:       (*SellerCirc)(nil),
-		TableName: "",
+		TableName: "seller_c",
 		Tools: entity.InternalTools{
 			ExtractField:  s.__d3_makeFieldExtractor(),
 			SetFieldVal:   s.__d3_makeFieldSetter(),

@@ -2,13 +2,13 @@
 
 package cache
 
-import "fmt"
 import "d3/orm/entity"
+import "fmt"
 
 func (e *entity1) D3Token() entity.MetaToken {
 	return entity.MetaToken{
 		Tpl:       (*entity1)(nil),
-		TableName: "",
+		TableName: "im_test_entity_1",
 		Tools: entity.InternalTools{
 			ExtractField:  e.__d3_makeFieldExtractor(),
 			SetFieldVal:   e.__d3_makeFieldSetter(),
@@ -125,7 +125,7 @@ func (e *entity1) __d3_makeComparator() entity.FieldComparator {
 func (e *entity2) D3Token() entity.MetaToken {
 	return entity.MetaToken{
 		Tpl:       (*entity2)(nil),
-		TableName: "",
+		TableName: "im_test_entity_2",
 		Tools: entity.InternalTools{
 			ExtractField:  e.__d3_makeFieldExtractor(),
 			SetFieldVal:   e.__d3_makeFieldSetter(),

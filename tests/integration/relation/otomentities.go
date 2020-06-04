@@ -3,6 +3,7 @@ package relation
 import entity2 "d3/orm/entity"
 
 //d3:entity
+//d3_table:shop
 type ShopLR struct {
 	Id    int32              `d3:"pk:auto"`
 	Books entity2.Collection `d3:"one_to_many:<target_entity:d3/tests/integration/relation/BookLR,join_on:t1_id>,type:lazy"`
@@ -10,6 +11,7 @@ type ShopLR struct {
 }
 
 //d3:entity
+//d3_table:book
 type BookLR struct {
 	Id int32 `d3:"pk:auto"`
 	//profile    entity.WrappedEntity `d3:"one_to_one:<target_entity:d3/tests/integration/relation/PhotoLL,join_on:t3_id,reference_on:id>,type:eager"`
@@ -17,6 +19,7 @@ type BookLR struct {
 }
 
 //d3:entity
+//d3_table:shop
 type ShopER struct {
 	Id    int32              `d3:"pk:auto"`
 	Books entity2.Collection `d3:"one_to_many:<target_entity:d3/tests/integration/relation/BookER,join_on:t1_id,reference_on:id>,type:eager"`
@@ -24,6 +27,7 @@ type ShopER struct {
 }
 
 //d3:entity
+//d3_table:book
 type BookER struct {
 	Id        int32              `d3:"pk:auto"`
 	Discounts entity2.Collection `d3:"one_to_many:<target_entity:d3/tests/integration/relation/DiscountER,join_on:t2_id,reference_on:id>,type:eager"`
@@ -31,6 +35,7 @@ type BookER struct {
 }
 
 //d3:entity
+//d3_table:discount
 type DiscountER struct {
 	Id    int32 `d3:"pk:auto"`
 	Value int32

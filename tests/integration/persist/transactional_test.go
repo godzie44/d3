@@ -27,10 +27,10 @@ func (t *TransactionalTs) SetupSuite() {
 	t.dbAdapter = helpers.NewDbAdapterWithQueryCounter(adapter.NewGoPgXAdapter(t.pgDb, &adapter.SquirrelAdapter{}))
 	t.d3Orm = orm.NewOrm(t.dbAdapter)
 	t.NoError(t.d3Orm.Register(
-		orm.NewMapping("book_p", (*Book)(nil)),
-		orm.NewMapping("shop_p", (*Shop)(nil)),
-		orm.NewMapping("profile_p", (*ShopProfile)(nil)),
-		orm.NewMapping("author_p", (*Author)(nil)),
+		(*Book)(nil),
+		(*Shop)(nil),
+		(*ShopProfile)(nil),
+		(*Author)(nil),
 	))
 
 	t.NoError(err)

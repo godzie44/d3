@@ -60,14 +60,8 @@ func (o *IMCacheTS) TestNoQueryCreateForCachedEntities() {
 	wrappedDbAdapter := helpers.NewDbAdapterWithQueryCounter(adapter.NewGoPgXAdapter(o.pgDb, &adapter.SquirrelAdapter{}))
 	d3Orm := orm.NewOrm(wrappedDbAdapter)
 	err := d3Orm.Register(
-		orm.Mapping{
-			Table:  "im_test_entity_1",
-			Entity: (*entity1)(nil),
-		},
-		orm.Mapping{
-			Table:  "im_test_entity_2",
-			Entity: (*entity2)(nil),
-		},
+		(*entity1)(nil),
+		(*entity2)(nil),
 	)
 	o.NoError(err)
 

@@ -2,6 +2,7 @@ package bootstrap
 
 import (
 	"bytes"
+	"d3/cmd/d3/parser"
 	"go/format"
 	"html/template"
 	"io/ioutil"
@@ -14,11 +15,10 @@ const aliasPrefix = "D3_entity_"
 
 type Generator struct {
 	PkgPath, PkgName string
-	Entities         []string
-
-	OutName   string
-	BuildTags string
-	Debug     bool
+	Metas            []parser.EntityMeta
+	OutName          string
+	BuildTags        string
+	Debug            bool
 }
 
 func (g *Generator) writeAlias() (string, error) {
@@ -35,15 +35,15 @@ package {{.pkg}}
 
 {{$pref := .Prefix}}
 
-{{range .entities}}
-type {{$pref}}{{.}} *{{.}}
+{{range .metas}}
+type {{$pref}}{{.Name}} *{{.Name}}
 {{end}}
 `)
 	if err != nil {
 		return "", err
 	}
 
-	if err := t.Execute(f, map[string]interface{}{"pkg": g.PkgName, "Prefix": aliasPrefix, "entities": g.Entities}); err != nil {
+	if err := t.Execute(f, map[string]interface{}{"pkg": g.PkgName, "Prefix": aliasPrefix, "metas": g.Metas}); err != nil {
 		return "", err
 	}
 
@@ -79,8 +79,8 @@ func main() {
 	fmt.Fprintf(os.Stdout, "package {{.PkgName}}\n")
 	g := gen.NewGenerator(os.Stdout, "{{.PkgPath}}")
 	{{$pref := .Prefix}}
-	{{range .entities}}
-	g.Prepare(reflect.TypeOf(al.{{$pref}}{{.}}(nil)))
+	{{range .metas}}
+	g.Prepare(reflect.TypeOf(al.{{$pref}}{{.Name}}(nil)), "{{.TableName}}")
 	{{end}}
 	g.Write()
 }
@@ -89,7 +89,7 @@ func main() {
 		return "", err
 	}
 
-	if err := t.Execute(f, map[string]interface{}{"PkgPath": g.PkgPath, "Prefix": aliasPrefix, "PkgName": g.PkgName, "entities": g.Entities}); err != nil {
+	if err := t.Execute(f, map[string]interface{}{"PkgPath": g.PkgPath, "Prefix": aliasPrefix, "PkgName": g.PkgName, "metas": g.Metas}); err != nil {
 		return "", err
 	}
 

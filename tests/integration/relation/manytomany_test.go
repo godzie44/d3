@@ -69,11 +69,11 @@ INSERT INTO author_redactor(author_id, redactor_id) VALUES (1, 1);
 
 	o.orm = orm.NewOrm(adapter.NewGoPgXAdapter(o.pgDb, &adapter.SquirrelAdapter{}))
 	o.Assert().NoError(o.orm.Register(
-		orm.NewMapping("book", (*BookLL)(nil)),
-		orm.NewMapping("author", (*AuthorLL)(nil)),
-		orm.NewMapping("redactor", (*Redactor)(nil)),
-		orm.NewMapping("book", (*BookEL)(nil)),
-		orm.NewMapping("author", (*AuthorEL)(nil)),
+		(*BookLL)(nil),
+		(*AuthorLL)(nil),
+		(*Redactor)(nil),
+		(*BookEL)(nil),
+		(*AuthorEL)(nil),
 	))
 }
 

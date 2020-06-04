@@ -27,19 +27,10 @@ func TestRegisterEntities(t *testing.T) {
 	orm1 := NewOrm(nil)
 
 	assert.Error(t, orm1.Register(
-		Mapping{
-			Table:  "",
-			Entity: &testEntity1{},
-		},
+		&testEntity1{},
 	))
 
 	orm2 := NewOrm(nil)
 
-	assert.NoError(t, orm2.Register(Mapping{
-		Table:  "",
-		Entity: (*testEntity1)(nil),
-	}, Mapping{
-		Table:  "",
-		Entity: &testEntity2{},
-	}))
+	assert.NoError(t, orm2.Register((*testEntity1)(nil), &testEntity2{}))
 }

@@ -10,10 +10,10 @@ import (
 func BenchmarkInsert(b *testing.B) {
 	d3orm := orm.NewOrm(newInMemoryStorage())
 	_ = d3orm.Register(
-		orm.NewMapping("shop", &shop{}),
-		orm.NewMapping("prof", &profile{}),
-		orm.NewMapping("book", &book{}),
-		orm.NewMapping("author", &author{}),
+		&shop{},
+		&profile{},
+		&book{},
+		&author{},
 	)
 	sess := d3orm.MakeSession()
 	repo, _ := sess.MakeRepository(&shop{})
@@ -27,10 +27,10 @@ func BenchmarkInsert(b *testing.B) {
 func BenchmarkSelect(b *testing.B) {
 	d3orm := orm.NewOrm(newInMemoryStorage())
 	_ = d3orm.Register(
-		orm.NewMapping("shop", &shop{}),
-		orm.NewMapping("prof", &profile{}),
-		orm.NewMapping("book", &book{}),
-		orm.NewMapping("author", &author{}),
+		&shop{},
+		&profile{},
+		&book{},
+		&author{},
 	)
 	sess := d3orm.MakeSession()
 	repo, _ := sess.MakeRepository(&shop{})
@@ -43,10 +43,10 @@ func BenchmarkSelect(b *testing.B) {
 func BenchmarkUpdate(b *testing.B) {
 	d3orm := orm.NewOrm(newInMemoryStorage())
 	_ = d3orm.Register(
-		orm.NewMapping("shop", &shop{}),
-		orm.NewMapping("prof", &profile{}),
-		orm.NewMapping("book", &book{}),
-		orm.NewMapping("author", &author{}),
+		&shop{},
+		&profile{},
+		&book{},
+		&author{},
 	)
 	sess := d3orm.MakeSession()
 	repo, _ := sess.MakeRepository(&shop{})

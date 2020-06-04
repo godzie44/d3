@@ -1,6 +1,9 @@
 package entity
 
-import "reflect"
+import (
+	"reflect"
+	"strings"
+)
 
 type WrappedEntity interface {
 	Copiable
@@ -110,9 +113,12 @@ func NameFromEntity(e interface{}) Name {
 }
 
 func (n Name) Short() string {
-	return string(n)
+	path := strings.Split(string(n), "/")
+
+	return path[len(path)-1]
 }
 
 func (n Name) Equal(name Name) bool {
-	return n == name || n.Short() == name.Short()
+	//return n == name || n.Short() == name.Short()
+	return n == name
 }

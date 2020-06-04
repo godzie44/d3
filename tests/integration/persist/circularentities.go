@@ -6,6 +6,7 @@ import (
 )
 
 //d3:entity
+//d3_table:shop_c
 type ShopCirc struct {
 	Id   sql.NullInt32 `d3:"pk:auto"`
 	Name string
@@ -20,6 +21,7 @@ type ShopCirc struct {
 }
 
 //d3:entity
+//d3_table:profile_c
 type ShopProfileCirc struct {
 	Id          sql.NullInt32        `d3:"pk:auto"`
 	Shop        entity.WrappedEntity `d3:"one_to_one:<target_entity:d3/tests/integration/persist/ShopCirc,join_on:shop_id>,type:lazy"`
@@ -27,6 +29,7 @@ type ShopProfileCirc struct {
 }
 
 //d3:entity
+//d3_table:seller_c
 type SellerCirc struct {
 	Id   sql.NullInt32 `d3:"pk:auto"`
 	Name string

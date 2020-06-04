@@ -18,28 +18,8 @@ func NewOrm(adapter Storage) *Orm {
 	}
 }
 
-type Mapping struct {
-	Table  string
-	Entity interface{}
-}
-
-func NewMapping(tableName string, entity interface{}) Mapping {
-	return Mapping{
-		Table:  tableName,
-		Entity: entity,
-	}
-}
-
-func (o *Orm) Register(mappings ...Mapping) error {
-	ms := make([]d3Entity.UserMapping, len(mappings))
-	for i := range mappings {
-		ms[i] = d3Entity.UserMapping{
-			Entity:    mappings[i].Entity,
-			TableName: mappings[i].Table,
-		}
-	}
-
-	err := o.metaRegistry.Add(ms...)
+func (o *Orm) Register(entities ...interface{}) error {
+	err := o.metaRegistry.Add(entities...)
 	if err != nil {
 		return err
 	}
