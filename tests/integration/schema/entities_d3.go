@@ -63,7 +63,7 @@ func (s *shop) __d3_makeFieldSetter() entity.FieldSetter {
 
 		switch name {
 		case "Books":
-			eTyped.Books = val.(entity.Collection)
+			eTyped.Books = val.(*entity.Collection)
 			return nil
 		case "Profile":
 			eTyped.Profile = val.(entity.WrappedEntity)
@@ -99,11 +99,12 @@ func (s *shop) __d3_makeCopier() entity.Copier {
 		copy.Id = srcTyped.Id
 		copy.Name = srcTyped.Name
 
-		if srcTyped.Books != nil {
-			copy.Books = srcTyped.Books.(entity.Copiable).DeepCopy().(entity.Collection)
-		}
 		if srcTyped.Profile != nil {
 			copy.Profile = srcTyped.Profile.(entity.Copiable).DeepCopy().(entity.WrappedEntity)
+		}
+
+		if srcTyped.Books != nil {
+			copy.Books = srcTyped.Books.DeepCopy().(*entity.Collection)
 		}
 
 		return copy
@@ -305,7 +306,7 @@ func (b *book) __d3_makeFieldSetter() entity.FieldSetter {
 
 		switch name {
 		case "Authors":
-			eTyped.Authors = val.(entity.Collection)
+			eTyped.Authors = val.(*entity.Collection)
 			return nil
 		case "Name":
 			eTyped.Name = val.(string)
@@ -339,7 +340,7 @@ func (b *book) __d3_makeCopier() entity.Copier {
 		copy.Name = srcTyped.Name
 
 		if srcTyped.Authors != nil {
-			copy.Authors = srcTyped.Authors.(entity.Copiable).DeepCopy().(entity.Collection)
+			copy.Authors = srcTyped.Authors.DeepCopy().(*entity.Collection)
 		}
 
 		return copy

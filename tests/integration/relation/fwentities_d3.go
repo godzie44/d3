@@ -2,8 +2,8 @@
 
 package relation
 
-import "d3/orm/entity"
 import "fmt"
+import "d3/orm/entity"
 
 func (f *fwTestEntity1) D3Token() entity.MetaToken {
 	return entity.MetaToken{
@@ -178,7 +178,7 @@ func (f *fwTestEntity2) __d3_makeFieldSetter() entity.FieldSetter {
 			eTyped.Id = val.(int32)
 			return nil
 		case "Rel":
-			eTyped.Rel = val.(entity.Collection)
+			eTyped.Rel = val.(*entity.Collection)
 			return nil
 		case "Data":
 			eTyped.Data = val.(string)
@@ -203,7 +203,7 @@ func (f *fwTestEntity2) __d3_makeCopier() entity.Copier {
 		copy.Data = srcTyped.Data
 
 		if srcTyped.Rel != nil {
-			copy.Rel = srcTyped.Rel.(entity.Copiable).DeepCopy().(entity.Collection)
+			copy.Rel = srcTyped.Rel.DeepCopy().(*entity.Collection)
 		}
 
 		return copy
@@ -295,7 +295,7 @@ func (f *fwTestEntity3) __d3_makeFieldSetter() entity.FieldSetter {
 			eTyped.Id = val.(int32)
 			return nil
 		case "Rel":
-			eTyped.Rel = val.(entity.Collection)
+			eTyped.Rel = val.(*entity.Collection)
 			return nil
 		case "Data":
 			eTyped.Data = val.(string)
@@ -320,7 +320,7 @@ func (f *fwTestEntity3) __d3_makeCopier() entity.Copier {
 		copy.Data = srcTyped.Data
 
 		if srcTyped.Rel != nil {
-			copy.Rel = srcTyped.Rel.(entity.Copiable).DeepCopy().(entity.Collection)
+			copy.Rel = srcTyped.Rel.DeepCopy().(*entity.Collection)
 		}
 
 		return copy

@@ -192,7 +192,7 @@ func TestExecuteComplexGraph(t *testing.T) {
 
 type Order struct {
 	ID       int                  `d3:"pk:auto"`
-	Items    entity.Collection    `d3:"one_to_many:<target_entity:d3/orm/persistence/OrderItem,join_on:order_id>,type:lazy"`
+	Items    *entity.Collection   `d3:"one_to_many:<target_entity:d3/orm/persistence/OrderItem,join_on:order_id>,type:lazy"`
 	BestItem entity.WrappedEntity `d3:"one_to_one:<target_entity:d3/orm/persistence/OrderItem,join_on:best_item_id>,type:lazy"`
 }
 

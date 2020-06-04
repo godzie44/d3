@@ -2,9 +2,9 @@
 
 package benchmark
 
+import "d3/orm/entity"
 import "database/sql/driver"
 import "fmt"
-import "d3/orm/entity"
 
 func (s *shop) D3Token() entity.MetaToken {
 	return entity.MetaToken{
@@ -62,7 +62,7 @@ func (s *shop) __d3_makeFieldSetter() entity.FieldSetter {
 
 		switch name {
 		case "books":
-			eTyped.books = val.(entity.Collection)
+			eTyped.books = val.(*entity.Collection)
 			return nil
 		case "profile":
 			eTyped.profile = val.(entity.WrappedEntity)
@@ -98,11 +98,12 @@ func (s *shop) __d3_makeCopier() entity.Copier {
 		copy.id = srcTyped.id
 		copy.name = srcTyped.name
 
-		if srcTyped.books != nil {
-			copy.books = srcTyped.books.(entity.Copiable).DeepCopy().(entity.Collection)
-		}
 		if srcTyped.profile != nil {
 			copy.profile = srcTyped.profile.(entity.Copiable).DeepCopy().(entity.WrappedEntity)
+		}
+
+		if srcTyped.books != nil {
+			copy.books = srcTyped.books.DeepCopy().(*entity.Collection)
 		}
 
 		return copy
@@ -304,7 +305,7 @@ func (b *book) __d3_makeFieldSetter() entity.FieldSetter {
 
 		switch name {
 		case "Authors":
-			eTyped.Authors = val.(entity.Collection)
+			eTyped.Authors = val.(*entity.Collection)
 			return nil
 		case "Name":
 			eTyped.Name = val.(string)
@@ -338,7 +339,7 @@ func (b *book) __d3_makeCopier() entity.Copier {
 		copy.Name = srcTyped.Name
 
 		if srcTyped.Authors != nil {
-			copy.Authors = srcTyped.Authors.(entity.Copiable).DeepCopy().(entity.Collection)
+			copy.Authors = srcTyped.Authors.DeepCopy().(*entity.Collection)
 		}
 
 		return copy

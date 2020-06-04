@@ -16,8 +16,8 @@ type ShopCirc struct {
 	FriendShop entity.WrappedEntity `d3:"one_to_one:<target_entity:d3/tests/integration/persist/ShopCirc,join_on:friend_id>,type:lazy"`
 
 	TopSeller    entity.WrappedEntity `d3:"one_to_one:<target_entity:d3/tests/integration/persist/SellerCirc,join_on:top_seller_id>,type:lazy"`
-	Sellers      entity.Collection    `d3:"one_to_many:<target_entity:d3/tests/integration/persist/SellerCirc,join_on:shop_id>,type:lazy"`
-	KnownSellers entity.Collection    `d3:"many_to_many:<target_entity:d3/tests/integration/persist/SellerCirc,join_on:shop_id,reference_on:seller_id,join_table:known_shop_seller_c>,type:lazy"`
+	Sellers      *entity.Collection   `d3:"one_to_many:<target_entity:d3/tests/integration/persist/SellerCirc,join_on:shop_id>,type:lazy"`
+	KnownSellers *entity.Collection   `d3:"many_to_many:<target_entity:d3/tests/integration/persist/SellerCirc,join_on:shop_id,reference_on:seller_id,join_table:known_shop_seller_c>,type:lazy"`
 }
 
 //d3:entity
@@ -35,5 +35,5 @@ type SellerCirc struct {
 	Name string
 
 	CurrentShop entity.WrappedEntity `d3:"one_to_one:<target_entity:d3/tests/integration/persist/ShopCirc,join_on:shop_id>,type:lazy"`
-	KnownShops  entity.Collection    `d3:"many_to_many:<target_entity:d3/tests/integration/persist/ShopCirc,join_on:seller_id,reference_on:shop_id,join_table:known_shop_seller_c>,type:lazy"`
+	KnownShops  *entity.Collection   `d3:"many_to_many:<target_entity:d3/tests/integration/persist/ShopCirc,join_on:seller_id,reference_on:shop_id,join_table:known_shop_seller_c>,type:lazy"`
 }

@@ -73,7 +73,7 @@ func TestTypeMapping(t *testing.T) {
 
 type shop struct {
 	Id      sql.NullInt32        `d3:"pk:auto"`
-	Books   entity.Collection    `d3:"one_to_many:<target_entity:d3/orm/schema/book,join_on:shop_id,delete:nullable>,type:lazy"`
+	Books   *entity.Collection   `d3:"one_to_many:<target_entity:d3/orm/schema/book,join_on:shop_id,delete:nullable>,type:lazy"`
 	Profile entity.WrappedEntity `d3:"one_to_one:<target_entity:d3/orm/schema/profile,join_on:profile_uuid,delete:cascade>,type:lazy"`
 	Name    string
 }
@@ -92,8 +92,8 @@ func (p *profile) D3Token() entity.MetaToken {
 }
 
 type book struct {
-	Id      sql.NullInt32     `d3:"pk:auto"`
-	Authors entity.Collection `d3:"many_to_many:<target_entity:d3/orm/schema/author,join_on:book_id,reference_on:author_id,join_table:book_author>,type:lazy"`
+	Id      sql.NullInt32      `d3:"pk:auto"`
+	Authors *entity.Collection `d3:"many_to_many:<target_entity:d3/orm/schema/author,join_on:book_id,reference_on:author_id,join_table:book_author>,type:lazy"`
 	Name    string
 }
 

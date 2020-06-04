@@ -13,16 +13,16 @@ type fwTestEntity1 struct {
 //d3:entity
 //d3_table:test_entity_2
 type fwTestEntity2 struct {
-	Id   int32               `d3:"pk:auto"`
-	Rel  d3entity.Collection `d3:"one_to_many:<target_entity:d3/tests/integration/relation/fwTestEntity3,join_on:e2_id>,type:lazy"`
+	Id   int32                `d3:"pk:auto"`
+	Rel  *d3entity.Collection `d3:"one_to_many:<target_entity:d3/tests/integration/relation/fwTestEntity3,join_on:e2_id>,type:lazy"`
 	Data string
 }
 
 //d3:entity
 //d3_table:test_entity_3
 type fwTestEntity3 struct {
-	Id   int32               `d3:"pk:auto"`
-	Rel  d3entity.Collection `d3:"many_to_many:<target_entity:d3/tests/integration/relation/fwTestEntity4,join_on:t3_id,reference_on:t4_id,join_table:t3_t4>,type:lazy"`
+	Id   int32                `d3:"pk:auto"`
+	Rel  *d3entity.Collection `d3:"many_to_many:<target_entity:d3/tests/integration/relation/fwTestEntity4,join_on:t3_id,reference_on:t4_id,join_table:t3_t4>,type:lazy"`
 	Data string
 }
 

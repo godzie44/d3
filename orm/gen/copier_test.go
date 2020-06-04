@@ -19,7 +19,7 @@ type copierTestStruct struct {
 	setter2 *copierTestStruct2   //nolint
 	t       time.Time            //nolint
 	wrap    entity.WrappedEntity //nolint
-	coll    entity.Collection    //nolint
+	coll    *entity.Collection   //nolint
 }
 
 var expectedCopierCode = `func (c *copierTestStruct) __d3_makeCopier() entity.Copier {
@@ -40,8 +40,9 @@ var expectedCopierCode = `func (c *copierTestStruct) __d3_makeCopier() entity.Co
 		if srcTyped.wrap != nil {
 			copy.wrap = srcTyped.wrap.(entity.Copiable).DeepCopy().(entity.WrappedEntity)
 		} 
+		
 		if srcTyped.coll != nil {
-			copy.coll = srcTyped.coll.(entity.Copiable).DeepCopy().(entity.Collection)
+			copy.coll = srcTyped.coll.DeepCopy().(*entity.Collection)
 		} 
 
 		return copy

@@ -34,9 +34,13 @@ func ({{.receiver}} *{{.entity}}) __d3_makeCopier() entity.Copier {
 		copy := &{{.entity}}{}
 		{{range .simple_fields}}
 		copy.{{.}} = srcTyped.{{.}} {{end}}
-		{{range .copy_fields}}
+		{{range .copy_fields_interf}}
 		if srcTyped.{{.FieldName}} != nil {
 			copy.{{.FieldName}} = srcTyped.{{.FieldName}}.(entity.Copiable).DeepCopy().({{.TypeName}})
+		} {{end}}
+		{{range .copy_fields_struct}}
+		if srcTyped.{{.FieldName}} != nil {
+			copy.{{.FieldName}} = srcTyped.{{.FieldName}}.DeepCopy().({{.TypeName}})
 		} {{end}}
 
 		return copy
@@ -48,7 +52,7 @@ func ({{.receiver}} *{{.entity}}) __d3_makeCopier() entity.Copier {
 	}
 
 	var fields []string
-	var copiableFields []struct{ FieldName, TypeName string }
+	var copiableInterfaceFields, copiableStructFields []struct{ FieldName, TypeName string }
 	for i := 0; i < t.NumField(); i++ {
 		if t.Field(i).Type.Implements(copiableType) {
 			typeName, pkgName := extractTypeAndPackageName(t.Field(i).Type, c.pkgPath)
@@ -56,13 +60,23 @@ func ({{.receiver}} *{{.entity}}) __d3_makeCopier() entity.Copier {
 				c.imports[pkgName] = struct{}{}
 			}
 
-			copiableFields = append(copiableFields, struct{ FieldName, TypeName string }{FieldName: t.Field(i).Name, TypeName: typeName})
+			if t.Field(i).Type.Kind() == reflect.Interface {
+				copiableInterfaceFields = append(copiableInterfaceFields, struct{ FieldName, TypeName string }{FieldName: t.Field(i).Name, TypeName: typeName})
+			} else {
+				copiableStructFields = append(copiableStructFields, struct{ FieldName, TypeName string }{FieldName: t.Field(i).Name, TypeName: typeName})
+			}
 		} else {
 			fields = append(fields, t.Field(i).Name)
 		}
 	}
 
-	if err := tpl.Execute(c.out, map[string]interface{}{"receiver": receiver, "entity": name, "simple_fields": fields, "copy_fields": copiableFields}); err != nil {
+	if err := tpl.Execute(c.out, map[string]interface{}{
+		"receiver":           receiver,
+		"entity":             name,
+		"simple_fields":      fields,
+		"copy_fields_interf": copiableInterfaceFields,
+		"copy_fields_struct": copiableStructFields,
+	}); err != nil {
 		return
 	}
 }

@@ -180,9 +180,11 @@ func (h *Hydrator) createRelation(entity interface{}, relation d3entity.Relation
 
 		switch rel.Type() {
 		case d3entity.Lazy:
-			return d3entity.NewLazyCollection(extractor, func(c d3entity.Collection) {
+			lazyCol := d3entity.NewLazyCollection(extractor, func(c *d3entity.Collection) {
 				h.session.uow.updateFieldOfOriginal(d3entity.NewBox(entity, h.meta), relation.Field().Name, c)
-			}), nil
+			})
+
+			return d3entity.NewCollectionFromCollectionner(lazyCol), nil
 		case d3entity.Eager:
 			return d3entity.NewCollection(d3reflect.BreakUpSlice(extractor())), nil
 		}

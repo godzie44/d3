@@ -112,22 +112,22 @@ func (o *OneToMany) fillFromTag(tag *parsedTag) {
 	o.ReferenceColumn = prop.getSubPropVal("reference_on")
 }
 
-func (o *OneToMany) ExtractCollection(ownerBox *Box) (Collection, error) {
+func (o *OneToMany) ExtractCollection(ownerBox *Box) (*Collection, error) {
 	val, err := ownerBox.Meta.Tools.ExtractField(ownerBox.Entity, o.Field().Name)
 	if err != nil {
 		return nil, err
 	}
 
-	if val == nil {
+	if val == nil || val == nilCollection {
 		return NewCollection(nil), nil
 	}
 
-	collection, ok := val.(Collection)
+	collection, ok := val.(*Collection)
 	if !ok {
-		return nil, errors.New("field type must be Collection")
+		return nil, errors.New("field type must be Collectionner")
 	}
 
-	if lc, ok := collection.(LazyContainer); ok && !lc.IsInitialized() {
+	if lc, ok := collection.base.(LazyContainer); ok && !lc.IsInitialized() {
 		return NewCollection(nil), nil
 	}
 
@@ -197,22 +197,24 @@ func (m *ManyToMany) fillFromTag(tag *parsedTag) {
 	m.JoinTable = prop.getSubPropVal("join_table")
 }
 
-func (m *ManyToMany) ExtractCollection(ownerBox *Box) (Collection, error) {
+var nilCollection *Collection
+
+func (m *ManyToMany) ExtractCollection(ownerBox *Box) (*Collection, error) {
 	val, err := ownerBox.Meta.Tools.ExtractField(ownerBox.Entity, m.Field().Name)
 	if err != nil {
 		return nil, err
 	}
 
-	if val == nil {
+	if val == nil || val == nilCollection {
 		return NewCollection(nil), nil
 	}
 
-	collection, ok := val.(Collection)
+	collection, ok := val.(*Collection)
 	if !ok {
-		return nil, errors.New("field type must be Collection")
+		return nil, errors.New("field type must be Collectionner")
 	}
 
-	if lc, ok := collection.(LazyContainer); ok && !lc.IsInitialized() {
+	if lc, ok := collection.base.(LazyContainer); ok && !lc.IsInitialized() {
 		return NewCollection(nil), nil
 	}
 

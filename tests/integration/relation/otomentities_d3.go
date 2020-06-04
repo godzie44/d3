@@ -61,7 +61,7 @@ func (s *ShopLR) __d3_makeFieldSetter() entity.FieldSetter {
 			eTyped.Id = val.(int32)
 			return nil
 		case "Books":
-			eTyped.Books = val.(entity.Collection)
+			eTyped.Books = val.(*entity.Collection)
 			return nil
 		case "Name":
 			eTyped.Name = val.(string)
@@ -86,7 +86,7 @@ func (s *ShopLR) __d3_makeCopier() entity.Copier {
 		copy.Name = srcTyped.Name
 
 		if srcTyped.Books != nil {
-			copy.Books = srcTyped.Books.(entity.Copiable).DeepCopy().(entity.Collection)
+			copy.Books = srcTyped.Books.DeepCopy().(*entity.Collection)
 		}
 
 		return copy
@@ -283,7 +283,7 @@ func (s *ShopER) __d3_makeFieldSetter() entity.FieldSetter {
 			eTyped.Id = val.(int32)
 			return nil
 		case "Books":
-			eTyped.Books = val.(entity.Collection)
+			eTyped.Books = val.(*entity.Collection)
 			return nil
 		case "Name":
 			eTyped.Name = val.(string)
@@ -308,7 +308,7 @@ func (s *ShopER) __d3_makeCopier() entity.Copier {
 		copy.Name = srcTyped.Name
 
 		if srcTyped.Books != nil {
-			copy.Books = srcTyped.Books.(entity.Copiable).DeepCopy().(entity.Collection)
+			copy.Books = srcTyped.Books.DeepCopy().(*entity.Collection)
 		}
 
 		return copy
@@ -400,7 +400,7 @@ func (b *BookER) __d3_makeFieldSetter() entity.FieldSetter {
 			eTyped.Id = val.(int32)
 			return nil
 		case "Discounts":
-			eTyped.Discounts = val.(entity.Collection)
+			eTyped.Discounts = val.(*entity.Collection)
 			return nil
 		case "Name":
 			eTyped.Name = val.(string)
@@ -425,7 +425,7 @@ func (b *BookER) __d3_makeCopier() entity.Copier {
 		copy.Name = srcTyped.Name
 
 		if srcTyped.Discounts != nil {
-			copy.Discounts = srcTyped.Discounts.(entity.Copiable).DeepCopy().(entity.Collection)
+			copy.Discounts = srcTyped.Discounts.DeepCopy().(*entity.Collection)
 		}
 
 		return copy

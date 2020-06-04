@@ -10,7 +10,7 @@ import (
 
 type Shop struct {
 	ID      int                  `d3:"pk:manual"`
-	Books   entity.Collection    `d3:"one_to_many:<target_entity:d3/orm/persistence/Book,join_on:shop_id>,type:lazy"`
+	Books   *entity.Collection   `d3:"one_to_many:<target_entity:d3/orm/persistence/Book,join_on:shop_id>,type:lazy"`
 	Profile entity.WrappedEntity `d3:"one_to_one:<target_entity:d3/orm/persistence/ShopProfile,join_on:profile_id>,type:lazy"`
 }
 
@@ -83,8 +83,8 @@ func (s *ShopProfile) D3Token() entity.MetaToken {
 }
 
 type Book struct {
-	ID      int               `d3:"pk:manual"`
-	Authors entity.Collection `d3:"many_to_many:<target_entity:d3/orm/persistence/Author,join_on:book_id,reference_on:author_id,join_table:book_author>,type:lazy"`
+	ID      int                `d3:"pk:manual"`
+	Authors *entity.Collection `d3:"many_to_many:<target_entity:d3/orm/persistence/Author,join_on:book_id,reference_on:author_id,join_table:book_author>,type:lazy"`
 }
 
 func (b *Book) D3Token() entity.MetaToken {
@@ -469,8 +469,8 @@ func TestDoublePersistNotAffectGraph(t *testing.T) {
 type User struct {
 	ID           int                  `d3:"pk:auto"`
 	Avatar       entity.WrappedEntity `d3:"one_to_one:<target_entity:d3/orm/persistence/Photo,join_on:avatar_id>,type:lazy"`
-	GoodPhotos   entity.Collection    `d3:"one_to_many:<target_entity:d3/orm/persistence/Photo,join_on:user_good_id>,type:lazy"`
-	PrettyPhotos entity.Collection    `d3:"one_to_many:<target_entity:d3/orm/persistence/Photo,join_on:user_pretty_id>,type:lazy"`
+	GoodPhotos   *entity.Collection   `d3:"one_to_many:<target_entity:d3/orm/persistence/Photo,join_on:user_good_id>,type:lazy"`
+	PrettyPhotos *entity.Collection   `d3:"one_to_many:<target_entity:d3/orm/persistence/Photo,join_on:user_pretty_id>,type:lazy"`
 }
 
 func (u *User) D3Token() entity.MetaToken {
@@ -609,7 +609,7 @@ func TestNoCycleOneToOneToMany(t *testing.T) {
 
 type BookCirc struct {
 	ID         int                  `d3:"pk:auto"`
-	Authors    entity.Collection    `d3:"many_to_many:<target_entity:d3/orm/persistence/Author,join_on:book_id,reference_on:author_id,join_table:book_author>,type:lazy"`
+	Authors    *entity.Collection   `d3:"many_to_many:<target_entity:d3/orm/persistence/Author,join_on:book_id,reference_on:author_id,join_table:book_author>,type:lazy"`
 	MainAuthor entity.WrappedEntity `d3:"one_to_one:<target_entity:d3/orm/persistence/Author,join_on:m_author_id>,type:lazy"`
 }
 
@@ -678,7 +678,7 @@ func TestNoCycleManyToManyToOne(t *testing.T) {
 type shopCirc struct {
 	ID      sql.NullInt32        `d3:"pk:auto"`
 	Profile entity.WrappedEntity `d3:"one_to_one:<target_entity:d3/orm/persistence/shopProfileCirc,join_on:profile_id>"`
-	Sellers entity.Collection    `d3:"one_to_many:<target_entity:d3/orm/persistence/sellerCirc,join_on:shop_id>"`
+	Sellers *entity.Collection   `d3:"one_to_many:<target_entity:d3/orm/persistence/sellerCirc,join_on:shop_id>"`
 	Name    string
 }
 

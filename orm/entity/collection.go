@@ -6,141 +6,178 @@ type Copiable interface {
 	DeepCopy() interface{}
 }
 
-type Collection interface {
-	Copiable
-	ToSlice() []interface{}
-	Add(el interface{})
-	Get(index int) interface{}
-	Count() int
-	Empty() bool
-	Remove(index int)
+type (
+	Collection struct {
+		base Collectionner
+	}
+	Collectionner interface {
+		Copiable
+		ToSlice() []interface{}
+		Add(el interface{})
+		Get(index int) interface{}
+		Count() int
+		Empty() bool
+		Remove(index int)
+	}
+)
+
+func NewCollection(entities []interface{}) *Collection {
+	return &Collection{base: &eagerCollection{holder: &dataHolder{data: entities}}}
 }
 
-type baseCollection struct {
-	Data []interface{}
+func NewCollectionFromCollectionner(c Collectionner) *Collection {
+	return &Collection{base: c}
 }
 
-func (e *baseCollection) ToSlice() []interface{} {
-	return e.Data
+func (c *Collection) DeepCopy() interface{} {
+	return &Collection{base: c.base.DeepCopy().(Collectionner)}
 }
 
-func (e *baseCollection) Add(el interface{}) {
-	e.Data = append(e.Data, el)
+func (c *Collection) ToSlice() []interface{} {
+	return c.base.ToSlice()
 }
 
-func (e *baseCollection) Get(index int) interface{} {
-	return e.Data[index]
+func (c *Collection) Add(el interface{}) {
+	c.base.Add(el)
 }
 
-func (e *baseCollection) Count() int {
-	return len(e.Data)
+func (c *Collection) Get(index int) interface{} {
+	return c.base.Get(index)
 }
 
-func (e *baseCollection) Empty() bool {
-	return len(e.Data) == 0
+func (c *Collection) Count() int {
+	return c.base.Count()
 }
 
-func (e *baseCollection) Remove(index int) {
-	copy(e.Data[index:], e.Data[index+1:])
-	e.Data[len(e.Data)-1] = nil
-	e.Data = e.Data[:len(e.Data)-1]
+func (c *Collection) Empty() bool {
+	return c.base.Empty()
 }
 
-type EagerCollection struct {
-	base *baseCollection
+func (c *Collection) Remove(index int) {
+	c.base.Remove(index)
 }
 
-func NewCollection(entities []interface{}) *EagerCollection {
-	return &EagerCollection{base: &baseCollection{Data: entities}}
+type dataHolder struct {
+	data []interface{}
 }
 
-func (e *EagerCollection) DeepCopy() interface{} {
-	dstData := make([]interface{}, len(e.base.Data))
-	copy(dstData, e.base.Data)
-	return &EagerCollection{base: &baseCollection{Data: dstData}}
+func (e *dataHolder) ToSlice() []interface{} {
+	return e.data
 }
 
-func (e *EagerCollection) ToSlice() []interface{} {
-	return e.base.ToSlice()
+func (e *dataHolder) Add(el interface{}) {
+	e.data = append(e.data, el)
 }
 
-func (e *EagerCollection) Add(el interface{}) {
-	e.base.Add(el)
+func (e *dataHolder) Get(index int) interface{} {
+	return e.data[index]
 }
 
-func (e *EagerCollection) Get(index int) interface{} {
-	return e.base.Get(index)
+func (e *dataHolder) Count() int {
+	return len(e.data)
 }
 
-func (e *EagerCollection) Count() int {
-	return e.base.Count()
+func (e *dataHolder) Empty() bool {
+	return len(e.data) == 0
 }
 
-func (e *EagerCollection) Empty() bool {
-	return e.base.Empty()
+func (e *dataHolder) Remove(index int) {
+	copy(e.data[index:], e.data[index+1:])
+	e.data[len(e.data)-1] = nil
+	e.data = e.data[:len(e.data)-1]
 }
 
-func (e *EagerCollection) Remove(index int) {
-	e.base.Remove(index)
+type eagerCollection struct {
+	holder *dataHolder
+}
+
+func (e *eagerCollection) DeepCopy() interface{} {
+	dstData := make([]interface{}, len(e.holder.data))
+	copy(dstData, e.holder.data)
+	return &eagerCollection{holder: &dataHolder{data: dstData}}
+}
+
+func (e *eagerCollection) ToSlice() []interface{} {
+	return e.holder.ToSlice()
+}
+
+func (e *eagerCollection) Add(el interface{}) {
+	e.holder.Add(el)
+}
+
+func (e *eagerCollection) Get(index int) interface{} {
+	return e.holder.Get(index)
+}
+
+func (e *eagerCollection) Count() int {
+	return e.holder.Count()
+}
+
+func (e *eagerCollection) Empty() bool {
+	return e.holder.Empty()
+}
+
+func (e *eagerCollection) Remove(index int) {
+	e.holder.Remove(index)
 }
 
 type lazyCollection struct {
-	collection *baseCollection
-	extractor  func() interface{}
-	afterInit  func(collection Collection)
+	holder    *dataHolder
+	extractor func() interface{}
+	afterInit func(collection *Collection)
 }
 
-func NewLazyCollection(extractor func() interface{}, afterInit func(collection Collection)) *lazyCollection {
+func NewLazyCollection(extractor func() interface{}, afterInit func(collection *Collection)) *lazyCollection {
 	return &lazyCollection{extractor: extractor, afterInit: afterInit}
 }
 
 func (l *lazyCollection) DeepCopy() interface{} {
-	if l.collection == nil {
-		return &lazyCollection{collection: nil}
+	if l.holder == nil {
+		return &lazyCollection{holder: nil}
 	}
 
-	dstData := make([]interface{}, len(l.collection.Data))
-	copy(dstData, l.collection.Data)
-	return &lazyCollection{collection: &baseCollection{Data: dstData}}
+	dstData := make([]interface{}, len(l.holder.data))
+	copy(dstData, l.holder.data)
+	return &lazyCollection{holder: &dataHolder{data: dstData}}
 }
 
 func (l *lazyCollection) ToSlice() []interface{} {
 	l.initIfNeeded()
-	return l.collection.ToSlice()
+	return l.holder.ToSlice()
 }
 
 func (l *lazyCollection) Add(el interface{}) {
 	l.initIfNeeded()
-	l.collection.Add(el)
+	l.holder.Add(el)
 }
 
 func (l *lazyCollection) Get(index int) interface{} {
 	l.initIfNeeded()
-	return l.collection.Get(index)
+	return l.holder.Get(index)
 }
 
 func (l *lazyCollection) Count() int {
 	l.initIfNeeded()
-	return l.collection.Count()
+	return l.holder.Count()
 }
 
 func (l *lazyCollection) Empty() bool {
 	l.initIfNeeded()
-	return l.collection.Empty()
+	return l.holder.Empty()
 }
 
 func (l *lazyCollection) Remove(index int) {
 	l.initIfNeeded()
-	l.collection.Remove(index)
+	l.holder.Remove(index)
 }
 
 func (l *lazyCollection) initIfNeeded() {
 	if !l.IsInitialized() {
-		l.collection = &baseCollection{Data: reflect.BreakUpSlice(l.extractor())}
-		l.afterInit(l)
+		l.holder = &dataHolder{data: reflect.BreakUpSlice(l.extractor())}
+		l.afterInit(&Collection{base: l})
 	}
 }
 
 func (l *lazyCollection) IsInitialized() bool {
-	return l.collection != nil
+	return l.holder != nil
 }
