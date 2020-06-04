@@ -224,6 +224,29 @@ func (u *UpdateTs) TestSelectThenDeleteOtoORelation() {
 		SeeOne("SELECT * FROM shop_p WHERE profile_id IS NULL")
 }
 
+func (u *UpdateTs) TestSelectThenChangeOtoORelation() {
+	fillDb(u.Assert(), u.dbAdapter)
+
+	repo, err := u.session.MakeRepository((*Shop)(nil))
+	u.NoError(err)
+
+	shop1i, err := repo.FindOne(repo.CreateQuery().AndWhere("shop_p.id = 1001"))
+	u.NoError(err)
+
+	shop1i.(*Shop).Profile = entity.NewWrapEntity(&ShopProfile{
+		Description: "changed profile",
+	})
+
+	u.dbAdapter.ResetCounters()
+	u.NoError(u.session.Flush())
+
+	u.Equal(1, u.dbAdapter.UpdateCounter())
+
+	helpers.NewPgTester(u.T(), u.pgDb).
+		SeeOne("SELECT * FROM shop_p WHERE id = 1001 AND profile_id IS NOT NULL").
+		SeeOne("SELECT * FROM profile_p WHERE description='changed profile'")
+}
+
 func (u *UpdateTs) TestSelectThenViewButDontChangeOtoORelation() {
 	fillDb(u.Assert(), u.dbAdapter)
 
