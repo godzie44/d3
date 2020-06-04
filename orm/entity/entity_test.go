@@ -12,7 +12,7 @@ func TestEagerEntityGet(t *testing.T) {
 
 func TestEagerEntitySet(t *testing.T) {
 	entity := NewWrapEntity(1)
-	entity.Wrap(2)
+	entity.wrap(2)
 	assert.Equal(t, 2, entity.base.inner)
 }
 
@@ -32,7 +32,7 @@ func TestLazyEntitySet(t *testing.T) {
 	entity := NewLazyWrappedEntity(func() interface{} {
 		return 1
 	}, func(_ WrappedEntity) {})
-	entity.Wrap(2)
+	entity.wrap(2)
 	assert.Equal(t, 2, entity.entity.inner)
 }
 

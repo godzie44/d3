@@ -9,7 +9,6 @@ type WrappedEntity interface {
 	Copiable
 	IsNil() bool
 	Unwrap() interface{}
-	Wrap(interface{})
 }
 
 type LazyContainer interface {
@@ -28,7 +27,7 @@ func (b *baseEntity) Unwrap() interface{} {
 	return b.inner
 }
 
-func (b *baseEntity) Wrap(entity interface{}) {
+func (b *baseEntity) wrap(entity interface{}) {
 	b.inner = entity
 }
 
@@ -44,8 +43,8 @@ func (e *eagerEntity) Unwrap() interface{} {
 	return e.base.Unwrap()
 }
 
-func (e *eagerEntity) Wrap(i interface{}) {
-	e.base.Wrap(i)
+func (e *eagerEntity) wrap(i interface{}) {
+	e.base.wrap(i)
 }
 
 func (e *eagerEntity) DeepCopy() interface{} {
@@ -91,9 +90,9 @@ func (l *lazyEntity) Unwrap() interface{} {
 	return l.entity.Unwrap()
 }
 
-func (l *lazyEntity) Wrap(entity interface{}) {
+func (l *lazyEntity) wrap(entity interface{}) {
 	l.initIfNeeded()
-	l.entity.Wrap(entity)
+	l.entity.wrap(entity)
 }
 
 func (l *lazyEntity) IsInitialized() bool {
