@@ -8,9 +8,9 @@ import (
 //d3:entity
 //d3_table:shop_p
 type Shop struct {
-	Id      sql.NullInt32        `d3:"pk:auto"`
-	Books   *entity.Collection   `d3:"one_to_many:<target_entity:d3/tests/integration/persist/Book,join_on:shop_id,delete:nullable>,type:lazy"`
-	Profile entity.WrappedEntity `d3:"one_to_one:<target_entity:d3/tests/integration/persist/ShopProfile,join_on:profile_id,delete:cascade>,type:lazy"`
+	Id      sql.NullInt32      `d3:"pk:auto"`
+	Books   *entity.Collection `d3:"one_to_many:<target_entity:d3/tests/integration/persist/Book,join_on:shop_id,delete:nullable>,type:lazy"`
+	Profile *entity.Cell       `d3:"one_to_one:<target_entity:d3/tests/integration/persist/ShopProfile,join_on:profile_id,delete:cascade>,type:lazy"`
 	Name    string
 }
 

@@ -26,8 +26,8 @@ func TestCreateMetaFromVariousReflectionsOfOneEntity(t *testing.T) {
 
 type shop struct {
 	ID      sql.NullInt32 `d3:"pk:auto"`
-	Books   Collection    `d3:"one_to_many:<target_entity:book,join_on:shop_id>,type:lazy"`
-	Profile WrappedEntity `d3:"one_to_one:<target_entity:shopProfile,join_on:profile_id,delete:cascade>"`
+	Books   *Collection   `d3:"one_to_many:<target_entity:book,join_on:shop_id>,type:lazy"`
+	Profile *Cell         `d3:"one_to_one:<target_entity:shopProfile,join_on:profile_id,delete:cascade>"`
 	Name    string
 }
 

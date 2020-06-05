@@ -111,7 +111,7 @@ func (u *UpdateTs) TestInsertThenFullUpdate() {
 	u.NoError(u.session.Flush())
 
 	newProfile := &ShopProfile{Description: "new shop profile"}
-	shop.Profile = entity.NewWrapEntity(newProfile)
+	shop.Profile = entity.NewCell(newProfile)
 	shop.Name = "new shop"
 
 	shop.Books.Remove(0)
@@ -151,7 +151,7 @@ func createAndPersistsShop(s *orm.Session) (*Shop, error) {
 			Authors: entity.NewCollection(author1, &Author{Name: "author 3"}),
 			Name:    "book 2",
 		}),
-		Profile: entity.NewWrapEntity(&ShopProfile{
+		Profile: entity.NewCell(&ShopProfile{
 			Description: "this is tests shop",
 		}),
 		Name: "shop",
@@ -213,7 +213,7 @@ func (u *UpdateTs) TestSelectThenDeleteOtoORelation() {
 	shop1i, err := repo.FindOne(repo.CreateQuery().AndWhere("shop_p.id = 1001"))
 	u.NoError(err)
 
-	shop1i.(*Shop).Profile = entity.NewWrapEntity(nil)
+	shop1i.(*Shop).Profile = entity.NewCell(nil)
 
 	u.dbAdapter.ResetCounters()
 	u.NoError(u.session.Flush())
@@ -233,7 +233,7 @@ func (u *UpdateTs) TestSelectThenChangeOtoORelation() {
 	shop1i, err := repo.FindOne(repo.CreateQuery().AndWhere("shop_p.id = 1001"))
 	u.NoError(err)
 
-	shop1i.(*Shop).Profile = entity.NewWrapEntity(&ShopProfile{
+	shop1i.(*Shop).Profile = entity.NewCell(&ShopProfile{
 		Description: "changed profile",
 	})
 
@@ -451,7 +451,7 @@ func (u *UpdateTs) TestSelectThenFullUpdate() {
 	shop1 := shop1i.(*Shop)
 
 	newProfile := &ShopProfile{Description: "new shop profile"}
-	shop1.Profile = entity.NewWrapEntity(newProfile)
+	shop1.Profile = entity.NewCell(newProfile)
 	shop1.Name = "new shop"
 
 	shop1.Books.Remove(0)

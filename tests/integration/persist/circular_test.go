@@ -93,10 +93,10 @@ func (o *PersistsCircularTS) TestInsertWithCircularRef() {
 		Description: "shop profile",
 	}
 	shop := &ShopCirc{
-		Profile: entity.NewWrapEntity(profile),
+		Profile: entity.NewCell(profile),
 		Name:    "shop",
 	}
-	profile.Shop = entity.NewWrapEntity(shop)
+	profile.Shop = entity.NewCell(shop)
 
 	o.Assert().NoError(repository.Persists(shop))
 	o.Assert().NoError(session.Flush())
@@ -123,12 +123,12 @@ func (o *PersistsCircularTS) TestInsertWithSelfCircularRef() {
 	shop4 := &ShopCirc{Name: "shop4"}
 	shop5 := &ShopCirc{Name: "shop5"}
 
-	shop1.FriendShop = entity.NewWrapEntity(shop2)
-	shop2.FriendShop = entity.NewWrapEntity(shop1)
+	shop1.FriendShop = entity.NewCell(shop2)
+	shop2.FriendShop = entity.NewCell(shop1)
 
-	shop3.FriendShop = entity.NewWrapEntity(shop4)
-	shop4.FriendShop = entity.NewWrapEntity(shop5)
-	shop5.FriendShop = entity.NewWrapEntity(shop3)
+	shop3.FriendShop = entity.NewCell(shop4)
+	shop4.FriendShop = entity.NewCell(shop5)
+	shop5.FriendShop = entity.NewCell(shop3)
 
 	o.Assert().NoError(repository.Persists(shop2))
 	o.Assert().NoError(repository.Persists(shop3))
@@ -164,14 +164,14 @@ func (o *PersistsCircularTS) TestBigCircularReferenceGraph() {
 	shop2.Sellers = entity.NewCollection(seller2, seller3)
 	shop1.KnownSellers = entity.NewCollection(seller1, seller2)
 	shop2.KnownSellers = entity.NewCollection(seller2, seller3)
-	shop1.TopSeller = entity.NewWrapEntity(seller1)
-	shop2.TopSeller = entity.NewWrapEntity(seller2)
+	shop1.TopSeller = entity.NewCell(seller1)
+	shop2.TopSeller = entity.NewCell(seller2)
 
-	seller1.CurrentShop = entity.NewWrapEntity(shop1)
+	seller1.CurrentShop = entity.NewCell(shop1)
 	seller1.KnownShops = entity.NewCollection(shop1)
-	seller2.CurrentShop = entity.NewWrapEntity(shop2)
+	seller2.CurrentShop = entity.NewCell(shop2)
 	seller2.KnownShops = entity.NewCollection(shop1, shop2)
-	seller3.CurrentShop = entity.NewWrapEntity(shop2)
+	seller3.CurrentShop = entity.NewCell(shop2)
 	seller3.KnownShops = entity.NewCollection(shop2)
 
 	o.Assert().NoError(repository.Persists(shop1))

@@ -2,9 +2,9 @@
 
 package benchmark
 
+import "fmt"
 import "d3/orm/entity"
 import "database/sql/driver"
-import "fmt"
 
 func (s *shop) D3Token() entity.MetaToken {
 	return entity.MetaToken{
@@ -65,7 +65,7 @@ func (s *shop) __d3_makeFieldSetter() entity.FieldSetter {
 			eTyped.books = val.(*entity.Collection)
 			return nil
 		case "profile":
-			eTyped.profile = val.(entity.WrappedEntity)
+			eTyped.profile = val.(*entity.Cell)
 			return nil
 		case "name":
 			eTyped.name = val.(string)
@@ -98,12 +98,11 @@ func (s *shop) __d3_makeCopier() entity.Copier {
 		copy.id = srcTyped.id
 		copy.name = srcTyped.name
 
-		if srcTyped.profile != nil {
-			copy.profile = srcTyped.profile.(entity.Copiable).DeepCopy().(entity.WrappedEntity)
-		}
-
 		if srcTyped.books != nil {
 			copy.books = srcTyped.books.DeepCopy().(*entity.Collection)
+		}
+		if srcTyped.profile != nil {
+			copy.profile = srcTyped.profile.DeepCopy().(*entity.Cell)
 		}
 
 		return copy

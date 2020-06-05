@@ -5,8 +5,8 @@ import d3entity "d3/orm/entity"
 //d3:entity
 //d3_table:test_entity_1
 type fwTestEntity1 struct {
-	Id   int32                  `d3:"pk:auto"`
-	Rel  d3entity.WrappedEntity `d3:"one_to_one:<target_entity:d3/tests/integration/relation/fwTestEntity2,join_on:e2_id,reference_on:id>,type:lazy"`
+	Id   int32          `d3:"pk:auto"`
+	Rel  *d3entity.Cell `d3:"one_to_one:<target_entity:d3/tests/integration/relation/fwTestEntity2,join_on:e2_id,reference_on:id>,type:lazy"`
 	Data string
 }
 

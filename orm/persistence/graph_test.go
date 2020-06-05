@@ -9,9 +9,9 @@ import (
 )
 
 type Shop struct {
-	ID      int                  `d3:"pk:manual"`
-	Books   *entity.Collection   `d3:"one_to_many:<target_entity:d3/orm/persistence/Book,join_on:shop_id>,type:lazy"`
-	Profile entity.WrappedEntity `d3:"one_to_one:<target_entity:d3/orm/persistence/ShopProfile,join_on:profile_id>,type:lazy"`
+	ID      int                `d3:"pk:manual"`
+	Books   *entity.Collection `d3:"one_to_many:<target_entity:d3/orm/persistence/Book,join_on:shop_id>,type:lazy"`
+	Profile *entity.Cell       `d3:"one_to_one:<target_entity:d3/orm/persistence/ShopProfile,join_on:profile_id>,type:lazy"`
 }
 
 func (s *Shop) D3Token() entity.MetaToken {
@@ -192,7 +192,7 @@ func createNewGraph() *PersistGraph {
 
 func TestGenerationOneToOneEntity(t *testing.T) {
 	meta, _ := metaRegistry.GetMeta((*Shop)(nil))
-	shop := &Shop{ID: 1, Profile: entity.NewWrapEntity(&ShopProfile{ID: 3})}
+	shop := &Shop{ID: 1, Profile: entity.NewCell(&ShopProfile{ID: 3})}
 
 	graph := createNewGraph()
 
@@ -308,9 +308,9 @@ func TestGenerationBigGraph(t *testing.T) {
 		},
 	}
 
-	shop1 := &Shop{ID: 1, Profile: entity.NewWrapEntity(&ShopProfile{ID: 1}),
+	shop1 := &Shop{ID: 1, Profile: entity.NewCell(&ShopProfile{ID: 1}),
 		Books: entity.NewCollection(books...)}
-	shop2 := &Shop{ID: 2, Profile: entity.NewWrapEntity(&ShopProfile{ID: 2}),
+	shop2 := &Shop{ID: 2, Profile: entity.NewCell(&ShopProfile{ID: 2}),
 		Books: entity.NewCollection(&Book{
 			ID: 2,
 		}),
@@ -467,10 +467,10 @@ func TestDoublePersistNotAffectGraph(t *testing.T) {
 }
 
 type User struct {
-	ID           int                  `d3:"pk:auto"`
-	Avatar       entity.WrappedEntity `d3:"one_to_one:<target_entity:d3/orm/persistence/Photo,join_on:avatar_id>,type:lazy"`
-	GoodPhotos   *entity.Collection   `d3:"one_to_many:<target_entity:d3/orm/persistence/Photo,join_on:user_good_id>,type:lazy"`
-	PrettyPhotos *entity.Collection   `d3:"one_to_many:<target_entity:d3/orm/persistence/Photo,join_on:user_pretty_id>,type:lazy"`
+	ID           int                `d3:"pk:auto"`
+	Avatar       *entity.Cell       `d3:"one_to_one:<target_entity:d3/orm/persistence/Photo,join_on:avatar_id>,type:lazy"`
+	GoodPhotos   *entity.Collection `d3:"one_to_many:<target_entity:d3/orm/persistence/Photo,join_on:user_good_id>,type:lazy"`
+	PrettyPhotos *entity.Collection `d3:"one_to_many:<target_entity:d3/orm/persistence/Photo,join_on:user_pretty_id>,type:lazy"`
 }
 
 func (u *User) D3Token() entity.MetaToken {
@@ -596,7 +596,7 @@ func TestNoCycleOneToOneToMany(t *testing.T) {
 
 	user := &User{ID: 1,
 		GoodPhotos: entity.NewCollection(goodAndAvatarPhoto),
-		Avatar:     entity.NewWrapEntity(goodAndAvatarPhoto),
+		Avatar:     entity.NewCell(goodAndAvatarPhoto),
 	}
 
 	graph := createNewGraph()
@@ -608,9 +608,9 @@ func TestNoCycleOneToOneToMany(t *testing.T) {
 }
 
 type BookCirc struct {
-	ID         int                  `d3:"pk:auto"`
-	Authors    *entity.Collection   `d3:"many_to_many:<target_entity:d3/orm/persistence/Author,join_on:book_id,reference_on:author_id,join_table:book_author>,type:lazy"`
-	MainAuthor entity.WrappedEntity `d3:"one_to_one:<target_entity:d3/orm/persistence/Author,join_on:m_author_id>,type:lazy"`
+	ID         int                `d3:"pk:auto"`
+	Authors    *entity.Collection `d3:"many_to_many:<target_entity:d3/orm/persistence/Author,join_on:book_id,reference_on:author_id,join_table:book_author>,type:lazy"`
+	MainAuthor *entity.Cell       `d3:"one_to_one:<target_entity:d3/orm/persistence/Author,join_on:m_author_id>,type:lazy"`
 }
 
 func (b *BookCirc) D3Token() entity.MetaToken {
@@ -662,7 +662,7 @@ func TestNoCycleManyToManyToOne(t *testing.T) {
 		Authors: entity.NewCollection(
 			mainAuthor, &Author{ID: 2},
 		),
-		MainAuthor: entity.NewWrapEntity(mainAuthor),
+		MainAuthor: entity.NewCell(mainAuthor),
 	}
 
 	graph := createNewGraph()
@@ -676,9 +676,9 @@ func TestNoCycleManyToManyToOne(t *testing.T) {
 }
 
 type shopCirc struct {
-	ID      sql.NullInt32        `d3:"pk:auto"`
-	Profile entity.WrappedEntity `d3:"one_to_one:<target_entity:d3/orm/persistence/shopProfileCirc,join_on:profile_id>"`
-	Sellers *entity.Collection   `d3:"one_to_many:<target_entity:d3/orm/persistence/sellerCirc,join_on:shop_id>"`
+	ID      sql.NullInt32      `d3:"pk:auto"`
+	Profile *entity.Cell       `d3:"one_to_one:<target_entity:d3/orm/persistence/shopProfileCirc,join_on:profile_id>"`
+	Sellers *entity.Collection `d3:"one_to_many:<target_entity:d3/orm/persistence/sellerCirc,join_on:shop_id>"`
 	Name    string
 }
 
@@ -723,8 +723,8 @@ func (s *shopCirc) D3Token() entity.MetaToken {
 }
 
 type shopProfileCirc struct {
-	ID   sql.NullInt32        `d3:"pk:auto"`
-	Shop entity.WrappedEntity `d3:"one_to_one:<target_entity:d3/orm/persistence/shopCirc,join_on:shop_id>"`
+	ID   sql.NullInt32 `d3:"pk:auto"`
+	Shop *entity.Cell  `d3:"one_to_one:<target_entity:d3/orm/persistence/shopCirc,join_on:shop_id>"`
 }
 
 func (s *shopProfileCirc) D3Token() entity.MetaToken {
@@ -760,8 +760,8 @@ func (s *shopProfileCirc) D3Token() entity.MetaToken {
 }
 
 type sellerCirc struct {
-	ID   sql.NullInt32        `d3:"pk:auto"`
-	Shop entity.WrappedEntity `d3:"one_to_one:<target_entity:d3/orm/persistence/shopCirc,join_on:shop_id>"`
+	ID   sql.NullInt32 `d3:"pk:auto"`
+	Shop *entity.Cell  `d3:"one_to_one:<target_entity:d3/orm/persistence/shopCirc,join_on:shop_id>"`
 }
 
 func (s *sellerCirc) D3Token() entity.MetaToken {
@@ -807,9 +807,9 @@ func TestNoCycleOneToOne(t *testing.T) {
 
 	profile := &shopProfileCirc{}
 	shop := &shopCirc{
-		Profile: entity.NewWrapEntity(profile),
+		Profile: entity.NewCell(profile),
 	}
-	profile.Shop = entity.NewWrapEntity(shop)
+	profile.Shop = entity.NewCell(shop)
 
 	graph := createNewGraph()
 
@@ -845,9 +845,9 @@ func TestNoCycleOneToMany(t *testing.T) {
 		ID:      sql.NullInt32{Int32: 2, Valid: true},
 		Sellers: entity.NewCollection(seller2, seller3),
 	}
-	seller1.Shop = entity.NewWrapEntity(shop1)
-	seller2.Shop = entity.NewWrapEntity(shop2)
-	seller3.Shop = entity.NewWrapEntity(shop2)
+	seller1.Shop = entity.NewCell(shop1)
+	seller2.Shop = entity.NewCell(shop2)
+	seller3.Shop = entity.NewCell(shop2)
 
 	graph := createNewGraph()
 

@@ -2,10 +2,10 @@
 
 package schema
 
-import "fmt"
-import "d3/orm/entity"
 import "database/sql/driver"
 import "time"
+import "fmt"
+import "d3/orm/entity"
 
 func (s *shop) D3Token() entity.MetaToken {
 	return entity.MetaToken{
@@ -66,7 +66,7 @@ func (s *shop) __d3_makeFieldSetter() entity.FieldSetter {
 			eTyped.Books = val.(*entity.Collection)
 			return nil
 		case "Profile":
-			eTyped.Profile = val.(entity.WrappedEntity)
+			eTyped.Profile = val.(*entity.Cell)
 			return nil
 		case "Name":
 			eTyped.Name = val.(string)
@@ -99,12 +99,11 @@ func (s *shop) __d3_makeCopier() entity.Copier {
 		copy.Id = srcTyped.Id
 		copy.Name = srcTyped.Name
 
-		if srcTyped.Profile != nil {
-			copy.Profile = srcTyped.Profile.(entity.Copiable).DeepCopy().(entity.WrappedEntity)
-		}
-
 		if srcTyped.Books != nil {
 			copy.Books = srcTyped.Books.DeepCopy().(*entity.Collection)
+		}
+		if srcTyped.Profile != nil {
+			copy.Profile = srcTyped.Profile.DeepCopy().(*entity.Cell)
 		}
 
 		return copy

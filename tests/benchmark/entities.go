@@ -8,10 +8,10 @@ import (
 //d3:entity
 //d3_table:shop
 type shop struct {
-	id      sql.NullInt32        `d3:"pk:auto"`
-	books   *entity.Collection   `d3:"one_to_many:<target_entity:d3/tests/benchmark/book,join_on:shop_id,delete:nullable>,type:eager"`
-	profile entity.WrappedEntity `d3:"one_to_one:<target_entity:d3/tests/benchmark/profile,join_on:profile_id,delete:cascade>,type:eager"`
-	name    string               `d3:"column:name"`
+	id      sql.NullInt32      `d3:"pk:auto"`
+	books   *entity.Collection `d3:"one_to_many:<target_entity:d3/tests/benchmark/book,join_on:shop_id,delete:nullable>,type:eager"`
+	profile *entity.Cell       `d3:"one_to_one:<target_entity:d3/tests/benchmark/profile,join_on:profile_id,delete:cascade>,type:eager"`
+	name    string             `d3:"column:name"`
 }
 
 //d3:entity

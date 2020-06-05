@@ -6,32 +6,26 @@ import (
 )
 
 func TestEagerEntityGet(t *testing.T) {
-	entity := NewWrapEntity(1)
+	entity := NewCell(1)
 	assert.Equal(t, 1, entity.Unwrap())
 }
 
-func TestEagerEntitySet(t *testing.T) {
-	entity := NewWrapEntity(1)
-	entity.wrap(2)
-	assert.Equal(t, 2, entity.base.inner)
-}
-
 func TestEagerEntityIsNil(t *testing.T) {
-	entity := NewWrapEntity(nil)
+	entity := NewCell(nil)
 	assert.True(t, entity.IsNil())
 }
 
 func TestLazyEntityGet(t *testing.T) {
 	entity := NewLazyWrappedEntity(func() *Collection {
 		return NewCollection(1)
-	}, func(_ WrappedEntity) {})
+	}, func(_ *Cell) {})
 	assert.Equal(t, 1, entity.Unwrap())
 }
 
 func TestLazyEntitySet(t *testing.T) {
 	entity := NewLazyWrappedEntity(func() *Collection {
 		return NewCollection(1)
-	}, func(_ WrappedEntity) {})
+	}, func(_ *Cell) {})
 	entity.wrap(2)
 	assert.Equal(t, 2, entity.entity.inner)
 }
@@ -39,6 +33,6 @@ func TestLazyEntitySet(t *testing.T) {
 func TestLazyEntityIsNil(t *testing.T) {
 	entity := NewLazyWrappedEntity(func() *Collection {
 		return NewCollection()
-	}, func(_ WrappedEntity) {})
+	}, func(_ *Cell) {})
 	assert.True(t, entity.IsNil())
 }

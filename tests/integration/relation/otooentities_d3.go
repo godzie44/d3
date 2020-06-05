@@ -59,7 +59,7 @@ func (s *ShopLL) __d3_makeFieldSetter() entity.FieldSetter {
 
 		switch name {
 		case "Profile":
-			eTyped.Profile = val.(entity.WrappedEntity)
+			eTyped.Profile = val.(*entity.Cell)
 			return nil
 		case "Data":
 			eTyped.Data = val.(string)
@@ -93,7 +93,7 @@ func (s *ShopLL) __d3_makeCopier() entity.Copier {
 		copy.Data = srcTyped.Data
 
 		if srcTyped.Profile != nil {
-			copy.Profile = srcTyped.Profile.(entity.Copiable).DeepCopy().(entity.WrappedEntity)
+			copy.Profile = srcTyped.Profile.DeepCopy().(*entity.Cell)
 		}
 
 		return copy
@@ -185,7 +185,7 @@ func (p *ProfileLL) __d3_makeFieldSetter() entity.FieldSetter {
 			eTyped.ID = val.(int32)
 			return nil
 		case "Photo":
-			eTyped.Photo = val.(entity.WrappedEntity)
+			eTyped.Photo = val.(*entity.Cell)
 			return nil
 		case "Data":
 			eTyped.Data = val.(string)
@@ -210,7 +210,7 @@ func (p *ProfileLL) __d3_makeCopier() entity.Copier {
 		copy.Data = srcTyped.Data
 
 		if srcTyped.Photo != nil {
-			copy.Photo = srcTyped.Photo.(entity.Copiable).DeepCopy().(entity.WrappedEntity)
+			copy.Photo = srcTyped.Photo.DeepCopy().(*entity.Cell)
 		}
 
 		return copy
@@ -407,7 +407,7 @@ func (s *ShopEL) __d3_makeFieldSetter() entity.FieldSetter {
 			eTyped.Id = val.(int32)
 			return nil
 		case "Profile":
-			eTyped.Profile = val.(entity.WrappedEntity)
+			eTyped.Profile = val.(*entity.Cell)
 			return nil
 		case "Data":
 			eTyped.Data = val.(string)
@@ -432,7 +432,7 @@ func (s *ShopEL) __d3_makeCopier() entity.Copier {
 		copy.Data = srcTyped.Data
 
 		if srcTyped.Profile != nil {
-			copy.Profile = srcTyped.Profile.(entity.Copiable).DeepCopy().(entity.WrappedEntity)
+			copy.Profile = srcTyped.Profile.DeepCopy().(*entity.Cell)
 		}
 
 		return copy

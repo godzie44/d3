@@ -1,14 +1,33 @@
 package entity
 
-import (
-	"reflect"
-	"strings"
-)
+type Cell struct {
+	w WrappedEntity
+}
 
 type WrappedEntity interface {
 	Copiable
 	IsNil() bool
 	Unwrap() interface{}
+}
+
+func NewCell(entity interface{}) *Cell {
+	return &Cell{w: &eagerEntity{base: &baseEntity{inner: entity}}}
+}
+
+func NewCellFromWrapper(w WrappedEntity) *Cell {
+	return &Cell{w: w}
+}
+
+func (c *Cell) DeepCopy() interface{} {
+	return &Cell{w: c.w.DeepCopy().(WrappedEntity)}
+}
+
+func (c *Cell) IsNil() bool {
+	return c.w.IsNil()
+}
+
+func (c *Cell) Unwrap() interface{} {
+	return c.w.Unwrap()
 }
 
 type LazyContainer interface {
@@ -43,25 +62,17 @@ func (e *eagerEntity) Unwrap() interface{} {
 	return e.base.Unwrap()
 }
 
-func (e *eagerEntity) wrap(i interface{}) {
-	e.base.wrap(i)
-}
-
 func (e *eagerEntity) DeepCopy() interface{} {
 	return &eagerEntity{base: &baseEntity{inner: e.base.inner}}
-}
-
-func NewWrapEntity(source interface{}) *eagerEntity {
-	return &eagerEntity{base: &baseEntity{inner: source}}
 }
 
 type lazyEntity struct {
 	entity    *baseEntity
 	extractor func() *Collection
-	afterInit func(entity WrappedEntity)
+	afterInit func(entity *Cell)
 }
 
-func NewLazyWrappedEntity(extractor func() *Collection, afterInit func(entity WrappedEntity)) *lazyEntity {
+func NewLazyWrappedEntity(extractor func() *Collection, afterInit func(entity *Cell)) *lazyEntity {
 	return &lazyEntity{extractor: extractor, afterInit: afterInit}
 }
 
@@ -80,7 +91,8 @@ func (l *lazyEntity) initIfNeeded() {
 		} else {
 			l.entity = &baseEntity{inner: collection.Get(0)}
 		}
-		l.afterInit(l)
+
+		l.afterInit(&Cell{w: l})
 	}
 }
 
@@ -104,25 +116,7 @@ func (l *lazyEntity) IsInitialized() bool {
 	return l.entity != nil
 }
 
-type Name string
-
-func NameFromEntity(e interface{}) Name {
-	t := reflect.TypeOf(e)
-	switch t.Kind() {
-	case reflect.Ptr:
-		return Name(t.Elem().PkgPath() + "/" + t.Elem().Name())
-	default:
-		return Name(t.PkgPath() + "/" + t.Name())
-	}
-}
-
-func (n Name) Short() string {
-	path := strings.Split(string(n), "/")
-
-	return path[len(path)-1]
-}
-
-func (n Name) Equal(name Name) bool {
-	//return n == name || n.Short() == name.Short()
-	return n == name
+func CellIsLazy(cell *Cell) bool {
+	_, ok := cell.w.(LazyContainer)
+	return ok
 }

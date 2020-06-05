@@ -218,7 +218,7 @@ func (p *PersistGraph) persistOneToOneRel(ownerBox *persistBox, relation *d3enti
 		return err
 	}
 
-	var origRelatedEntity d3entity.WrappedEntity = d3entity.NewWrapEntity(nil)
+	var origRelatedEntity = d3entity.NewCell(nil)
 	if ownerBox.original != nil {
 		origRelatedEntity, err = relation.Extract(d3entity.NewBox(ownerBox.original, ownerBox.Meta))
 		if err != nil {
@@ -226,18 +226,15 @@ func (p *PersistGraph) persistOneToOneRel(ownerBox *persistBox, relation *d3enti
 		}
 	}
 
-	_, relatedEntityIsLazy := relatedEntity.(d3entity.LazyContainer)
-	_, origEntityIsLazy := origRelatedEntity.(d3entity.LazyContainer)
-
 	switch {
-	case relatedEntityIsLazy:
+	case d3entity.CellIsLazy(relatedEntity):
 		// if new relation is lazy entity then user dont change original
 		return nil
-	case !origEntityIsLazy && relatedEntity.Unwrap() == origRelatedEntity.Unwrap():
-		// if unwrap values of old and new relation equals than use dont change original
+	case !d3entity.CellIsLazy(origRelatedEntity) && relatedEntity.Unwrap() == origRelatedEntity.Unwrap():
+		// if unwrap values of old and new relation equals than user dont change original
 		return nil
 	case relatedEntity.IsNil():
-		// if bew relation is nil then delete relation
+		// if new relation is nil then delete relation
 		ownerBox.action.mergeFields(ActionField(relation.JoinColumn, nil))
 	default:
 		relatedBox, err := p.knownBoxes.getRaw(relatedEntity.Unwrap(), ownerBox.GetRelatedMeta(relation.RelatedWith()))

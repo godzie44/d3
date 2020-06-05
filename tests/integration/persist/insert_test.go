@@ -60,7 +60,7 @@ func (o *PersistsTS) TestSimpleInsert() {
 
 	shop := &Shop{
 		Books: nil,
-		Profile: entity.NewWrapEntity(&ShopProfile{
+		Profile: entity.NewCell(&ShopProfile{
 			Description: "this is simple tests shop",
 		}),
 		Name: "simple-shop",

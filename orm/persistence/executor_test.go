@@ -103,7 +103,7 @@ func TestExecuteSimpleGraph(t *testing.T) {
 	meta, err := metaRegistry.GetMeta((*Shop)(nil))
 	assert.NoError(t, err)
 
-	shop := &Shop{ID: 1, Profile: entity.NewWrapEntity(&ShopProfile{ID: 1})}
+	shop := &Shop{ID: 1, Profile: entity.NewCell(&ShopProfile{ID: 1})}
 
 	graph := createNewGraph()
 
@@ -147,11 +147,11 @@ func TestExecuteComplexGraph(t *testing.T) {
 
 	shop1 := &Shop{
 		ID:      1,
-		Profile: entity.NewWrapEntity(&ShopProfile{ID: 1}),
+		Profile: entity.NewCell(&ShopProfile{ID: 1}),
 		Books:   entity.NewCollection(books...)}
 	shop2 := &Shop{
 		ID:      2,
-		Profile: entity.NewWrapEntity(&ShopProfile{ID: 2}),
+		Profile: entity.NewCell(&ShopProfile{ID: 2}),
 		Books: entity.NewCollection(&Book{
 			ID: 2,
 		}),
@@ -191,9 +191,9 @@ func TestExecuteComplexGraph(t *testing.T) {
 }
 
 type Order struct {
-	ID       int                  `d3:"pk:auto"`
-	Items    *entity.Collection   `d3:"one_to_many:<target_entity:d3/orm/persistence/OrderItem,join_on:order_id>,type:lazy"`
-	BestItem entity.WrappedEntity `d3:"one_to_one:<target_entity:d3/orm/persistence/OrderItem,join_on:best_item_id>,type:lazy"`
+	ID       int                `d3:"pk:auto"`
+	Items    *entity.Collection `d3:"one_to_many:<target_entity:d3/orm/persistence/OrderItem,join_on:order_id>,type:lazy"`
+	BestItem *entity.Cell       `d3:"one_to_one:<target_entity:d3/orm/persistence/OrderItem,join_on:best_item_id>,type:lazy"`
 }
 
 func (o *Order) D3Token() entity.MetaToken {
@@ -279,7 +279,7 @@ func TestExecuteWithCircularReference(t *testing.T) {
 	order := &Order{
 		ID:       1,
 		Items:    entity.NewCollection(orderItems...),
-		BestItem: entity.NewWrapEntity(bestItem),
+		BestItem: entity.NewCell(bestItem),
 	}
 
 	meta, _ := metaRegistry.GetMeta(order)

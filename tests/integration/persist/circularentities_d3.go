@@ -74,13 +74,13 @@ func (s *ShopCirc) __d3_makeFieldSetter() entity.FieldSetter {
 			eTyped.Name = val.(string)
 			return nil
 		case "Profile":
-			eTyped.Profile = val.(entity.WrappedEntity)
+			eTyped.Profile = val.(*entity.Cell)
 			return nil
 		case "FriendShop":
-			eTyped.FriendShop = val.(entity.WrappedEntity)
+			eTyped.FriendShop = val.(*entity.Cell)
 			return nil
 		case "TopSeller":
-			eTyped.TopSeller = val.(entity.WrappedEntity)
+			eTyped.TopSeller = val.(*entity.Cell)
 			return nil
 		case "Sellers":
 			eTyped.Sellers = val.(*entity.Collection)
@@ -117,15 +117,14 @@ func (s *ShopCirc) __d3_makeCopier() entity.Copier {
 		copy.Name = srcTyped.Name
 
 		if srcTyped.Profile != nil {
-			copy.Profile = srcTyped.Profile.(entity.Copiable).DeepCopy().(entity.WrappedEntity)
+			copy.Profile = srcTyped.Profile.DeepCopy().(*entity.Cell)
 		}
 		if srcTyped.FriendShop != nil {
-			copy.FriendShop = srcTyped.FriendShop.(entity.Copiable).DeepCopy().(entity.WrappedEntity)
+			copy.FriendShop = srcTyped.FriendShop.DeepCopy().(*entity.Cell)
 		}
 		if srcTyped.TopSeller != nil {
-			copy.TopSeller = srcTyped.TopSeller.(entity.Copiable).DeepCopy().(entity.WrappedEntity)
+			copy.TopSeller = srcTyped.TopSeller.DeepCopy().(*entity.Cell)
 		}
-
 		if srcTyped.Sellers != nil {
 			copy.Sellers = srcTyped.Sellers.DeepCopy().(*entity.Collection)
 		}
@@ -227,7 +226,7 @@ func (s *ShopProfileCirc) __d3_makeFieldSetter() entity.FieldSetter {
 
 		switch name {
 		case "Shop":
-			eTyped.Shop = val.(entity.WrappedEntity)
+			eTyped.Shop = val.(*entity.Cell)
 			return nil
 		case "Description":
 			eTyped.Description = val.(string)
@@ -261,7 +260,7 @@ func (s *ShopProfileCirc) __d3_makeCopier() entity.Copier {
 		copy.Description = srcTyped.Description
 
 		if srcTyped.Shop != nil {
-			copy.Shop = srcTyped.Shop.(entity.Copiable).DeepCopy().(entity.WrappedEntity)
+			copy.Shop = srcTyped.Shop.DeepCopy().(*entity.Cell)
 		}
 
 		return copy
@@ -356,7 +355,7 @@ func (s *SellerCirc) __d3_makeFieldSetter() entity.FieldSetter {
 			eTyped.Name = val.(string)
 			return nil
 		case "CurrentShop":
-			eTyped.CurrentShop = val.(entity.WrappedEntity)
+			eTyped.CurrentShop = val.(*entity.Cell)
 			return nil
 		case "KnownShops":
 			eTyped.KnownShops = val.(*entity.Collection)
@@ -390,9 +389,8 @@ func (s *SellerCirc) __d3_makeCopier() entity.Copier {
 		copy.Name = srcTyped.Name
 
 		if srcTyped.CurrentShop != nil {
-			copy.CurrentShop = srcTyped.CurrentShop.(entity.Copiable).DeepCopy().(entity.WrappedEntity)
+			copy.CurrentShop = srcTyped.CurrentShop.DeepCopy().(*entity.Cell)
 		}
-
 		if srcTyped.KnownShops != nil {
 			copy.KnownShops = srcTyped.KnownShops.DeepCopy().(*entity.Collection)
 		}

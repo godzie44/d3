@@ -93,7 +93,7 @@ func (h *Hydrator) fetchRelation(relation d3entity.Relation, entityData []map[st
 
 		var entity interface{}
 		if relationPkVal == nil {
-			return d3entity.NewWrapEntity(nil), nil
+			return d3entity.NewCell(nil), nil
 		}
 
 		entity = relationMeta.Tools.NewInstance()
@@ -104,7 +104,7 @@ func (h *Hydrator) fetchRelation(relation d3entity.Relation, entityData []map[st
 
 		h.afterHydrateEntity(d3entity.NewBox(entity, relationMeta))
 
-		return d3entity.NewWrapEntity(entity), nil
+		return d3entity.NewCell(entity), nil
 	case *d3entity.OneToMany, *d3entity.ManyToMany:
 		var entities = d3entity.NewCollection()
 
@@ -145,22 +145,24 @@ func (h *Hydrator) createRelation(entity interface{}, relation d3entity.Relation
 		}
 
 		if relatedId == nil {
-			return d3entity.NewWrapEntity(nil), nil
+			return d3entity.NewCell(nil), nil
 		}
 
 		extractor := h.session.makeOneToOneExtractor(relatedId, h.meta.RelatedMeta[rel.RelatedWith()])
 
 		switch rel.Type() {
 		case d3entity.Lazy:
-			return d3entity.NewLazyWrappedEntity(extractor, func(we d3entity.WrappedEntity) {
-				h.session.uow.updateFieldOfOriginal(d3entity.NewBox(entity, h.meta), relation.Field().Name, we)
-			}), nil
+			lazy := d3entity.NewLazyWrappedEntity(extractor, func(cell *d3entity.Cell) {
+				h.session.uow.updateFieldOfOriginal(d3entity.NewBox(entity, h.meta), relation.Field().Name, cell)
+			})
+
+			return d3entity.NewCellFromWrapper(lazy), nil
 		case d3entity.Eager:
 			collection := extractor()
 			if collection.Empty() {
-				return d3entity.NewWrapEntity(nil), nil
+				return d3entity.NewCell(nil), nil
 			}
-			return d3entity.NewWrapEntity(collection.Get(0)), nil
+			return d3entity.NewCell(collection.Get(0)), nil
 		}
 	case *d3entity.OneToMany, *d3entity.ManyToMany:
 		relatedId, exists := entityData[h.meta.Pk.FullDbAlias()]

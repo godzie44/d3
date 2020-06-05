@@ -77,7 +77,7 @@ func createAggregate() *shop {
 
 	shop := &shop{
 		books: entity.NewCollection(book),
-		profile: entity.NewWrapEntity(&profile{
+		profile: entity.NewCell(&profile{
 			Description: "good shop",
 		}),
 		name: "new shop",

@@ -153,22 +153,24 @@ func (o *OneToOne) fillFromTag(tag *parsedTag) {
 	o.ReferenceColumn = prop.getSubPropVal("reference_on")
 }
 
-func (o *OneToOne) Extract(ownerBox *Box) (WrappedEntity, error) {
+var nilCell *Cell
+
+func (o *OneToOne) Extract(ownerBox *Box) (*Cell, error) {
 	val, err := ownerBox.Meta.Tools.ExtractField(ownerBox.Entity, o.Field().Name)
 	if err != nil {
 		return nil, err
 	}
 
-	if val == nil {
-		return NewWrapEntity(nil), nil
+	if val == nil || val == nilCell {
+		return NewCell(nil), nil
 	}
 
-	wrappedEntity, ok := val.(WrappedEntity)
+	cell, ok := val.(*Cell)
 	if !ok {
 		return nil, errors.New("field type must be WrappedEntity")
 	}
 
-	return wrappedEntity, nil
+	return cell, nil
 }
 
 //type OneToOneInverse struct {
