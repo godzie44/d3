@@ -3,7 +3,6 @@ package orm
 import (
 	"d3/orm/entity"
 	"d3/orm/query"
-	d3reflect "d3/reflect"
 	"errors"
 	"sync"
 )
@@ -26,24 +25,24 @@ func (im *identityMap) canApply(plan *query.FetchPlan) bool {
 	return !plan.HasJoins() && len(plan.PKs()) != 0
 }
 
-func (im *identityMap) executePlan(plan *query.FetchPlan) (interface{}, error) {
+func (im *identityMap) executePlan(plan *query.FetchPlan) (*entity.Collection, error) {
 	im.RLock()
 	defer im.RUnlock()
 
-	var entities []interface{}
+	collection := entity.NewCollection([]interface{}{})
 	for _, id := range plan.PKs() {
 		if e, exists := im.get(plan.Query().OwnerMeta().EntityName, id); exists {
-			entities = append(entities, e)
+			collection.Add(e)
 		} else {
 			return nil, ErrCantExecutePlan
 		}
 	}
 
-	return entities, nil
+	return collection, nil
 }
 
-func (im *identityMap) putEntities(meta *entity.MetaInfo, entities interface{}) {
-	for _, el := range d3reflect.BreakUpSlice(entities) {
+func (im *identityMap) putEntities(meta *entity.MetaInfo, collection *entity.Collection) {
+	for _, el := range collection.ToSlice() {
 		pkVal, err := meta.ExtractPkValue(el)
 		if err != nil {
 			continue

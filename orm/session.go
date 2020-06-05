@@ -29,7 +29,7 @@ func NewSession(storage Storage, uow *UnitOfWork, metaRegistry *entity.MetaRegis
 	return &Session{storage: storage, uow: uow, metaRegistry: metaRegistry}
 }
 
-func (s *Session) execute(q *query.Query) (interface{}, error) {
+func (s *Session) execute(q *query.Query) (*entity.Collection, error) {
 	fetchPlan := query.Preprocessor.CreateFetchPlan(q)
 
 	if s.uow.identityMap.canApply(fetchPlan) {

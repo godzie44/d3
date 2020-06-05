@@ -3,33 +3,26 @@ package orm
 import (
 	d3entity "d3/orm/entity"
 	"d3/orm/query"
-	d3reflect "d3/reflect"
 	"fmt"
 )
 
-type Extractor func() interface{}
+type Extractor func() *d3entity.Collection
 
 func (s *Session) makeOneToOneExtractor(id interface{}, relatedMeta *d3entity.MetaInfo) Extractor {
-	return func() interface{} {
+	return func() *d3entity.Collection {
 		entities, err := s.execute(
 			query.NewQuery(relatedMeta).AndWhere(relatedMeta.Pk.FullDbAlias()+"=?", id),
 		)
-
 		if err != nil {
 			return nil
 		}
 
-		entity, err := d3reflect.GetFirstElementFromSlice(entities)
-		if err != nil {
-			return nil
-		}
-
-		return entity
+		return entities
 	}
 }
 
 func (s *Session) makeOneToManyExtractor(joinId interface{}, relation *d3entity.OneToMany, relatedMeta *d3entity.MetaInfo) Extractor {
-	return func() interface{} {
+	return func() *d3entity.Collection {
 		entities, err := s.execute(
 			query.NewQuery(relatedMeta).AndWhere(relatedMeta.FullColumnAlias(relation.JoinColumn)+"=?", joinId),
 		)
@@ -42,7 +35,7 @@ func (s *Session) makeOneToManyExtractor(joinId interface{}, relation *d3entity.
 }
 
 func (s *Session) makeManyToManyExtractor(id interface{}, rel *d3entity.ManyToMany, relatedMeta *d3entity.MetaInfo) Extractor {
-	return func() interface{} {
+	return func() *d3entity.Collection {
 		entities, err := s.execute(
 			query.
 				NewQuery(relatedMeta).

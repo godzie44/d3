@@ -3,8 +3,11 @@ package orm
 import (
 	d3entity "d3/orm/entity"
 	"d3/orm/query"
-	d3reflect "d3/reflect"
-	"fmt"
+	"errors"
+)
+
+var (
+	ErrEntityNotFound = errors.New("entity not found")
 )
 
 type Repository struct {
@@ -13,20 +16,19 @@ type Repository struct {
 }
 
 func (r *Repository) FindOne(q *query.Query) (interface{}, error) {
-	entities, err := r.session.execute(q)
+	coll, err := r.session.execute(q)
 	if err != nil {
 		return nil, err
 	}
 
-	el, err := d3reflect.GetFirstElementFromSlice(entities)
-	if err != nil {
-		return nil, fmt.Errorf("Entity not found: %w", err)
+	if coll.Count() == 0 {
+		return nil, ErrEntityNotFound
 	}
 
-	return el, nil
+	return coll.Get(0), nil
 }
 
-func (r *Repository) FindAll(q *query.Query) (interface{}, error) {
+func (r *Repository) FindAll(q *query.Query) (*d3entity.Collection, error) {
 	return r.session.execute(q)
 }
 

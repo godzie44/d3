@@ -22,23 +22,23 @@ func TestEagerEntityIsNil(t *testing.T) {
 }
 
 func TestLazyEntityGet(t *testing.T) {
-	entity := NewLazyWrappedEntity(func() interface{} {
-		return 1
+	entity := NewLazyWrappedEntity(func() *Collection {
+		return NewCollection([]interface{}{1})
 	}, func(_ WrappedEntity) {})
 	assert.Equal(t, 1, entity.Unwrap())
 }
 
 func TestLazyEntitySet(t *testing.T) {
-	entity := NewLazyWrappedEntity(func() interface{} {
-		return 1
+	entity := NewLazyWrappedEntity(func() *Collection {
+		return NewCollection([]interface{}{1})
 	}, func(_ WrappedEntity) {})
 	entity.wrap(2)
 	assert.Equal(t, 2, entity.entity.inner)
 }
 
 func TestLazyEntityIsNil(t *testing.T) {
-	entity := NewLazyWrappedEntity(func() interface{} {
-		return nil
+	entity := NewLazyWrappedEntity(func() *Collection {
+		return NewCollection([]interface{}{})
 	}, func(_ WrappedEntity) {})
 	assert.True(t, entity.IsNil())
 }

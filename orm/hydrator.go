@@ -3,7 +3,6 @@ package orm
 import (
 	d3entity "d3/orm/entity"
 	"d3/orm/query"
-	d3reflect "d3/reflect"
 	"fmt"
 	"reflect"
 )
@@ -17,7 +16,7 @@ type Hydrator struct {
 	rawMapper          RawDataMapper
 }
 
-func (h *Hydrator) Hydrate(fetchedData []map[string]interface{}, plan *query.FetchPlan) (interface{}, error) {
+func (h *Hydrator) Hydrate(fetchedData []map[string]interface{}, plan *query.FetchPlan) (*d3entity.Collection, error) {
 	groupByEntityData := make(map[interface{}][]map[string]interface{})
 
 	for _, rowData := range fetchedData {
@@ -25,12 +24,8 @@ func (h *Hydrator) Hydrate(fetchedData []map[string]interface{}, plan *query.Fet
 		groupByEntityData[pkVal] = append(groupByEntityData[pkVal], rowData)
 	}
 
-	entityType := reflect.TypeOf(h.meta.Tpl)
+	collection := d3entity.NewCollection([]interface{}{})
 
-	modelSlice := d3reflect.CreateSliceOfStructPtrs(entityType, len(groupByEntityData))
-	sliceVal := reflect.ValueOf(modelSlice)
-
-	var lastInsertedNum int
 	for _, entityData := range groupByEntityData {
 		newEntity := h.meta.Tools.NewInstance()
 		err := h.hydrateOne(newEntity, entityData, plan)
@@ -40,11 +35,10 @@ func (h *Hydrator) Hydrate(fetchedData []map[string]interface{}, plan *query.Fet
 
 		h.afterHydrateEntity(d3entity.NewBox(newEntity, h.meta))
 
-		sliceVal.Index(lastInsertedNum).Set(reflect.ValueOf(newEntity))
-		lastInsertedNum++
+		collection.Add(newEntity)
 	}
 
-	return modelSlice, nil
+	return collection, nil
 }
 
 func (h *Hydrator) hydrateOne(entity interface{}, entityData []map[string]interface{}, plan *query.FetchPlan) error {
@@ -162,7 +156,11 @@ func (h *Hydrator) createRelation(entity interface{}, relation d3entity.Relation
 				h.session.uow.updateFieldOfOriginal(d3entity.NewBox(entity, h.meta), relation.Field().Name, we)
 			}), nil
 		case d3entity.Eager:
-			return d3entity.NewWrapEntity(extractor()), nil
+			collection := extractor()
+			if collection.Empty() {
+				return d3entity.NewWrapEntity(nil), nil
+			}
+			return d3entity.NewWrapEntity(collection.Get(0)), nil
 		}
 	case *d3entity.OneToMany, *d3entity.ManyToMany:
 		relatedId, exists := entityData[h.meta.Pk.FullDbAlias()]
@@ -170,7 +168,7 @@ func (h *Hydrator) createRelation(entity interface{}, relation d3entity.Relation
 			return nil, fmt.Errorf("hydration: owner pk not exists")
 		}
 
-		var extractor func() interface{}
+		var extractor Extractor
 		switch rel := rel.(type) {
 		case *d3entity.OneToMany:
 			extractor = h.session.makeOneToManyExtractor(relatedId, rel, h.meta.RelatedMeta[rel.RelatedWith()])
@@ -186,7 +184,7 @@ func (h *Hydrator) createRelation(entity interface{}, relation d3entity.Relation
 
 			return d3entity.NewCollectionFromCollectionner(lazyCol), nil
 		case d3entity.Eager:
-			return d3entity.NewCollection(d3reflect.BreakUpSlice(extractor())), nil
+			return extractor(), nil
 		}
 	}
 

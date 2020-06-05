@@ -1,7 +1,5 @@
 package entity
 
-import "d3/reflect"
-
 type Copiable interface {
 	DeepCopy() interface{}
 }
@@ -123,11 +121,11 @@ func (e *eagerCollection) Remove(index int) {
 
 type lazyCollection struct {
 	holder    *dataHolder
-	extractor func() interface{}
+	extractor func() *Collection
 	afterInit func(collection *Collection)
 }
 
-func NewLazyCollection(extractor func() interface{}, afterInit func(collection *Collection)) *lazyCollection {
+func NewLazyCollection(extractor func() *Collection, afterInit func(collection *Collection)) *lazyCollection {
 	return &lazyCollection{extractor: extractor, afterInit: afterInit}
 }
 
@@ -173,7 +171,7 @@ func (l *lazyCollection) Remove(index int) {
 
 func (l *lazyCollection) initIfNeeded() {
 	if !l.IsInitialized() {
-		l.holder = &dataHolder{data: reflect.BreakUpSlice(l.extractor())}
+		l.holder = &dataHolder{data: l.extractor().ToSlice()}
 		l.afterInit(&Collection{base: l})
 	}
 }

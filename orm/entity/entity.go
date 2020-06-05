@@ -57,11 +57,11 @@ func NewWrapEntity(source interface{}) *eagerEntity {
 
 type lazyEntity struct {
 	entity    *baseEntity
-	extractor func() interface{}
+	extractor func() *Collection
 	afterInit func(entity WrappedEntity)
 }
 
-func NewLazyWrappedEntity(extractor func() interface{}, afterInit func(entity WrappedEntity)) *lazyEntity {
+func NewLazyWrappedEntity(extractor func() *Collection, afterInit func(entity WrappedEntity)) *lazyEntity {
 	return &lazyEntity{extractor: extractor, afterInit: afterInit}
 }
 
@@ -74,7 +74,12 @@ func (l *lazyEntity) DeepCopy() interface{} {
 
 func (l *lazyEntity) initIfNeeded() {
 	if !l.IsInitialized() {
-		l.entity = &baseEntity{inner: l.extractor()}
+		collection := l.extractor()
+		if collection.Empty() {
+			l.entity = &baseEntity{inner: nil}
+		} else {
+			l.entity = &baseEntity{inner: collection.Get(0)}
+		}
 		l.afterInit(l)
 	}
 }
