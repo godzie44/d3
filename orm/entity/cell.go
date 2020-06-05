@@ -1,10 +1,10 @@
 package entity
 
 type Cell struct {
-	w WrappedEntity
+	w wrapper
 }
 
-type WrappedEntity interface {
+type wrapper interface {
 	Copiable
 	IsNil() bool
 	Unwrap() interface{}
@@ -14,12 +14,12 @@ func NewCell(entity interface{}) *Cell {
 	return &Cell{w: &eagerEntity{base: &baseEntity{inner: entity}}}
 }
 
-func NewCellFromWrapper(w WrappedEntity) *Cell {
+func NewCellFromWrapper(w wrapper) *Cell {
 	return &Cell{w: w}
 }
 
 func (c *Cell) DeepCopy() interface{} {
-	return &Cell{w: c.w.DeepCopy().(WrappedEntity)}
+	return &Cell{w: c.w.DeepCopy().(wrapper)}
 }
 
 func (c *Cell) IsNil() bool {

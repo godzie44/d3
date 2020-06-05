@@ -124,7 +124,7 @@ func (o *OneToMany) ExtractCollection(ownerBox *Box) (*Collection, error) {
 
 	collection, ok := val.(*Collection)
 	if !ok {
-		return nil, errors.New("field type must be Collectionner")
+		return nil, errors.New("field type must be Collection")
 	}
 
 	if lc, ok := collection.base.(LazyContainer); ok && !lc.IsInitialized() {
@@ -167,7 +167,7 @@ func (o *OneToOne) Extract(ownerBox *Box) (*Cell, error) {
 
 	cell, ok := val.(*Cell)
 	if !ok {
-		return nil, errors.New("field type must be WrappedEntity")
+		return nil, errors.New("field type must be wrapper")
 	}
 
 	return cell, nil
@@ -213,7 +213,7 @@ func (m *ManyToMany) ExtractCollection(ownerBox *Box) (*Collection, error) {
 
 	collection, ok := val.(*Collection)
 	if !ok {
-		return nil, errors.New("field type must be Collectionner")
+		return nil, errors.New("field type must be Collection")
 	}
 
 	if lc, ok := collection.base.(LazyContainer); ok && !lc.IsInitialized() {

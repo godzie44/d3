@@ -6,9 +6,9 @@ type Copiable interface {
 
 type (
 	Collection struct {
-		base Collectionner
+		base collectionner
 	}
-	Collectionner interface {
+	collectionner interface {
 		Copiable
 		ToSlice() []interface{}
 		Add(el interface{})
@@ -23,12 +23,12 @@ func NewCollection(entities ...interface{}) *Collection {
 	return &Collection{base: &eagerCollection{holder: &dataHolder{data: entities}}}
 }
 
-func NewCollectionFromCollectionner(c Collectionner) *Collection {
+func NewCollectionFromCollectionner(c collectionner) *Collection {
 	return &Collection{base: c}
 }
 
 func (c *Collection) DeepCopy() interface{} {
-	return &Collection{base: c.base.DeepCopy().(Collectionner)}
+	return &Collection{base: c.base.DeepCopy().(collectionner)}
 }
 
 func (c *Collection) ToSlice() []interface{} {
