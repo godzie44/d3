@@ -62,8 +62,7 @@ func (uow *UnitOfWork) registerDirty(box *entity.Box) error {
 	}
 
 	uow.dirtyEntities[box.GetEName()][pkVal] = &dirtyEl{
-		box: box,
-		//original: d3reflect.Copy(box.Entity),
+		box:      box,
 		original: box.Meta.Tools.Copy(box.Entity),
 	}
 
