@@ -179,3 +179,29 @@ func (l *lazyCollection) initIfNeeded() {
 func (l *lazyCollection) IsInitialized() bool {
 	return l.holder != nil
 }
+
+type iterator struct {
+	currPos int
+	c       *Collection
+}
+
+func (i *iterator) Rewind() {
+	i.currPos = -1
+}
+
+func (i *iterator) Next() bool {
+	if i.currPos+1 >= i.c.base.Count() {
+		return false
+	}
+
+	i.currPos++
+	return true
+}
+
+func (i *iterator) Value() interface{} {
+	return i.c.base.Get(i.currPos)
+}
+
+func (c *Collection) MakeIter() *iterator {
+	return &iterator{c: c, currPos: -1}
+}

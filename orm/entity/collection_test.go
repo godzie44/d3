@@ -82,3 +82,32 @@ func TestLazyCollectionToSlice(t *testing.T) {
 
 	assert.Equal(t, []interface{}{1, 2, 3}, collection.ToSlice())
 }
+
+func TestCollectionIteratorIterate(t *testing.T) {
+	collection := NewCollection(1, 2, 3)
+
+	iter := collection.MakeIter()
+	var expected, iterCount = 1, 0
+	for iter.Next() {
+		assert.Equal(t, expected, iter.Value())
+		expected++
+		iterCount++
+	}
+	assert.Equal(t, 3, iterCount)
+}
+
+func TestCollectionIteratorRewind(t *testing.T) {
+	collection := NewCollection(1, 2, 3)
+
+	iter := collection.MakeIter()
+	iter.currPos = 2
+
+	iter.Rewind()
+	var expected, iterCount = 1, 0
+	for iter.Next() {
+		assert.Equal(t, expected, iter.Value())
+		expected++
+		iterCount++
+	}
+	assert.Equal(t, 3, iterCount)
+}

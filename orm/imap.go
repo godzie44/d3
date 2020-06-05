@@ -42,14 +42,16 @@ func (im *identityMap) executePlan(plan *query.FetchPlan) (*entity.Collection, e
 }
 
 func (im *identityMap) putEntities(meta *entity.MetaInfo, collection *entity.Collection) {
-	for _, el := range collection.ToSlice() {
-		pkVal, err := meta.ExtractPkValue(el)
+	iter := collection.MakeIter()
+
+	for iter.Next() {
+		pkVal, err := meta.ExtractPkValue(iter.Value())
 		if err != nil {
 			continue
 		}
 
 		im.Lock()
-		im.add(meta.EntityName, pkVal, el)
+		im.add(meta.EntityName, pkVal, iter.Value())
 		im.Unlock()
 	}
 }
