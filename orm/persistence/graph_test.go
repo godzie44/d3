@@ -219,7 +219,7 @@ func TestGenerationOneToManyEntity(t *testing.T) {
 			ID: 3,
 		},
 	}
-	shop := &Shop{ID: 1, Books: entity.NewCollection(books)}
+	shop := &Shop{ID: 1, Books: entity.NewCollection(books...)}
 
 	graph := createNewGraph()
 
@@ -250,7 +250,7 @@ func TestGenerationManyToMany(t *testing.T) {
 			ID: 2,
 		},
 	}
-	books := &Book{ID: 1, Authors: entity.NewCollection(authors)}
+	books := &Book{ID: 1, Authors: entity.NewCollection(authors...)}
 
 	graph := createNewGraph()
 
@@ -304,16 +304,16 @@ func TestGenerationBigGraph(t *testing.T) {
 		},
 		&Book{
 			ID:      3,
-			Authors: entity.NewCollection(authors),
+			Authors: entity.NewCollection(authors...),
 		},
 	}
 
 	shop1 := &Shop{ID: 1, Profile: entity.NewWrapEntity(&ShopProfile{ID: 1}),
-		Books: entity.NewCollection(books)}
+		Books: entity.NewCollection(books...)}
 	shop2 := &Shop{ID: 2, Profile: entity.NewWrapEntity(&ShopProfile{ID: 2}),
-		Books: entity.NewCollection([]interface{}{&Book{
+		Books: entity.NewCollection(&Book{
 			ID: 2,
-		}}),
+		}),
 	}
 
 	graph := createNewGraph()
@@ -392,8 +392,8 @@ func TestGenerationManyToManyWithCommonEntity(t *testing.T) {
 			ID: 2,
 		},
 	}
-	book1 := &Book{ID: 1, Authors: entity.NewCollection(e4s)}
-	book2 := &Book{ID: 2, Authors: entity.NewCollection([]interface{}{commonAuthor})}
+	book1 := &Book{ID: 1, Authors: entity.NewCollection(e4s...)}
+	book2 := &Book{ID: 2, Authors: entity.NewCollection(commonAuthor)}
 
 	graph := createNewGraph()
 
@@ -453,8 +453,8 @@ func TestDoublePersistNotAffectGraph(t *testing.T) {
 			ID: 3,
 		},
 	}
-	entity31 := &Book{ID: 1, Authors: entity.NewCollection(e4s)}
-	entity32 := &Book{ID: 2, Authors: entity.NewCollection([]interface{}{commonAuthor})}
+	entity31 := &Book{ID: 1, Authors: entity.NewCollection(e4s...)}
+	entity32 := &Book{ID: 2, Authors: entity.NewCollection(commonAuthor)}
 
 	graph := createNewGraph()
 
@@ -555,8 +555,8 @@ func TestGenerationTwoOneToManyOnOneEntity(t *testing.T) {
 	goodAndPrettyPhoto := &Photo{ID: 1}
 
 	user := &User{ID: 1,
-		GoodPhotos:   entity.NewCollection([]interface{}{goodAndPrettyPhoto, &Photo{ID: 2}}),
-		PrettyPhotos: entity.NewCollection([]interface{}{goodAndPrettyPhoto, &Photo{ID: 3}}),
+		GoodPhotos:   entity.NewCollection(goodAndPrettyPhoto, &Photo{ID: 2}),
+		PrettyPhotos: entity.NewCollection(goodAndPrettyPhoto, &Photo{ID: 3}),
 	}
 
 	graph := createNewGraph()
@@ -595,7 +595,7 @@ func TestNoCycleOneToOneToMany(t *testing.T) {
 	goodAndAvatarPhoto := &Photo{ID: 1}
 
 	user := &User{ID: 1,
-		GoodPhotos: entity.NewCollection([]interface{}{goodAndAvatarPhoto}),
+		GoodPhotos: entity.NewCollection(goodAndAvatarPhoto),
 		Avatar:     entity.NewWrapEntity(goodAndAvatarPhoto),
 	}
 
@@ -659,9 +659,9 @@ func TestNoCycleManyToManyToOne(t *testing.T) {
 	mainAuthor := &Author{ID: 1}
 	book := &BookCirc{
 		ID: 1,
-		Authors: entity.NewCollection([]interface{}{
+		Authors: entity.NewCollection(
 			mainAuthor, &Author{ID: 2},
-		}),
+		),
 		MainAuthor: entity.NewWrapEntity(mainAuthor),
 	}
 
@@ -839,11 +839,11 @@ func TestNoCycleOneToMany(t *testing.T) {
 	seller3 := &sellerCirc{}
 	shop1 := &shopCirc{
 		ID:      sql.NullInt32{Int32: 1, Valid: true},
-		Sellers: entity.NewCollection([]interface{}{seller1}),
+		Sellers: entity.NewCollection(seller1),
 	}
 	shop2 := &shopCirc{
 		ID:      sql.NullInt32{Int32: 2, Valid: true},
-		Sellers: entity.NewCollection([]interface{}{seller2, seller3}),
+		Sellers: entity.NewCollection(seller2, seller3),
 	}
 	seller1.Shop = entity.NewWrapEntity(shop1)
 	seller2.Shop = entity.NewWrapEntity(shop2)

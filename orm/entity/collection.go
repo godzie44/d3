@@ -19,7 +19,7 @@ type (
 	}
 )
 
-func NewCollection(entities []interface{}) *Collection {
+func NewCollection(entities ...interface{}) *Collection {
 	return &Collection{base: &eagerCollection{holder: &dataHolder{data: entities}}}
 }
 

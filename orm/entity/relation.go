@@ -119,7 +119,7 @@ func (o *OneToMany) ExtractCollection(ownerBox *Box) (*Collection, error) {
 	}
 
 	if val == nil || val == nilCollection {
-		return NewCollection(nil), nil
+		return NewCollection(), nil
 	}
 
 	collection, ok := val.(*Collection)
@@ -128,7 +128,7 @@ func (o *OneToMany) ExtractCollection(ownerBox *Box) (*Collection, error) {
 	}
 
 	if lc, ok := collection.base.(LazyContainer); ok && !lc.IsInitialized() {
-		return NewCollection(nil), nil
+		return NewCollection(), nil
 	}
 
 	return collection, nil
@@ -206,7 +206,7 @@ func (m *ManyToMany) ExtractCollection(ownerBox *Box) (*Collection, error) {
 	}
 
 	if val == nil || val == nilCollection {
-		return NewCollection(nil), nil
+		return NewCollection(), nil
 	}
 
 	collection, ok := val.(*Collection)
@@ -215,7 +215,7 @@ func (m *ManyToMany) ExtractCollection(ownerBox *Box) (*Collection, error) {
 	}
 
 	if lc, ok := collection.base.(LazyContainer); ok && !lc.IsInitialized() {
-		return NewCollection(nil), nil
+		return NewCollection(), nil
 	}
 
 	return collection, nil

@@ -160,19 +160,19 @@ func (o *PersistsCircularTS) TestBigCircularReferenceGraph() {
 	seller2 := &SellerCirc{Name: "Sergej"}
 	seller3 := &SellerCirc{Name: "Nickolay"}
 
-	shop1.Sellers = entity.NewCollection([]interface{}{seller1})
-	shop2.Sellers = entity.NewCollection([]interface{}{seller2, seller3})
-	shop1.KnownSellers = entity.NewCollection([]interface{}{seller1, seller2})
-	shop2.KnownSellers = entity.NewCollection([]interface{}{seller2, seller3})
+	shop1.Sellers = entity.NewCollection(seller1)
+	shop2.Sellers = entity.NewCollection(seller2, seller3)
+	shop1.KnownSellers = entity.NewCollection(seller1, seller2)
+	shop2.KnownSellers = entity.NewCollection(seller2, seller3)
 	shop1.TopSeller = entity.NewWrapEntity(seller1)
 	shop2.TopSeller = entity.NewWrapEntity(seller2)
 
 	seller1.CurrentShop = entity.NewWrapEntity(shop1)
-	seller1.KnownShops = entity.NewCollection([]interface{}{shop1})
+	seller1.KnownShops = entity.NewCollection(shop1)
 	seller2.CurrentShop = entity.NewWrapEntity(shop2)
-	seller2.KnownShops = entity.NewCollection([]interface{}{shop1, shop2})
+	seller2.KnownShops = entity.NewCollection(shop1, shop2)
 	seller3.CurrentShop = entity.NewWrapEntity(shop2)
-	seller3.KnownShops = entity.NewCollection([]interface{}{shop2})
+	seller3.KnownShops = entity.NewCollection(shop2)
 
 	o.Assert().NoError(repository.Persists(shop1))
 	o.Assert().NoError(repository.Persists(shop2))

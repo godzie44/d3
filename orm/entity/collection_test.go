@@ -6,19 +6,19 @@ import (
 )
 
 func TestEagerCollectionCount(t *testing.T) {
-	collection := NewCollection([]interface{}{1, 2})
+	collection := NewCollection(1, 2)
 
 	assert.Equal(t, 2, collection.Count())
 }
 
 func TestEagerCollectionEmpty(t *testing.T) {
-	collection := NewCollection([]interface{}{})
+	collection := NewCollection()
 
 	assert.True(t, collection.Empty())
 }
 
 func TestEagerCollectionAdd(t *testing.T) {
-	collection := NewCollection([]interface{}{})
+	collection := NewCollection()
 
 	collection.Add(1)
 	collection.Add(2)
@@ -27,13 +27,13 @@ func TestEagerCollectionAdd(t *testing.T) {
 }
 
 func TestEagerCollectionGet(t *testing.T) {
-	collection := NewCollection([]interface{}{1, 2})
+	collection := NewCollection(1, 2)
 
 	assert.Equal(t, 1, collection.Get(0))
 }
 
 func TestEagerCollectionToSlice(t *testing.T) {
-	collection := NewCollection([]interface{}{1, 2})
+	collection := NewCollection(1, 2)
 	collection.Add(3)
 
 	assert.Equal(t, []interface{}{1, 2, 3}, collection.ToSlice())
@@ -41,7 +41,7 @@ func TestEagerCollectionToSlice(t *testing.T) {
 
 func TestLazyCollectionCount(t *testing.T) {
 	collection := NewCollectionFromCollectionner(NewLazyCollection(func() *Collection {
-		return NewCollection([]interface{}{1, 2})
+		return NewCollection(1, 2)
 	}, func(_ *Collection) {}))
 
 	assert.Equal(t, 2, collection.Count())
@@ -49,7 +49,7 @@ func TestLazyCollectionCount(t *testing.T) {
 
 func TestLazyCollectionEmpty(t *testing.T) {
 	collection := NewCollectionFromCollectionner(NewLazyCollection(func() *Collection {
-		return NewCollection([]interface{}{})
+		return NewCollection()
 	}, func(_ *Collection) {}))
 
 	assert.True(t, collection.Empty())
@@ -57,7 +57,7 @@ func TestLazyCollectionEmpty(t *testing.T) {
 
 func TestLazyCollectionAdd(t *testing.T) {
 	collection := NewCollectionFromCollectionner(NewLazyCollection(func() *Collection {
-		return NewCollection([]interface{}{})
+		return NewCollection()
 	}, func(_ *Collection) {}))
 
 	collection.Add(1)
@@ -68,7 +68,7 @@ func TestLazyCollectionAdd(t *testing.T) {
 
 func TestLazyCollectionGet(t *testing.T) {
 	collection := NewCollectionFromCollectionner(NewLazyCollection(func() *Collection {
-		return NewCollection([]interface{}{1, 2})
+		return NewCollection(1, 2)
 	}, func(_ *Collection) {}))
 
 	assert.Equal(t, 1, collection.Get(0))
@@ -76,7 +76,7 @@ func TestLazyCollectionGet(t *testing.T) {
 
 func TestLazyCollectionToSlice(t *testing.T) {
 	collection := NewCollectionFromCollectionner(NewLazyCollection(func() *Collection {
-		return NewCollection([]interface{}{1, 2})
+		return NewCollection(1, 2)
 	}, func(_ *Collection) {}))
 	collection.Add(3)
 

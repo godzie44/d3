@@ -137,24 +137,24 @@ func TestExecuteComplexGraph(t *testing.T) {
 	books := []interface{}{
 		&Book{
 			ID:      1,
-			Authors: entity.NewCollection([]interface{}{commonAuthor}),
+			Authors: entity.NewCollection(commonAuthor),
 		},
 		&Book{
 			ID:      3,
-			Authors: entity.NewCollection(authors),
+			Authors: entity.NewCollection(authors...),
 		},
 	}
 
 	shop1 := &Shop{
 		ID:      1,
 		Profile: entity.NewWrapEntity(&ShopProfile{ID: 1}),
-		Books:   entity.NewCollection(books)}
+		Books:   entity.NewCollection(books...)}
 	shop2 := &Shop{
 		ID:      2,
 		Profile: entity.NewWrapEntity(&ShopProfile{ID: 2}),
-		Books: entity.NewCollection([]interface{}{&Book{
+		Books: entity.NewCollection(&Book{
 			ID: 2,
-		}}),
+		}),
 	}
 
 	graph := createNewGraph()
@@ -278,7 +278,7 @@ func TestExecuteWithCircularReference(t *testing.T) {
 
 	order := &Order{
 		ID:       1,
-		Items:    entity.NewCollection(orderItems),
+		Items:    entity.NewCollection(orderItems...),
 		BestItem: entity.NewWrapEntity(bestItem),
 	}
 

@@ -24,7 +24,7 @@ func (h *Hydrator) Hydrate(fetchedData []map[string]interface{}, plan *query.Fet
 		groupByEntityData[pkVal] = append(groupByEntityData[pkVal], rowData)
 	}
 
-	collection := d3entity.NewCollection([]interface{}{})
+	collection := d3entity.NewCollection()
 
 	for _, entityData := range groupByEntityData {
 		newEntity := h.meta.Tools.NewInstance()
@@ -106,7 +106,7 @@ func (h *Hydrator) fetchRelation(relation d3entity.Relation, entityData []map[st
 
 		return d3entity.NewWrapEntity(entity), nil
 	case *d3entity.OneToMany, *d3entity.ManyToMany:
-		var entities []interface{}
+		var entities = d3entity.NewCollection()
 
 		groupByEntity := make(map[interface{}][]map[string]interface{})
 
@@ -125,12 +125,12 @@ func (h *Hydrator) fetchRelation(relation d3entity.Relation, entityData []map[st
 			if err != nil {
 				return nil, fmt.Errorf("hydration: %w", err)
 			}
-			entities = append(entities, entity)
+			entities.Add(entity)
 
 			h.afterHydrateEntity(d3entity.NewBox(entity, relationMeta))
 		}
 
-		return d3entity.NewCollection(entities), nil
+		return entities, nil
 	}
 
 	return nil, nil

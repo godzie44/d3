@@ -29,7 +29,7 @@ func (im *identityMap) executePlan(plan *query.FetchPlan) (*entity.Collection, e
 	im.RLock()
 	defer im.RUnlock()
 
-	collection := entity.NewCollection([]interface{}{})
+	collection := entity.NewCollection()
 	for _, id := range plan.PKs() {
 		if e, exists := im.get(plan.Query().OwnerMeta().EntityName, id); exists {
 			collection.Add(e)

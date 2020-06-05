@@ -56,7 +56,7 @@ func TestPutEntities(t *testing.T) {
 	meta, err := entity.CreateMeta((*imTestEntity1)(nil))
 	assert.NoError(t, err)
 
-	collection := entity.NewCollection([]interface{}{})
+	collection := entity.NewCollection()
 	collection.Add(&imTestEntity1{
 		ID:   1,
 		Data: "1",
@@ -71,12 +71,12 @@ func TestPutEntities(t *testing.T) {
 	assert.Len(t, im.data, 1)
 	assert.Len(t, im.data["d3/orm/imTestEntity1"], 2)
 
-	coll2 := entity.NewCollection([]interface{}{
+	coll2 := entity.NewCollection(
 		&imTestEntity2{
 			ID:   1,
 			Data: "1",
 		},
-	})
+	)
 
 	meta2, err := entity.CreateMeta((*imTestEntity2)(nil))
 	assert.NoError(t, err)

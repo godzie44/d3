@@ -71,12 +71,12 @@ func createAggregate() *shop {
 	}
 
 	book := &book{
-		Authors: entity.NewCollection([]interface{}{author1, author2}),
+		Authors: entity.NewCollection(author1, author2),
 		Name:    "new book",
 	}
 
 	shop := &shop{
-		books: entity.NewCollection([]interface{}{book}),
+		books: entity.NewCollection(book),
 		profile: entity.NewWrapEntity(&profile{
 			Description: "good shop",
 		}),

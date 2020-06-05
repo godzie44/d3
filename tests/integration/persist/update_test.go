@@ -117,7 +117,7 @@ func (u *UpdateTs) TestInsertThenFullUpdate() {
 	shop.Books.Remove(0)
 
 	newAuthor := &Author{Name: "new author"}
-	newBook := &Book{Name: "new book", Authors: entity.NewCollection([]interface{}{newAuthor})}
+	newBook := &Book{Name: "new book", Authors: entity.NewCollection(newAuthor)}
 	shop.Books.Add(newBook)
 
 	oldBook := shop.Books.Get(0).(*Book)
@@ -144,13 +144,13 @@ func createAndPersistsShop(s *orm.Session) (*Shop, error) {
 		Name: "author1",
 	}
 	shop := &Shop{
-		Books: entity.NewCollection([]interface{}{&Book{
-			Authors: entity.NewCollection([]interface{}{author1, &Author{Name: "author 2"}}),
+		Books: entity.NewCollection(&Book{
+			Authors: entity.NewCollection(author1, &Author{Name: "author 2"}),
 			Name:    "book 1",
 		}, &Book{
-			Authors: entity.NewCollection([]interface{}{author1, &Author{Name: "author 3"}}),
+			Authors: entity.NewCollection(author1, &Author{Name: "author 3"}),
 			Name:    "book 2",
-		}}),
+		}),
 		Profile: entity.NewWrapEntity(&ShopProfile{
 			Description: "this is tests shop",
 		}),
@@ -457,7 +457,7 @@ func (u *UpdateTs) TestSelectThenFullUpdate() {
 	shop1.Books.Remove(0)
 
 	newAuthor := &Author{Name: "new author"}
-	newBook := &Book{Name: "new book", Authors: entity.NewCollection([]interface{}{newAuthor})}
+	newBook := &Book{Name: "new book", Authors: entity.NewCollection(newAuthor)}
 	shop1.Books.Add(newBook)
 
 	oldBook := shop1.Books.Get(0).(*Book)
