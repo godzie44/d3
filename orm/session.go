@@ -18,16 +18,16 @@ type Storage interface {
 	MakeRawDataMapper() RawDataMapper
 }
 
-type Session struct {
+type session struct {
 	storage Storage
 	uow     *UnitOfWork
 }
 
-func newSession(storage Storage, uow *UnitOfWork) *Session {
-	return &Session{storage: storage, uow: uow}
+func newSession(storage Storage, uow *UnitOfWork) *session {
+	return &session{storage: storage, uow: uow}
 }
 
-func (s *Session) execute(q *query.Query) (*entity.Collection, error) {
+func (s *session) execute(q *query.Query) (*entity.Collection, error) {
 	fetchPlan := query.Preprocessor.CreateFetchPlan(q)
 
 	if s.uow.identityMap.canApply(fetchPlan) {
@@ -58,7 +58,7 @@ func (s *Session) execute(q *query.Query) (*entity.Collection, error) {
 }
 
 // Flush save all created, update changed and delete deleted entities within the session.
-func (s *Session) Flush() error {
+func (s *session) Flush() error {
 	return s.uow.Commit()
 }
 
@@ -67,14 +67,14 @@ type Transaction interface {
 	Rollback() error
 }
 
-func (s *Session) BeginTx() error {
+func (s *session) BeginTx() error {
 	return s.uow.beginTx()
 }
 
-func (s *Session) CommitTx() error {
+func (s *session) CommitTx() error {
 	return s.uow.commitTx()
 }
 
-func (s *Session) RollbackTx() error {
+func (s *session) RollbackTx() error {
 	return s.uow.rollbackTx()
 }

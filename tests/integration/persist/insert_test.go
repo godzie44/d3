@@ -67,7 +67,7 @@ func (o *PersistsTS) TestSimpleInsert() {
 	}
 
 	o.NoError(repository.Persists(o.ctx, shop))
-	o.NoError(orm.SessionFromCtx(o.ctx).Flush())
+	o.NoError(orm.Session(o.ctx).Flush())
 
 	o.NotEqual(0, shop.Id.Int32)
 	o.NotEqual(0, shop.Profile.Unwrap().(*ShopProfile).Id.Int32)
@@ -81,7 +81,7 @@ func (o *PersistsTS) TestBigInsert() {
 	shop, err := createAndPersistsShop(o.ctx, o.d3Orm)
 	o.NoError(err)
 
-	o.NoError(orm.SessionFromCtx(o.ctx).Flush())
+	o.NoError(orm.Session(o.ctx).Flush())
 
 	o.NotEqual(0, shop.Id.Int32)
 	o.NotEqual(0, shop.Profile.Unwrap().(*ShopProfile).Id.Int32)
@@ -102,10 +102,10 @@ func (o *PersistsTS) TestNoNewQueriesIfDoubleFlush() {
 	_, err := createAndPersistsShop(o.ctx, o.d3Orm)
 	o.NoError(err)
 
-	o.NoError(orm.SessionFromCtx(o.ctx).Flush())
+	o.NoError(orm.Session(o.ctx).Flush())
 	insertCounter, updCounter := o.dbAdapter.InsertCounter(), o.dbAdapter.UpdateCounter()
 
-	o.NoError(orm.SessionFromCtx(o.ctx).Flush())
+	o.NoError(orm.Session(o.ctx).Flush())
 
 	o.Equal(insertCounter, o.dbAdapter.InsertCounter())
 	o.Equal(updCounter, o.dbAdapter.UpdateCounter())
@@ -121,7 +121,7 @@ func (o *PersistsTS) TestOneNewEntityIfDoublePersist() {
 	o.NoError(repository.Persists(o.ctx, shop))
 	o.NoError(repository.Persists(o.ctx, shop))
 
-	o.NoError(orm.SessionFromCtx(o.ctx).Flush())
+	o.NoError(orm.Session(o.ctx).Flush())
 
 	o.Equal(1, o.dbAdapter.InsertCounter())
 }

@@ -58,11 +58,11 @@ func (u *UpdateTs) TestInsertThenUpdate() {
 	shop, err := createAndPersistsShop(u.ctx, u.d3Orm)
 	u.NoError(err)
 
-	u.NoError(orm.SessionFromCtx(u.ctx).Flush())
+	u.NoError(orm.Session(u.ctx).Flush())
 
 	shop.Name = "new shop"
 
-	u.NoError(orm.SessionFromCtx(u.ctx).Flush())
+	u.NoError(orm.Session(u.ctx).Flush())
 
 	u.Equal(1, u.dbAdapter.UpdateCounter())
 	helpers.NewPgTester(u.T(), u.pgDb).
@@ -74,11 +74,11 @@ func (u *UpdateTs) TestInsertThenUpdateOToMRelation() {
 	shop, err := createAndPersistsShop(u.ctx, u.d3Orm)
 	u.NoError(err)
 
-	u.NoError(orm.SessionFromCtx(u.ctx).Flush())
+	u.NoError(orm.Session(u.ctx).Flush())
 
 	shop.Books.Remove(0)
 
-	u.NoError(orm.SessionFromCtx(u.ctx).Flush())
+	u.NoError(orm.Session(u.ctx).Flush())
 
 	u.Equal(1, u.dbAdapter.UpdateCounter())
 	helpers.NewPgTester(u.T(), u.pgDb).
@@ -90,14 +90,14 @@ func (u *UpdateTs) TestInsertThenUpdateMToMRelations() {
 	shop, err := createAndPersistsShop(u.ctx, u.d3Orm)
 	u.NoError(err)
 
-	u.NoError(orm.SessionFromCtx(u.ctx).Flush())
+	u.NoError(orm.Session(u.ctx).Flush())
 
 	book := shop.Books.Get(0).(*Book)
 	author := book.Authors.Get(1).(*Author)
 
 	book.Authors.Remove(1)
 
-	u.NoError(orm.SessionFromCtx(u.ctx).Flush())
+	u.NoError(orm.Session(u.ctx).Flush())
 
 	u.Equal(1, u.dbAdapter.DeleteCounter())
 	helpers.NewPgTester(u.T(), u.pgDb).
@@ -108,7 +108,7 @@ func (u *UpdateTs) TestInsertThenFullUpdate() {
 	shop, err := createAndPersistsShop(u.ctx, u.d3Orm)
 	u.NoError(err)
 
-	u.NoError(orm.SessionFromCtx(u.ctx).Flush())
+	u.NoError(orm.Session(u.ctx).Flush())
 
 	newProfile := &ShopProfile{Description: "new shop profile"}
 	shop.Profile = entity.NewCell(newProfile)
@@ -124,7 +124,7 @@ func (u *UpdateTs) TestInsertThenFullUpdate() {
 	oldBook.Authors.Remove(1)
 
 	u.dbAdapter.ResetCounters()
-	u.NoError(orm.SessionFromCtx(u.ctx).Flush())
+	u.NoError(orm.Session(u.ctx).Flush())
 
 	u.Equal(1, u.dbAdapter.DeleteCounter())
 	u.Equal(2, u.dbAdapter.UpdateCounter())
@@ -175,7 +175,7 @@ func (u *UpdateTs) TestSelectThenSimpleUpdate() {
 	shop2i.(*Shop).Name = "new shop 1002 name"
 
 	u.dbAdapter.ResetCounters()
-	u.NoError(orm.SessionFromCtx(u.ctx).Flush())
+	u.NoError(orm.Session(u.ctx).Flush())
 
 	u.Equal(2, u.dbAdapter.UpdateCounter())
 
@@ -196,7 +196,7 @@ func (u *UpdateTs) TestSelectThenUpdateOtoORelation() {
 	shop1i.(*Shop).Profile.Unwrap().(*ShopProfile).Description = "new shop 1001 profile"
 
 	u.dbAdapter.ResetCounters()
-	u.NoError(orm.SessionFromCtx(u.ctx).Flush())
+	u.NoError(orm.Session(u.ctx).Flush())
 
 	u.Equal(1, u.dbAdapter.UpdateCounter())
 
@@ -216,7 +216,7 @@ func (u *UpdateTs) TestSelectThenDeleteOtoORelation() {
 	shop1i.(*Shop).Profile = entity.NewCell(nil)
 
 	u.dbAdapter.ResetCounters()
-	u.NoError(orm.SessionFromCtx(u.ctx).Flush())
+	u.NoError(orm.Session(u.ctx).Flush())
 
 	u.Equal(1, u.dbAdapter.UpdateCounter())
 
@@ -238,7 +238,7 @@ func (u *UpdateTs) TestSelectThenChangeOtoORelation() {
 	})
 
 	u.dbAdapter.ResetCounters()
-	u.NoError(orm.SessionFromCtx(u.ctx).Flush())
+	u.NoError(orm.Session(u.ctx).Flush())
 
 	u.Equal(1, u.dbAdapter.UpdateCounter())
 
@@ -260,7 +260,7 @@ func (u *UpdateTs) TestSelectThenViewButDontChangeOtoORelation() {
 	shop1i.(*Shop).Profile.Unwrap().(*ShopProfile).Description = "desc1"
 
 	u.dbAdapter.ResetCounters()
-	u.NoError(orm.SessionFromCtx(u.ctx).Flush())
+	u.NoError(orm.Session(u.ctx).Flush())
 
 	u.Equal(0, u.dbAdapter.UpdateCounter())
 }
@@ -278,7 +278,7 @@ func (u *UpdateTs) TestSelectThenUpdateOtoMRelation() {
 	shop1.(*Shop).Books.Get(1).(*Book).Name = "new book 1"
 
 	u.dbAdapter.ResetCounters()
-	u.NoError(orm.SessionFromCtx(u.ctx).Flush())
+	u.NoError(orm.Session(u.ctx).Flush())
 
 	u.Equal(2, u.dbAdapter.UpdateCounter())
 
@@ -300,7 +300,7 @@ func (u *UpdateTs) TestSelectThenDeleteOtoMRelation() {
 	shop1.(*Shop).Books.Remove(0)
 
 	u.dbAdapter.ResetCounters()
-	u.NoError(orm.SessionFromCtx(u.ctx).Flush())
+	u.NoError(orm.Session(u.ctx).Flush())
 
 	u.Equal(1, u.dbAdapter.UpdateCounter())
 
@@ -324,7 +324,7 @@ func (u *UpdateTs) TestSelectThenAddOtoMRelation() {
 	shop1.(*Shop).Books.Add(newBook)
 
 	u.dbAdapter.ResetCounters()
-	u.NoError(orm.SessionFromCtx(u.ctx).Flush())
+	u.NoError(orm.Session(u.ctx).Flush())
 
 	u.Equal(1, u.dbAdapter.InsertCounter())
 
@@ -345,7 +345,7 @@ func (u *UpdateTs) TestSelectThenViewButDontChangeOtoMRelation() {
 	shop1.(*Shop).Books.Get(0).(*Book).Name = sameName
 
 	u.dbAdapter.ResetCounters()
-	u.NoError(orm.SessionFromCtx(u.ctx).Flush())
+	u.NoError(orm.Session(u.ctx).Flush())
 
 	u.Equal(0, u.dbAdapter.UpdateCounter())
 }
@@ -363,7 +363,7 @@ func (u *UpdateTs) TestSelectThenUpdateMtoMRelation() {
 	book1.(*Book).Authors.Get(1).(*Author).Name = "new author 2"
 
 	u.dbAdapter.ResetCounters()
-	u.NoError(orm.SessionFromCtx(u.ctx).Flush())
+	u.NoError(orm.Session(u.ctx).Flush())
 
 	u.Equal(2, u.dbAdapter.UpdateCounter())
 
@@ -385,7 +385,7 @@ func (u *UpdateTs) TestSelectThenDeleteMtoMRelation() {
 	book1.(*Book).Authors.Remove(1)
 
 	u.dbAdapter.ResetCounters()
-	u.NoError(orm.SessionFromCtx(u.ctx).Flush())
+	u.NoError(orm.Session(u.ctx).Flush())
 
 	u.Equal(1, u.dbAdapter.DeleteCounter())
 
@@ -411,7 +411,7 @@ func (u *UpdateTs) TestSelectThenAddMtoMRelation() {
 	book2.(*Book).Authors.Add(newAuthor)
 
 	u.dbAdapter.ResetCounters()
-	u.NoError(orm.SessionFromCtx(u.ctx).Flush())
+	u.NoError(orm.Session(u.ctx).Flush())
 
 	u.Equal(3, u.dbAdapter.InsertCounter())
 
@@ -434,7 +434,7 @@ func (u *UpdateTs) TestSelectThenViewButDontChangeMtoMRelation() {
 	book1.(*Book).Authors.Get(0).(*Author).Name = sameName
 
 	u.dbAdapter.ResetCounters()
-	u.NoError(orm.SessionFromCtx(u.ctx).Flush())
+	u.NoError(orm.Session(u.ctx).Flush())
 
 	u.Equal(0, u.dbAdapter.UpdateCounter())
 }
@@ -464,7 +464,7 @@ func (u *UpdateTs) TestSelectThenFullUpdate() {
 	oldBook.Authors.Remove(0)
 
 	u.dbAdapter.ResetCounters()
-	u.NoError(orm.SessionFromCtx(u.ctx).Flush())
+	u.NoError(orm.Session(u.ctx).Flush())
 
 	u.Equal(1, u.dbAdapter.DeleteCounter())
 	u.Equal(2, u.dbAdapter.UpdateCounter())

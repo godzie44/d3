@@ -60,7 +60,7 @@ func (d *DeleteTS) TestDeleteEntity() {
 
 	d.NoError(rep.Delete(d.ctx, profile))
 
-	d.NoError(orm.SessionFromCtx(d.ctx).Flush())
+	d.NoError(orm.Session(d.ctx).Flush())
 
 	d.Equal(1, d.dbAdapter.DeleteCounter())
 }
@@ -77,7 +77,7 @@ func (d *DeleteTS) TestDeleteWithRelations() {
 	d.NoError(rep.Delete(d.ctx, shop))
 
 	d.dbAdapter.ResetCounters()
-	d.NoError(orm.SessionFromCtx(d.ctx).Flush())
+	d.NoError(orm.Session(d.ctx).Flush())
 
 	// delete shop and profile (cause cascade)
 	d.Equal(2, d.dbAdapter.DeleteCounter())
@@ -98,7 +98,7 @@ func (d *DeleteTS) TestDeleteWithManyToMany() {
 	d.NoError(rep.Delete(d.ctx, book))
 
 	d.dbAdapter.ResetCounters()
-	d.NoError(orm.SessionFromCtx(d.ctx).Flush())
+	d.NoError(orm.Session(d.ctx).Flush())
 
 	// delete from book_p table and book_author_p table
 	d.Equal(2, d.dbAdapter.DeleteCounter())

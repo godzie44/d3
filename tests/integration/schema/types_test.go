@@ -38,7 +38,7 @@ func TestTypeConversion(t *testing.T) {
 	}
 
 	assert.NoError(t, rep.Persists(ctx, entity))
-	assert.NoError(t, orm.SessionFromCtx(ctx).Flush())
+	assert.NoError(t, orm.Session(ctx).Flush())
 
 	ctx2 := d3orm.CtxWithSession(context.Background())
 	rep, err = d3orm.MakeRepository(&allTypeStruct{})

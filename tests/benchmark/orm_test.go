@@ -27,7 +27,7 @@ func BenchmarkInsert(b *testing.B) {
 	for i := 0; i < b.N; i++ {
 		aggregate := createAggregate()
 		_ = repo.Persists(ctx, aggregate)
-		_ = orm.SessionFromCtx(ctx).Flush()
+		_ = orm.Session(ctx).Flush()
 	}
 }
 
@@ -55,7 +55,7 @@ func BenchmarkUpdate(b *testing.B) {
 
 		book := shop.books.Get(0).(*book)
 		book.Name += " updated"
-		_ = orm.SessionFromCtx(ctx).Flush()
+		_ = orm.Session(ctx).Flush()
 	}
 }
 

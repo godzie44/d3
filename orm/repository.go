@@ -71,13 +71,13 @@ func (r *Repository) Delete(ctx context.Context, entities ...interface{}) error 
 	return nil
 }
 
-func sessionFromCtx(ctx context.Context) (*Session, error) {
-	session := ctx.Value(sessionKey)
-	if session == nil {
+func sessionFromCtx(ctx context.Context) (*session, error) {
+	s := Session(ctx)
+	if s == nil {
 		return nil, ErrSessionNotSet
 	}
 
-	return session.(*Session), nil
+	return s, nil
 }
 
 func (r *Repository) CreateQuery() *query.Query {

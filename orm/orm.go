@@ -34,11 +34,14 @@ func (o *Orm) CtxWithSession(ctx context.Context) context.Context {
 	return context.WithValue(ctx, sessionKey, o.MakeSession())
 }
 
-func SessionFromCtx(ctx context.Context) *Session {
-	return ctx.Value(sessionKey).(*Session)
+func Session(ctx context.Context) *session {
+	if sess, ok := ctx.Value(sessionKey).(*session); ok {
+		return sess
+	}
+	return nil
 }
 
-func (o *Orm) MakeSession() *Session {
+func (o *Orm) MakeSession() *session {
 	return newSession(o.PgDb, NewUOW(o.PgDb))
 }
 

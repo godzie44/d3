@@ -10,7 +10,7 @@ import (
 type RawDataMapper func(data interface{}, into reflect.Kind) interface{}
 
 type Hydrator struct {
-	session            *Session
+	session            *session
 	meta               *d3entity.MetaInfo
 	afterHydrateEntity func(b *d3entity.Box)
 	rawMapper          RawDataMapper

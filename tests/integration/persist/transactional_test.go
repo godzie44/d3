@@ -46,7 +46,7 @@ func (t *TransactionalTs) TearDownTest() {
 
 func (t *TransactionalTs) TestAutoCommit() {
 	ctx := t.d3Orm.CtxWithSession(context.Background())
-	session := orm.SessionFromCtx(ctx)
+	session := orm.Session(ctx)
 	repository, _ := t.d3Orm.MakeRepository((*Shop)(nil))
 
 	shop1 := &Shop{
@@ -71,7 +71,7 @@ func newConn() *pgx.Conn {
 
 func (t *TransactionalTs) TestManualCommit() {
 	ctx := t.d3Orm.CtxWithSession(context.Background())
-	session := orm.SessionFromCtx(ctx)
+	session := orm.Session(ctx)
 
 	repository, _ := t.d3Orm.MakeRepository((*Shop)(nil))
 
@@ -98,7 +98,7 @@ func (t *TransactionalTs) TestManualCommit() {
 
 func (t *TransactionalTs) TestManualRollback() {
 	ctx := t.d3Orm.CtxWithSession(context.Background())
-	session := orm.SessionFromCtx(ctx)
+	session := orm.Session(ctx)
 
 	repository, _ := t.d3Orm.MakeRepository((*Shop)(nil))
 
