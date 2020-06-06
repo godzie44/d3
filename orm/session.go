@@ -4,7 +4,6 @@ import (
 	"d3/orm/entity"
 	"d3/orm/persistence"
 	"d3/orm/query"
-	"fmt"
 )
 
 type Storage interface {
@@ -20,13 +19,12 @@ type Storage interface {
 }
 
 type Session struct {
-	storage      Storage
-	uow          *UnitOfWork
-	metaRegistry *entity.MetaRegistry
+	storage Storage
+	uow     *UnitOfWork
 }
 
-func NewSession(storage Storage, uow *UnitOfWork, metaRegistry *entity.MetaRegistry) *Session {
-	return &Session{storage: storage, uow: uow, metaRegistry: metaRegistry}
+func newSession(storage Storage, uow *UnitOfWork) *Session {
+	return &Session{storage: storage, uow: uow}
 }
 
 func (s *Session) execute(q *query.Query) (*entity.Collection, error) {
@@ -59,21 +57,9 @@ func (s *Session) execute(q *query.Query) (*entity.Collection, error) {
 	return result, nil
 }
 
-//Flush save all created, update changed and delete deleted entities within the session.
+// Flush save all created, update changed and delete deleted entities within the session.
 func (s *Session) Flush() error {
 	return s.uow.Commit()
-}
-
-func (s *Session) MakeRepository(entity interface{}) (*Repository, error) {
-	entityMeta, err := s.metaRegistry.GetMeta(entity)
-	if err != nil {
-		return nil, fmt.Errorf("repository: %w", err)
-	}
-
-	return &Repository{
-		session:    s,
-		entityMeta: entityMeta,
-	}, nil
 }
 
 type Transaction interface {

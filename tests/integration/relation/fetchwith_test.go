@@ -106,11 +106,12 @@ func TestFetchWithRelationTestSuite(t *testing.T) {
 }
 
 func (o *FetchWithRelationTS) TestFetchWithOneToOne() {
-	session := o.orm.MakeSession()
-	repository, _ := session.MakeRepository((*fwTestEntity1)(nil))
+	ctx := o.orm.CtxWithSession(context.Background())
+
+	repository, _ := o.orm.MakeRepository((*fwTestEntity1)(nil))
 	q := repository.CreateQuery()
 	_ = q.AndWhere("test_entity_1.id = ?", 1).With("d3/tests/integration/relation/fwTestEntity2")
-	entity, _ := repository.FindOne(q)
+	entity, _ := repository.FindOne(ctx, q)
 
 	o.Assert().IsType(&fwTestEntity1{}, entity)
 	o.Assert().Equal(int32(1), entity.(*fwTestEntity1).Id)
@@ -126,11 +127,11 @@ func (o *FetchWithRelationTS) TestFetchWithOneToOne() {
 }
 
 func (o *FetchWithRelationTS) TestFetchWithOneToMany() {
-	session := o.orm.MakeSession()
-	repository, _ := session.MakeRepository((*fwTestEntity2)(nil))
+	ctx := o.orm.CtxWithSession(context.Background())
+	repository, _ := o.orm.MakeRepository((*fwTestEntity2)(nil))
 	q := repository.CreateQuery()
 	_ = q.AndWhere("test_entity_2.id = ?", 1).With("d3/tests/integration/relation/fwTestEntity3")
-	entity, _ := repository.FindOne(q)
+	entity, _ := repository.FindOne(ctx, q)
 
 	o.Assert().IsType(&fwTestEntity2{}, entity)
 	o.Assert().Equal(int32(1), entity.(*fwTestEntity2).Id)
@@ -147,11 +148,12 @@ func (o *FetchWithRelationTS) TestFetchWithOneToMany() {
 }
 
 func (o *FetchWithRelationTS) TestFetchWithManyToMany() {
-	repository, _ := o.orm.MakeSession().MakeRepository((*fwTestEntity3)(nil))
+	ctx := o.orm.CtxWithSession(context.Background())
+	repository, _ := o.orm.MakeRepository((*fwTestEntity3)(nil))
 
 	q := repository.CreateQuery()
 	_ = q.AndWhere("test_entity_3.id = ?", 1).With("d3/tests/integration/relation/fwTestEntity4")
-	entity, _ := repository.FindOne(q)
+	entity, _ := repository.FindOne(ctx, q)
 
 	o.Assert().IsType(&fwTestEntity3{}, entity)
 	o.Assert().Equal(int32(1), entity.(*fwTestEntity3).Id)
@@ -168,13 +170,14 @@ func (o *FetchWithRelationTS) TestFetchWithManyToMany() {
 }
 
 func (o *FetchWithRelationTS) TestFetchFullGraph() {
-	repository, _ := o.orm.MakeSession().MakeRepository((*fwTestEntity1)(nil))
+	ctx := o.orm.CtxWithSession(context.Background())
+	repository, _ := o.orm.MakeRepository((*fwTestEntity1)(nil))
 
 	q := repository.CreateQuery()
 	_ = q.AndWhere("test_entity_1.id = ?", 1).With("d3/tests/integration/relation/fwTestEntity2")
 	_ = q.With("d3/tests/integration/relation/fwTestEntity3")
 	_ = q.With("d3/tests/integration/relation/fwTestEntity4")
-	entity, _ := repository.FindOne(q)
+	entity, _ := repository.FindOne(ctx, q)
 
 	o.Assert().Equal([]interface{}{int32(1), "entity_1_data_1"}, []interface{}{entity.(*fwTestEntity1).Id, entity.(*fwTestEntity1).Data})
 

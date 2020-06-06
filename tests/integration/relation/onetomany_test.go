@@ -75,11 +75,11 @@ func TestRunOneToManyTestSuite(t *testing.T) {
 }
 
 func (o *OneToManyRelationTS) TestLazyRelation() {
-	session := o.orm.MakeSession()
-	repository, err := session.MakeRepository((*ShopLR)(nil))
+	ctx := o.orm.CtxWithSession(context.Background())
+	repository, err := o.orm.MakeRepository((*ShopLR)(nil))
 	o.Assert().NoError(err)
 
-	entity, err := repository.FindOne(repository.CreateQuery().AndWhere("id = ?", 1))
+	entity, err := repository.FindOne(ctx, repository.CreateQuery().AndWhere("id = ?", 1))
 	o.Assert().NoError(err)
 
 	o.Assert().IsType(&ShopLR{}, entity)
@@ -95,11 +95,11 @@ func (o *OneToManyRelationTS) TestLazyRelation() {
 }
 
 func (o *OneToManyRelationTS) TestEagerRelation() {
-	session := o.orm.MakeSession()
-	repository, err := session.MakeRepository((*ShopER)(nil))
+	ctx := o.orm.CtxWithSession(context.Background())
+	repository, err := o.orm.MakeRepository((*ShopER)(nil))
 	o.Assert().NoError(err)
 
-	entity, err := repository.FindOne(repository.CreateQuery().AndWhere("shop.id = ?", 1))
+	entity, err := repository.FindOne(ctx, repository.CreateQuery().AndWhere("shop.id = ?", 1))
 	o.Assert().NoError(err)
 
 	o.Assert().IsType(&ShopER{}, entity)

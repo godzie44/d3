@@ -15,8 +15,8 @@ import (
 func TestTypeConversion(t *testing.T) {
 	pgDb, d3orm := initDb(t)
 
-	s1 := d3orm.MakeSession()
-	rep, err := s1.MakeRepository(&allTypeStruct{})
+	ctx := d3orm.CtxWithSession(context.Background())
+	rep, err := d3orm.MakeRepository(&allTypeStruct{})
 	assert.NoError(t, err)
 
 	currTime := time.Unix(time.Now().Unix(), 0)
@@ -37,14 +37,14 @@ func TestTypeConversion(t *testing.T) {
 		NullTimeField:    sql.NullTime{Time: currTime, Valid: true},
 	}
 
-	assert.NoError(t, rep.Persists(entity))
-	assert.NoError(t, s1.Flush())
+	assert.NoError(t, rep.Persists(ctx, entity))
+	assert.NoError(t, orm.SessionFromCtx(ctx).Flush())
 
-	s2 := d3orm.MakeSession()
-	rep, err = s2.MakeRepository(&allTypeStruct{})
+	ctx2 := d3orm.CtxWithSession(context.Background())
+	rep, err = d3orm.MakeRepository(&allTypeStruct{})
 	assert.NoError(t, err)
 
-	fetchedEntity, err := rep.FindOne(rep.CreateQuery().AndWhere("id = ?", entity.ID))
+	fetchedEntity, err := rep.FindOne(ctx2, rep.CreateQuery().AndWhere("id = ?", entity.ID))
 	assert.NoError(t, err)
 
 	assert.Equal(t, entity, fetchedEntity)

@@ -17,7 +17,7 @@ type UpdateTs struct {
 	pgDb      *pgx.Conn
 	dbAdapter *helpers.DbAdapterWithQueryCounter
 	d3Orm     *orm.Orm
-	session   *orm.Session
+	ctx       context.Context
 }
 
 func (u *UpdateTs) SetupSuite() {
@@ -38,7 +38,7 @@ func (u *UpdateTs) SetupSuite() {
 }
 
 func (u *UpdateTs) SetupTest() {
-	u.session = u.d3Orm.MakeSession()
+	u.ctx = u.d3Orm.CtxWithSession(context.Background())
 }
 
 func (u *UpdateTs) TearDownSuite() {
@@ -55,14 +55,14 @@ func TestUpdateSuite(t *testing.T) {
 }
 
 func (u *UpdateTs) TestInsertThenUpdate() {
-	shop, err := createAndPersistsShop(u.session)
+	shop, err := createAndPersistsShop(u.ctx, u.d3Orm)
 	u.NoError(err)
 
-	u.NoError(u.session.Flush())
+	u.NoError(orm.SessionFromCtx(u.ctx).Flush())
 
 	shop.Name = "new shop"
 
-	u.NoError(u.session.Flush())
+	u.NoError(orm.SessionFromCtx(u.ctx).Flush())
 
 	u.Equal(1, u.dbAdapter.UpdateCounter())
 	helpers.NewPgTester(u.T(), u.pgDb).
@@ -71,14 +71,14 @@ func (u *UpdateTs) TestInsertThenUpdate() {
 }
 
 func (u *UpdateTs) TestInsertThenUpdateOToMRelation() {
-	shop, err := createAndPersistsShop(u.session)
+	shop, err := createAndPersistsShop(u.ctx, u.d3Orm)
 	u.NoError(err)
 
-	u.NoError(u.session.Flush())
+	u.NoError(orm.SessionFromCtx(u.ctx).Flush())
 
 	shop.Books.Remove(0)
 
-	u.NoError(u.session.Flush())
+	u.NoError(orm.SessionFromCtx(u.ctx).Flush())
 
 	u.Equal(1, u.dbAdapter.UpdateCounter())
 	helpers.NewPgTester(u.T(), u.pgDb).
@@ -87,17 +87,17 @@ func (u *UpdateTs) TestInsertThenUpdateOToMRelation() {
 }
 
 func (u *UpdateTs) TestInsertThenUpdateMToMRelations() {
-	shop, err := createAndPersistsShop(u.session)
+	shop, err := createAndPersistsShop(u.ctx, u.d3Orm)
 	u.NoError(err)
 
-	u.NoError(u.session.Flush())
+	u.NoError(orm.SessionFromCtx(u.ctx).Flush())
 
 	book := shop.Books.Get(0).(*Book)
 	author := book.Authors.Get(1).(*Author)
 
 	book.Authors.Remove(1)
 
-	u.NoError(u.session.Flush())
+	u.NoError(orm.SessionFromCtx(u.ctx).Flush())
 
 	u.Equal(1, u.dbAdapter.DeleteCounter())
 	helpers.NewPgTester(u.T(), u.pgDb).
@@ -105,10 +105,10 @@ func (u *UpdateTs) TestInsertThenUpdateMToMRelations() {
 }
 
 func (u *UpdateTs) TestInsertThenFullUpdate() {
-	shop, err := createAndPersistsShop(u.session)
+	shop, err := createAndPersistsShop(u.ctx, u.d3Orm)
 	u.NoError(err)
 
-	u.NoError(u.session.Flush())
+	u.NoError(orm.SessionFromCtx(u.ctx).Flush())
 
 	newProfile := &ShopProfile{Description: "new shop profile"}
 	shop.Profile = entity.NewCell(newProfile)
@@ -124,7 +124,7 @@ func (u *UpdateTs) TestInsertThenFullUpdate() {
 	oldBook.Authors.Remove(1)
 
 	u.dbAdapter.ResetCounters()
-	u.NoError(u.session.Flush())
+	u.NoError(orm.SessionFromCtx(u.ctx).Flush())
 
 	u.Equal(1, u.dbAdapter.DeleteCounter())
 	u.Equal(2, u.dbAdapter.UpdateCounter())
@@ -137,8 +137,8 @@ func (u *UpdateTs) TestInsertThenFullUpdate() {
 		SeeOne("SELECT * FROM book_author_p WHERE book_id = $1 and author_id = $2", newBook.Id, newAuthor.Id)
 }
 
-func createAndPersistsShop(s *orm.Session) (*Shop, error) {
-	repository, _ := s.MakeRepository((*Shop)(nil))
+func createAndPersistsShop(ctx context.Context, orm *orm.Orm) (*Shop, error) {
+	repository, _ := orm.MakeRepository((*Shop)(nil))
 
 	author1 := &Author{
 		Name: "author1",
@@ -157,25 +157,25 @@ func createAndPersistsShop(s *orm.Session) (*Shop, error) {
 		Name: "shop",
 	}
 
-	return shop, repository.Persists(shop)
+	return shop, repository.Persists(ctx, shop)
 }
 
 func (u *UpdateTs) TestSelectThenSimpleUpdate() {
 	fillDb(u.Assert(), u.dbAdapter)
 
-	repo, err := u.session.MakeRepository((*Shop)(nil))
+	repo, err := u.d3Orm.MakeRepository((*Shop)(nil))
 	u.NoError(err)
 
-	shop1i, err := repo.FindOne(repo.CreateQuery().AndWhere("shop_p.id = 1001"))
+	shop1i, err := repo.FindOne(u.ctx, repo.CreateQuery().AndWhere("shop_p.id = 1001"))
 	u.NoError(err)
-	shop2i, err := repo.FindOne(repo.CreateQuery().AndWhere("shop_p.id = 1002"))
+	shop2i, err := repo.FindOne(u.ctx, repo.CreateQuery().AndWhere("shop_p.id = 1002"))
 	u.NoError(err)
 
 	shop1i.(*Shop).Name = "new shop 1001 name"
 	shop2i.(*Shop).Name = "new shop 1002 name"
 
 	u.dbAdapter.ResetCounters()
-	u.NoError(u.session.Flush())
+	u.NoError(orm.SessionFromCtx(u.ctx).Flush())
 
 	u.Equal(2, u.dbAdapter.UpdateCounter())
 
@@ -187,16 +187,16 @@ func (u *UpdateTs) TestSelectThenSimpleUpdate() {
 func (u *UpdateTs) TestSelectThenUpdateOtoORelation() {
 	fillDb(u.Assert(), u.dbAdapter)
 
-	repo, err := u.session.MakeRepository((*Shop)(nil))
+	repo, err := u.d3Orm.MakeRepository((*Shop)(nil))
 	u.NoError(err)
 
-	shop1i, err := repo.FindOne(repo.CreateQuery().AndWhere("shop_p.id = 1001"))
+	shop1i, err := repo.FindOne(u.ctx, repo.CreateQuery().AndWhere("shop_p.id = 1001"))
 	u.NoError(err)
 
 	shop1i.(*Shop).Profile.Unwrap().(*ShopProfile).Description = "new shop 1001 profile"
 
 	u.dbAdapter.ResetCounters()
-	u.NoError(u.session.Flush())
+	u.NoError(orm.SessionFromCtx(u.ctx).Flush())
 
 	u.Equal(1, u.dbAdapter.UpdateCounter())
 
@@ -207,16 +207,16 @@ func (u *UpdateTs) TestSelectThenUpdateOtoORelation() {
 func (u *UpdateTs) TestSelectThenDeleteOtoORelation() {
 	fillDb(u.Assert(), u.dbAdapter)
 
-	repo, err := u.session.MakeRepository((*Shop)(nil))
+	repo, err := u.d3Orm.MakeRepository((*Shop)(nil))
 	u.NoError(err)
 
-	shop1i, err := repo.FindOne(repo.CreateQuery().AndWhere("shop_p.id = 1001"))
+	shop1i, err := repo.FindOne(u.ctx, repo.CreateQuery().AndWhere("shop_p.id = 1001"))
 	u.NoError(err)
 
 	shop1i.(*Shop).Profile = entity.NewCell(nil)
 
 	u.dbAdapter.ResetCounters()
-	u.NoError(u.session.Flush())
+	u.NoError(orm.SessionFromCtx(u.ctx).Flush())
 
 	u.Equal(1, u.dbAdapter.UpdateCounter())
 
@@ -227,10 +227,10 @@ func (u *UpdateTs) TestSelectThenDeleteOtoORelation() {
 func (u *UpdateTs) TestSelectThenChangeOtoORelation() {
 	fillDb(u.Assert(), u.dbAdapter)
 
-	repo, err := u.session.MakeRepository((*Shop)(nil))
+	repo, err := u.d3Orm.MakeRepository((*Shop)(nil))
 	u.NoError(err)
 
-	shop1i, err := repo.FindOne(repo.CreateQuery().AndWhere("shop_p.id = 1001"))
+	shop1i, err := repo.FindOne(u.ctx, repo.CreateQuery().AndWhere("shop_p.id = 1001"))
 	u.NoError(err)
 
 	shop1i.(*Shop).Profile = entity.NewCell(&ShopProfile{
@@ -238,7 +238,7 @@ func (u *UpdateTs) TestSelectThenChangeOtoORelation() {
 	})
 
 	u.dbAdapter.ResetCounters()
-	u.NoError(u.session.Flush())
+	u.NoError(orm.SessionFromCtx(u.ctx).Flush())
 
 	u.Equal(1, u.dbAdapter.UpdateCounter())
 
@@ -250,17 +250,17 @@ func (u *UpdateTs) TestSelectThenChangeOtoORelation() {
 func (u *UpdateTs) TestSelectThenViewButDontChangeOtoORelation() {
 	fillDb(u.Assert(), u.dbAdapter)
 
-	repo, err := u.session.MakeRepository((*Shop)(nil))
+	repo, err := u.d3Orm.MakeRepository((*Shop)(nil))
 	u.NoError(err)
 
-	shop1i, err := repo.FindOne(repo.CreateQuery().AndWhere("shop_p.id = 1001"))
+	shop1i, err := repo.FindOne(u.ctx, repo.CreateQuery().AndWhere("shop_p.id = 1001"))
 	u.NoError(err)
 
 	// previous description and new are equal, we expect 0 updates
 	shop1i.(*Shop).Profile.Unwrap().(*ShopProfile).Description = "desc1"
 
 	u.dbAdapter.ResetCounters()
-	u.NoError(u.session.Flush())
+	u.NoError(orm.SessionFromCtx(u.ctx).Flush())
 
 	u.Equal(0, u.dbAdapter.UpdateCounter())
 }
@@ -268,17 +268,17 @@ func (u *UpdateTs) TestSelectThenViewButDontChangeOtoORelation() {
 func (u *UpdateTs) TestSelectThenUpdateOtoMRelation() {
 	fillDb(u.Assert(), u.dbAdapter)
 
-	repo, err := u.session.MakeRepository((*Shop)(nil))
+	repo, err := u.d3Orm.MakeRepository((*Shop)(nil))
 	u.NoError(err)
 
-	shop1, err := repo.FindOne(repo.CreateQuery().AndWhere("shop_p.id = 1001"))
+	shop1, err := repo.FindOne(u.ctx, repo.CreateQuery().AndWhere("shop_p.id = 1001"))
 	u.NoError(err)
 
 	shop1.(*Shop).Books.Get(0).(*Book).Name = "new book 0"
 	shop1.(*Shop).Books.Get(1).(*Book).Name = "new book 1"
 
 	u.dbAdapter.ResetCounters()
-	u.NoError(u.session.Flush())
+	u.NoError(orm.SessionFromCtx(u.ctx).Flush())
 
 	u.Equal(2, u.dbAdapter.UpdateCounter())
 
@@ -290,17 +290,17 @@ func (u *UpdateTs) TestSelectThenUpdateOtoMRelation() {
 func (u *UpdateTs) TestSelectThenDeleteOtoMRelation() {
 	fillDb(u.Assert(), u.dbAdapter)
 
-	repo, err := u.session.MakeRepository((*Shop)(nil))
+	repo, err := u.d3Orm.MakeRepository((*Shop)(nil))
 	u.NoError(err)
 
-	shop1, err := repo.FindOne(repo.CreateQuery().AndWhere("shop_p.id = 1001"))
+	shop1, err := repo.FindOne(u.ctx, repo.CreateQuery().AndWhere("shop_p.id = 1001"))
 	u.NoError(err)
 
 	oldBookCount := shop1.(*Shop).Books.Count()
 	shop1.(*Shop).Books.Remove(0)
 
 	u.dbAdapter.ResetCounters()
-	u.NoError(u.session.Flush())
+	u.NoError(orm.SessionFromCtx(u.ctx).Flush())
 
 	u.Equal(1, u.dbAdapter.UpdateCounter())
 
@@ -311,10 +311,10 @@ func (u *UpdateTs) TestSelectThenDeleteOtoMRelation() {
 func (u *UpdateTs) TestSelectThenAddOtoMRelation() {
 	fillDb(u.Assert(), u.dbAdapter)
 
-	repo, err := u.session.MakeRepository((*Shop)(nil))
+	repo, err := u.d3Orm.MakeRepository((*Shop)(nil))
 	u.NoError(err)
 
-	shop1, err := repo.FindOne(repo.CreateQuery().AndWhere("shop_p.id = 1001"))
+	shop1, err := repo.FindOne(u.ctx, repo.CreateQuery().AndWhere("shop_p.id = 1001"))
 	u.NoError(err)
 
 	newBook := &Book{
@@ -324,7 +324,7 @@ func (u *UpdateTs) TestSelectThenAddOtoMRelation() {
 	shop1.(*Shop).Books.Add(newBook)
 
 	u.dbAdapter.ResetCounters()
-	u.NoError(u.session.Flush())
+	u.NoError(orm.SessionFromCtx(u.ctx).Flush())
 
 	u.Equal(1, u.dbAdapter.InsertCounter())
 
@@ -335,17 +335,17 @@ func (u *UpdateTs) TestSelectThenAddOtoMRelation() {
 func (u *UpdateTs) TestSelectThenViewButDontChangeOtoMRelation() {
 	fillDb(u.Assert(), u.dbAdapter)
 
-	repo, err := u.session.MakeRepository((*Shop)(nil))
+	repo, err := u.d3Orm.MakeRepository((*Shop)(nil))
 	u.NoError(err)
 
-	shop1, err := repo.FindOne(repo.CreateQuery().AndWhere("shop_p.id = 1001"))
+	shop1, err := repo.FindOne(u.ctx, repo.CreateQuery().AndWhere("shop_p.id = 1001"))
 	u.NoError(err)
 
 	sameName := shop1.(*Shop).Books.Get(0).(*Book).Name
 	shop1.(*Shop).Books.Get(0).(*Book).Name = sameName
 
 	u.dbAdapter.ResetCounters()
-	u.NoError(u.session.Flush())
+	u.NoError(orm.SessionFromCtx(u.ctx).Flush())
 
 	u.Equal(0, u.dbAdapter.UpdateCounter())
 }
@@ -353,17 +353,17 @@ func (u *UpdateTs) TestSelectThenViewButDontChangeOtoMRelation() {
 func (u *UpdateTs) TestSelectThenUpdateMtoMRelation() {
 	fillDb(u.Assert(), u.dbAdapter)
 
-	repo, err := u.session.MakeRepository((*Book)(nil))
+	repo, err := u.d3Orm.MakeRepository((*Book)(nil))
 	u.NoError(err)
 
-	book1, err := repo.FindOne(repo.CreateQuery().AndWhere("book_p.id = 1002"))
+	book1, err := repo.FindOne(u.ctx, repo.CreateQuery().AndWhere("book_p.id = 1002"))
 	u.NoError(err)
 
 	book1.(*Book).Authors.Get(0).(*Author).Name = "new author 1"
 	book1.(*Book).Authors.Get(1).(*Author).Name = "new author 2"
 
 	u.dbAdapter.ResetCounters()
-	u.NoError(u.session.Flush())
+	u.NoError(orm.SessionFromCtx(u.ctx).Flush())
 
 	u.Equal(2, u.dbAdapter.UpdateCounter())
 
@@ -375,17 +375,17 @@ func (u *UpdateTs) TestSelectThenUpdateMtoMRelation() {
 func (u *UpdateTs) TestSelectThenDeleteMtoMRelation() {
 	fillDb(u.Assert(), u.dbAdapter)
 
-	repo, err := u.session.MakeRepository((*Book)(nil))
+	repo, err := u.d3Orm.MakeRepository((*Book)(nil))
 	u.NoError(err)
 
-	book1, err := repo.FindOne(repo.CreateQuery().AndWhere("book_p.id = 1002"))
+	book1, err := repo.FindOne(u.ctx, repo.CreateQuery().AndWhere("book_p.id = 1002"))
 	u.NoError(err)
 
 	oldAuthorCount := book1.(*Book).Authors.Count()
 	book1.(*Book).Authors.Remove(1)
 
 	u.dbAdapter.ResetCounters()
-	u.NoError(u.session.Flush())
+	u.NoError(orm.SessionFromCtx(u.ctx).Flush())
 
 	u.Equal(1, u.dbAdapter.DeleteCounter())
 
@@ -396,12 +396,12 @@ func (u *UpdateTs) TestSelectThenDeleteMtoMRelation() {
 func (u *UpdateTs) TestSelectThenAddMtoMRelation() {
 	fillDb(u.Assert(), u.dbAdapter)
 
-	repo, err := u.session.MakeRepository((*Book)(nil))
+	repo, err := u.d3Orm.MakeRepository((*Book)(nil))
 	u.NoError(err)
 
-	book1, err := repo.FindOne(repo.CreateQuery().AndWhere("book_p.id = 1001"))
+	book1, err := repo.FindOne(u.ctx, repo.CreateQuery().AndWhere("book_p.id = 1001"))
 	u.NoError(err)
-	book2, err := repo.FindOne(repo.CreateQuery().AndWhere("book_p.id = 1002"))
+	book2, err := repo.FindOne(u.ctx, repo.CreateQuery().AndWhere("book_p.id = 1002"))
 	u.NoError(err)
 
 	newAuthor := &Author{
@@ -411,7 +411,7 @@ func (u *UpdateTs) TestSelectThenAddMtoMRelation() {
 	book2.(*Book).Authors.Add(newAuthor)
 
 	u.dbAdapter.ResetCounters()
-	u.NoError(u.session.Flush())
+	u.NoError(orm.SessionFromCtx(u.ctx).Flush())
 
 	u.Equal(3, u.dbAdapter.InsertCounter())
 
@@ -424,17 +424,17 @@ func (u *UpdateTs) TestSelectThenAddMtoMRelation() {
 func (u *UpdateTs) TestSelectThenViewButDontChangeMtoMRelation() {
 	fillDb(u.Assert(), u.dbAdapter)
 
-	repo, err := u.session.MakeRepository((*Book)(nil))
+	repo, err := u.d3Orm.MakeRepository((*Book)(nil))
 	u.NoError(err)
 
-	book1, err := repo.FindOne(repo.CreateQuery().AndWhere("book_p.id = 1002"))
+	book1, err := repo.FindOne(u.ctx, repo.CreateQuery().AndWhere("book_p.id = 1002"))
 	u.NoError(err)
 
 	sameName := book1.(*Book).Authors.Get(0).(*Author).Name
 	book1.(*Book).Authors.Get(0).(*Author).Name = sameName
 
 	u.dbAdapter.ResetCounters()
-	u.NoError(u.session.Flush())
+	u.NoError(orm.SessionFromCtx(u.ctx).Flush())
 
 	u.Equal(0, u.dbAdapter.UpdateCounter())
 }
@@ -442,10 +442,10 @@ func (u *UpdateTs) TestSelectThenViewButDontChangeMtoMRelation() {
 func (u *UpdateTs) TestSelectThenFullUpdate() {
 	fillDb(u.Assert(), u.dbAdapter)
 
-	repo, err := u.session.MakeRepository((*Shop)(nil))
+	repo, err := u.d3Orm.MakeRepository((*Shop)(nil))
 	u.NoError(err)
 
-	shop1i, err := repo.FindOne(repo.CreateQuery().AndWhere("shop_p.id = 1001"))
+	shop1i, err := repo.FindOne(u.ctx, repo.CreateQuery().AndWhere("shop_p.id = 1001"))
 	u.NoError(err)
 
 	shop1 := shop1i.(*Shop)
@@ -464,7 +464,7 @@ func (u *UpdateTs) TestSelectThenFullUpdate() {
 	oldBook.Authors.Remove(0)
 
 	u.dbAdapter.ResetCounters()
-	u.NoError(u.session.Flush())
+	u.NoError(orm.SessionFromCtx(u.ctx).Flush())
 
 	u.Equal(1, u.dbAdapter.DeleteCounter())
 	u.Equal(2, u.dbAdapter.UpdateCounter())

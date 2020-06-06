@@ -16,7 +16,6 @@ type TransactionalTs struct {
 	pgDb      *pgx.Conn
 	dbAdapter *helpers.DbAdapterWithQueryCounter
 	d3Orm     *orm.Orm
-	session   *orm.Session
 }
 
 func (t *TransactionalTs) SetupSuite() {
@@ -36,10 +35,6 @@ func (t *TransactionalTs) SetupSuite() {
 	t.NoError(err)
 }
 
-func (t *TransactionalTs) SetupTest() {
-	t.session = t.d3Orm.MakeSession()
-}
-
 func (t *TransactionalTs) TearDownSuite() {
 	t.NoError(deleteSchema(t.pgDb))
 }
@@ -50,9 +45,9 @@ func (t *TransactionalTs) TearDownTest() {
 }
 
 func (t *TransactionalTs) TestAutoCommit() {
-	session := t.d3Orm.MakeSession()
-
-	repository, _ := session.MakeRepository((*Shop)(nil))
+	ctx := t.d3Orm.CtxWithSession(context.Background())
+	session := orm.SessionFromCtx(ctx)
+	repository, _ := t.d3Orm.MakeRepository((*Shop)(nil))
 
 	shop1 := &Shop{
 		Name: "shop1",
@@ -61,7 +56,7 @@ func (t *TransactionalTs) TestAutoCommit() {
 		Name: "shop2",
 	}
 
-	t.NoError(repository.Persists(shop1, shop2))
+	t.NoError(repository.Persists(ctx, shop1, shop2))
 	t.NoError(session.Flush())
 
 	helpers.NewPgTester(t.T(), t.pgDb).
@@ -75,9 +70,10 @@ func newConn() *pgx.Conn {
 }
 
 func (t *TransactionalTs) TestManualCommit() {
-	session := t.d3Orm.MakeSession()
+	ctx := t.d3Orm.CtxWithSession(context.Background())
+	session := orm.SessionFromCtx(ctx)
 
-	repository, _ := session.MakeRepository((*Shop)(nil))
+	repository, _ := t.d3Orm.MakeRepository((*Shop)(nil))
 
 	t.NoError(session.BeginTx())
 
@@ -88,7 +84,7 @@ func (t *TransactionalTs) TestManualCommit() {
 		Name: "shop2",
 	}
 
-	t.NoError(repository.Persists(shop1, shop2))
+	t.NoError(repository.Persists(ctx, shop1, shop2))
 	t.NoError(session.Flush())
 
 	pgTester := helpers.NewPgTester(t.T(), newConn())
@@ -101,23 +97,24 @@ func (t *TransactionalTs) TestManualCommit() {
 }
 
 func (t *TransactionalTs) TestManualRollback() {
-	session := t.d3Orm.MakeSession()
+	ctx := t.d3Orm.CtxWithSession(context.Background())
+	session := orm.SessionFromCtx(ctx)
 
-	repository, _ := session.MakeRepository((*Shop)(nil))
+	repository, _ := t.d3Orm.MakeRepository((*Shop)(nil))
 
 	t.NoError(session.BeginTx())
 
 	shop1 := &Shop{
 		Name: "shop1",
 	}
-	t.NoError(repository.Persists(shop1))
+	t.NoError(repository.Persists(ctx, shop1))
 	t.NoError(session.Flush())
 
 	shop2 := &Shop{
 		Name: "shop2",
 	}
 
-	t.NoError(repository.Persists(shop2))
+	t.NoError(repository.Persists(ctx, shop2))
 	t.NoError(session.Flush())
 
 	pgTester := helpers.NewPgTester(t.T(), newConn())

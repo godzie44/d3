@@ -86,8 +86,8 @@ func TestPersistsCircularSuite(t *testing.T) {
 }
 
 func (o *PersistsCircularTS) TestInsertWithCircularRef() {
-	session := o.orm.MakeSession()
-	repository, _ := session.MakeRepository((*ShopCirc)(nil))
+	ctx := o.orm.CtxWithSession(context.Background())
+	repository, _ := o.orm.MakeRepository((*ShopCirc)(nil))
 
 	profile := &ShopProfileCirc{
 		Description: "shop profile",
@@ -98,8 +98,8 @@ func (o *PersistsCircularTS) TestInsertWithCircularRef() {
 	}
 	profile.Shop = entity.NewCell(shop)
 
-	o.Assert().NoError(repository.Persists(shop))
-	o.Assert().NoError(session.Flush())
+	o.Assert().NoError(repository.Persists(ctx, shop))
+	o.Assert().NoError(orm.SessionFromCtx(ctx).Flush())
 
 	o.Assert().NotEqual(0, shop.Id.Int32)
 	o.Assert().NotEqual(0, shop.Profile.Unwrap().(*ShopProfileCirc).Id.Int32)
@@ -113,8 +113,8 @@ func (o *PersistsCircularTS) TestInsertWithCircularRef() {
 }
 
 func (o *PersistsCircularTS) TestInsertWithSelfCircularRef() {
-	session := o.orm.MakeSession()
-	repository, _ := session.MakeRepository((*ShopCirc)(nil))
+	ctx := o.orm.CtxWithSession(context.Background())
+	repository, _ := o.orm.MakeRepository((*ShopCirc)(nil))
 
 	shop1 := &ShopCirc{Name: "shop1"}
 	shop2 := &ShopCirc{Name: "shop2"}
@@ -130,10 +130,10 @@ func (o *PersistsCircularTS) TestInsertWithSelfCircularRef() {
 	shop4.FriendShop = entity.NewCell(shop5)
 	shop5.FriendShop = entity.NewCell(shop3)
 
-	o.Assert().NoError(repository.Persists(shop2))
-	o.Assert().NoError(repository.Persists(shop3))
+	o.Assert().NoError(repository.Persists(ctx, shop2))
+	o.Assert().NoError(repository.Persists(ctx, shop3))
 
-	o.Assert().NoError(session.Flush())
+	o.Assert().NoError(orm.SessionFromCtx(ctx).Flush())
 
 	o.Assert().NotEqual(0, shop1.Id.Int32)
 	o.Assert().NotEqual(0, shop2.Id.Int32)
@@ -150,8 +150,8 @@ func (o *PersistsCircularTS) TestInsertWithSelfCircularRef() {
 }
 
 func (o *PersistsCircularTS) TestBigCircularReferenceGraph() {
-	session := o.orm.MakeSession()
-	repository, _ := session.MakeRepository((*ShopCirc)(nil))
+	ctx := o.orm.CtxWithSession(context.Background())
+	repository, _ := o.orm.MakeRepository((*ShopCirc)(nil))
 
 	shop1 := &ShopCirc{Name: "shop1"}
 	shop2 := &ShopCirc{Name: "shop2"}
@@ -174,10 +174,10 @@ func (o *PersistsCircularTS) TestBigCircularReferenceGraph() {
 	seller3.CurrentShop = entity.NewCell(shop2)
 	seller3.KnownShops = entity.NewCollection(shop2)
 
-	o.Assert().NoError(repository.Persists(shop1))
-	o.Assert().NoError(repository.Persists(shop2))
+	o.Assert().NoError(repository.Persists(ctx, shop1))
+	o.Assert().NoError(repository.Persists(ctx, shop2))
 
-	o.Assert().NoError(session.Flush())
+	o.Assert().NoError(orm.SessionFromCtx(ctx).Flush())
 
 	o.Assert().Equal(9, o.dbAdapter.InsertCounter())
 	o.Assert().Equal(4, o.dbAdapter.UpdateCounter())

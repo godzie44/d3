@@ -17,7 +17,7 @@ type PersistsTS struct {
 	pgDb      *pgx.Conn
 	dbAdapter *helpers.DbAdapterWithQueryCounter
 	d3Orm     *orm.Orm
-	session   *orm.Session
+	ctx       context.Context
 }
 
 func (o *PersistsTS) SetupSuite() {
@@ -38,7 +38,7 @@ func (o *PersistsTS) SetupSuite() {
 }
 
 func (o *PersistsTS) SetupTest() {
-	o.session = o.d3Orm.MakeSession()
+	o.ctx = o.d3Orm.CtxWithSession(context.Background())
 }
 
 func (o *PersistsTS) TearDownSuite() {
@@ -55,7 +55,7 @@ func TestPersistsSuite(t *testing.T) {
 }
 
 func (o *PersistsTS) TestSimpleInsert() {
-	repository, err := o.session.MakeRepository((*Shop)(nil))
+	repository, err := o.d3Orm.MakeRepository((*Shop)(nil))
 	o.NoError(err)
 
 	shop := &Shop{
@@ -66,8 +66,8 @@ func (o *PersistsTS) TestSimpleInsert() {
 		Name: "simple-shop",
 	}
 
-	o.NoError(repository.Persists(shop))
-	o.NoError(o.session.Flush())
+	o.NoError(repository.Persists(o.ctx, shop))
+	o.NoError(orm.SessionFromCtx(o.ctx).Flush())
 
 	o.NotEqual(0, shop.Id.Int32)
 	o.NotEqual(0, shop.Profile.Unwrap().(*ShopProfile).Id.Int32)
@@ -78,10 +78,10 @@ func (o *PersistsTS) TestSimpleInsert() {
 }
 
 func (o *PersistsTS) TestBigInsert() {
-	shop, err := createAndPersistsShop(o.session)
+	shop, err := createAndPersistsShop(o.ctx, o.d3Orm)
 	o.NoError(err)
 
-	o.NoError(o.session.Flush())
+	o.NoError(orm.SessionFromCtx(o.ctx).Flush())
 
 	o.NotEqual(0, shop.Id.Int32)
 	o.NotEqual(0, shop.Profile.Unwrap().(*ShopProfile).Id.Int32)
@@ -99,33 +99,29 @@ func (o *PersistsTS) TestBigInsert() {
 }
 
 func (o *PersistsTS) TestNoNewQueriesIfDoubleFlush() {
-	session := o.d3Orm.MakeSession()
-
-	_, err := createAndPersistsShop(session)
+	_, err := createAndPersistsShop(o.ctx, o.d3Orm)
 	o.NoError(err)
 
-	o.NoError(session.Flush())
+	o.NoError(orm.SessionFromCtx(o.ctx).Flush())
 	insertCounter, updCounter := o.dbAdapter.InsertCounter(), o.dbAdapter.UpdateCounter()
 
-	o.NoError(session.Flush())
+	o.NoError(orm.SessionFromCtx(o.ctx).Flush())
 
 	o.Equal(insertCounter, o.dbAdapter.InsertCounter())
 	o.Equal(updCounter, o.dbAdapter.UpdateCounter())
 }
 
 func (o *PersistsTS) TestOneNewEntityIfDoublePersist() {
-	session := o.d3Orm.MakeSession()
-
-	repository, _ := session.MakeRepository((*Shop)(nil))
+	repository, _ := o.d3Orm.MakeRepository((*Shop)(nil))
 
 	shop := &Shop{
 		Name: "shop",
 	}
 
-	o.NoError(repository.Persists(shop))
-	o.NoError(repository.Persists(shop))
+	o.NoError(repository.Persists(o.ctx, shop))
+	o.NoError(repository.Persists(o.ctx, shop))
 
-	o.NoError(session.Flush())
+	o.NoError(orm.SessionFromCtx(o.ctx).Flush())
 
 	o.Equal(1, o.dbAdapter.InsertCounter())
 }

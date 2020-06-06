@@ -1,6 +1,7 @@
 package orm
 
 import (
+	"context"
 	d3entity "d3/orm/entity"
 	"d3/orm/query"
 	"errors"
@@ -8,15 +9,20 @@ import (
 
 var (
 	ErrEntityNotFound = errors.New("entity not found")
+	ErrSessionNotSet  = errors.New("session not found in context")
 )
 
 type Repository struct {
-	session    *Session
 	entityMeta d3entity.MetaInfo
 }
 
-func (r *Repository) FindOne(q *query.Query) (interface{}, error) {
-	coll, err := r.session.execute(q)
+func (r *Repository) FindOne(ctx context.Context, q *query.Query) (interface{}, error) {
+	session, err := sessionFromCtx(ctx)
+	if err != nil {
+		return nil, err
+	}
+
+	coll, err := session.execute(q)
 	if err != nil {
 		return nil, err
 	}
@@ -28,28 +34,52 @@ func (r *Repository) FindOne(q *query.Query) (interface{}, error) {
 	return coll.Get(0), nil
 }
 
-func (r *Repository) FindAll(q *query.Query) (*d3entity.Collection, error) {
-	return r.session.execute(q)
+func (r *Repository) FindAll(ctx context.Context, q *query.Query) (*d3entity.Collection, error) {
+	session, err := sessionFromCtx(ctx)
+	if err != nil {
+		return nil, err
+	}
+
+	return session.execute(q)
 }
 
-func (r *Repository) Persists(entities ...interface{}) error {
+func (r *Repository) Persists(ctx context.Context, entities ...interface{}) error {
+	session, err := sessionFromCtx(ctx)
+	if err != nil {
+		return err
+	}
+
 	for _, entity := range entities {
-		if err := r.session.uow.registerNew(d3entity.NewBox(entity, &r.entityMeta)); err != nil {
+		if err := session.uow.registerNew(d3entity.NewBox(entity, &r.entityMeta)); err != nil {
 			return err
 		}
 	}
 	return nil
+}
+
+func (r *Repository) Delete(ctx context.Context, entities ...interface{}) error {
+	session, err := sessionFromCtx(ctx)
+	if err != nil {
+		return err
+	}
+
+	for _, e := range entities {
+		if err := session.uow.registerRemove(d3entity.NewBox(e, &r.entityMeta)); err != nil {
+			return err
+		}
+	}
+	return nil
+}
+
+func sessionFromCtx(ctx context.Context) (*Session, error) {
+	session := ctx.Value(sessionKey)
+	if session == nil {
+		return nil, ErrSessionNotSet
+	}
+
+	return session.(*Session), nil
 }
 
 func (r *Repository) CreateQuery() *query.Query {
 	return query.NewQuery(&r.entityMeta)
-}
-
-func (r *Repository) Delete(entities ...interface{}) error {
-	for _, e := range entities {
-		if err := r.session.uow.registerRemove(d3entity.NewBox(e, &r.entityMeta)); err != nil {
-			return err
-		}
-	}
-	return nil
 }

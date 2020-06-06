@@ -16,7 +16,7 @@ type DeleteTS struct {
 	pgDb      *pgx.Conn
 	dbAdapter *helpers.DbAdapterWithQueryCounter
 	d3Orm     *orm.Orm
-	session   *orm.Session
+	ctx       context.Context
 }
 
 func (d *DeleteTS) SetupSuite() {
@@ -37,7 +37,7 @@ func (d *DeleteTS) SetupSuite() {
 }
 
 func (d *DeleteTS) SetupTest() {
-	d.session = d.d3Orm.MakeSession()
+	d.ctx = d.d3Orm.CtxWithSession(context.Background())
 }
 
 func (d *DeleteTS) TearDownSuite() {
@@ -52,15 +52,15 @@ func (d *DeleteTS) TearDownTest() {
 func (d *DeleteTS) TestDeleteEntity() {
 	fillDb(d.Assert(), d.dbAdapter)
 
-	rep, err := d.session.MakeRepository((*ShopProfile)(nil))
+	rep, err := d.d3Orm.MakeRepository((*ShopProfile)(nil))
 	d.NoError(err)
 
-	profile, err := rep.FindOne(rep.CreateQuery().AndWhere("profile_p.id = 1001"))
+	profile, err := rep.FindOne(d.ctx, rep.CreateQuery().AndWhere("profile_p.id = 1001"))
 	d.NoError(err)
 
-	d.NoError(rep.Delete(profile))
+	d.NoError(rep.Delete(d.ctx, profile))
 
-	d.NoError(d.session.Flush())
+	d.NoError(orm.SessionFromCtx(d.ctx).Flush())
 
 	d.Equal(1, d.dbAdapter.DeleteCounter())
 }
@@ -68,16 +68,16 @@ func (d *DeleteTS) TestDeleteEntity() {
 func (d *DeleteTS) TestDeleteWithRelations() {
 	fillDb(d.Assert(), d.dbAdapter)
 
-	rep, err := d.session.MakeRepository((*Shop)(nil))
+	rep, err := d.d3Orm.MakeRepository((*Shop)(nil))
 	d.NoError(err)
 
-	shop, err := rep.FindOne(rep.CreateQuery().AndWhere("shop_p.id = 1001"))
+	shop, err := rep.FindOne(d.ctx, rep.CreateQuery().AndWhere("shop_p.id = 1001"))
 	d.NoError(err)
 
-	d.NoError(rep.Delete(shop))
+	d.NoError(rep.Delete(d.ctx, shop))
 
 	d.dbAdapter.ResetCounters()
-	d.NoError(d.session.Flush())
+	d.NoError(orm.SessionFromCtx(d.ctx).Flush())
 
 	// delete shop and profile (cause cascade)
 	d.Equal(2, d.dbAdapter.DeleteCounter())
@@ -89,16 +89,16 @@ func (d *DeleteTS) TestDeleteWithRelations() {
 func (d *DeleteTS) TestDeleteWithManyToMany() {
 	fillDb(d.Assert(), d.dbAdapter)
 
-	rep, err := d.session.MakeRepository((*Book)(nil))
+	rep, err := d.d3Orm.MakeRepository((*Book)(nil))
 	d.NoError(err)
 
-	book, err := rep.FindOne(rep.CreateQuery().AndWhere("book_p.id = 1001"))
+	book, err := rep.FindOne(d.ctx, rep.CreateQuery().AndWhere("book_p.id = 1001"))
 	d.NoError(err)
 
-	d.NoError(rep.Delete(book))
+	d.NoError(rep.Delete(d.ctx, book))
 
 	d.dbAdapter.ResetCounters()
-	d.NoError(d.session.Flush())
+	d.NoError(orm.SessionFromCtx(d.ctx).Flush())
 
 	// delete from book_p table and book_author_p table
 	d.Equal(2, d.dbAdapter.DeleteCounter())

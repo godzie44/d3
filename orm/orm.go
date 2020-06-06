@@ -1,10 +1,13 @@
 package orm
 
 import (
+	"context"
 	d3Entity "d3/orm/entity"
 	"d3/orm/schema"
 	"fmt"
 )
+
+const sessionKey = "d3_session"
 
 type Orm struct {
 	PgDb         Storage
@@ -27,8 +30,27 @@ func (o *Orm) Register(entities ...interface{}) error {
 	return nil
 }
 
+func (o *Orm) CtxWithSession(ctx context.Context) context.Context {
+	return context.WithValue(ctx, sessionKey, o.MakeSession())
+}
+
+func SessionFromCtx(ctx context.Context) *Session {
+	return ctx.Value(sessionKey).(*Session)
+}
+
 func (o *Orm) MakeSession() *Session {
-	return NewSession(o.PgDb, NewUOW(o.PgDb), o.metaRegistry)
+	return newSession(o.PgDb, NewUOW(o.PgDb))
+}
+
+func (o *Orm) MakeRepository(entity interface{}) (*Repository, error) {
+	entityMeta, err := o.metaRegistry.GetMeta(entity)
+	if err != nil {
+		return nil, fmt.Errorf("repository: %w", err)
+	}
+
+	return &Repository{
+		entityMeta: entityMeta,
+	}, nil
 }
 
 func (o *Orm) GenerateSchema() (string, error) {

@@ -93,11 +93,11 @@ func TestManyToManyTestSuite(t *testing.T) {
 }
 
 func (o *ManyToManyRelationTS) TestLazyRelation() {
-	session := o.orm.MakeSession()
-	repository, err := session.MakeRepository((*BookLL)(nil))
+	ctx := o.orm.CtxWithSession(context.Background())
+	repository, err := o.orm.MakeRepository((*BookLL)(nil))
 	o.Assert().NoError(err)
 
-	entity, err := repository.FindOne(repository.CreateQuery().AndWhere("book.id = ?", 1))
+	entity, err := repository.FindOne(ctx, repository.CreateQuery().AndWhere("book.id = ?", 1))
 	o.Assert().NoError(err)
 
 	o.Assert().IsType(&BookLL{}, entity)
@@ -113,11 +113,11 @@ func (o *ManyToManyRelationTS) TestLazyRelation() {
 }
 
 func (o *ManyToManyRelationTS) TestEagerRelation() {
-	session := o.orm.MakeSession()
-	repository, err := session.MakeRepository((*BookEL)(nil))
+	ctx := o.orm.CtxWithSession(context.Background())
+	repository, err := o.orm.MakeRepository((*BookEL)(nil))
 	o.Assert().NoError(err)
 
-	entity, err := repository.FindOne(repository.CreateQuery().AndWhere("book.id = ?", 1))
+	entity, err := repository.FindOne(ctx, repository.CreateQuery().AndWhere("book.id = ?", 1))
 	o.Assert().NoError(err)
 
 	o.Assert().IsType(&BookEL{}, entity)
