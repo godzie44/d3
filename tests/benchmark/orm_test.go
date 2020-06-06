@@ -2,8 +2,8 @@ package benchmark
 
 import (
 	"context"
-	"d3/orm"
-	"d3/orm/entity"
+	"github.com/godzie44/d3/orm"
+	"github.com/godzie44/d3/orm/entity"
 	"runtime"
 	"testing"
 )

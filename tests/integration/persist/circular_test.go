@@ -2,10 +2,10 @@ package persist
 
 import (
 	"context"
-	"d3/adapter"
-	"d3/orm"
-	"d3/orm/entity"
-	"d3/tests/helpers"
+	"github.com/godzie44/d3/adapter"
+	"github.com/godzie44/d3/orm"
+	"github.com/godzie44/d3/orm/entity"
+	"github.com/godzie44/d3/tests/helpers"
 	"github.com/jackc/pgx/v4"
 	"github.com/stretchr/testify/suite"
 	"os"

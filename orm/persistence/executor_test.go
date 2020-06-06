@@ -1,7 +1,7 @@
 package persistence
 
 import (
-	"d3/orm/entity"
+	"github.com/godzie44/d3/orm/entity"
 	"github.com/stretchr/testify/assert"
 	"reflect"
 	"testing"
@@ -192,8 +192,8 @@ func TestExecuteComplexGraph(t *testing.T) {
 
 type Order struct {
 	ID       int                `d3:"pk:auto"`
-	Items    *entity.Collection `d3:"one_to_many:<target_entity:d3/orm/persistence/OrderItem,join_on:order_id>,type:lazy"`
-	BestItem *entity.Cell       `d3:"one_to_one:<target_entity:d3/orm/persistence/OrderItem,join_on:best_item_id>,type:lazy"`
+	Items    *entity.Collection `d3:"one_to_many:<target_entity:github.com/godzie44/d3/orm/persistence/OrderItem,join_on:order_id>,type:lazy"`
+	BestItem *entity.Cell       `d3:"one_to_one:<target_entity:github.com/godzie44/d3/orm/persistence/OrderItem,join_on:best_item_id>,type:lazy"`
 }
 
 func (o *Order) D3Token() entity.MetaToken {

@@ -125,5 +125,5 @@ func TestCodeGenerator(t *testing.T) {
 	gen.Write()
 
 	assert.Contains(t, buff.String(), "import \"fmt\"")
-	assert.Contains(t, buff.String(), "import \"d3/orm/entity\"")
+	assert.Contains(t, buff.String(), "import \"github.com/godzie44/d3/orm/entity\"")
 }

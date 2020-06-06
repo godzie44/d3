@@ -1,8 +1,8 @@
 package adapter
 
 import (
-	"d3/orm/entity"
-	"d3/orm/query"
+	"github.com/godzie44/d3/orm/entity"
+	"github.com/godzie44/d3/orm/query"
 	"github.com/stretchr/testify/assert"
 	"testing"
 )

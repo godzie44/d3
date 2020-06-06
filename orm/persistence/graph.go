@@ -1,8 +1,8 @@
 package persistence
 
 import (
-	d3entity "d3/orm/entity"
 	"fmt"
+	d3entity "github.com/godzie44/d3/orm/entity"
 	"math"
 )
 

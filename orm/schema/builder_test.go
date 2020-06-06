@@ -1,8 +1,8 @@
 package schema
 
 import (
-	"d3/orm/entity"
 	"database/sql"
+	"github.com/godzie44/d3/orm/entity"
 	"github.com/stretchr/testify/assert"
 	"reflect"
 	"testing"
@@ -73,8 +73,8 @@ func TestTypeMapping(t *testing.T) {
 
 type shop struct {
 	Id      sql.NullInt32      `d3:"pk:auto"`
-	Books   *entity.Collection `d3:"one_to_many:<target_entity:d3/orm/schema/book,join_on:shop_id,delete:nullable>,type:lazy"`
-	Profile *entity.Cell       `d3:"one_to_one:<target_entity:d3/orm/schema/profile,join_on:profile_uuid,delete:cascade>,type:lazy"`
+	Books   *entity.Collection `d3:"one_to_many:<target_entity:github.com/godzie44/d3/orm/schema/book,join_on:shop_id,delete:nullable>,type:lazy"`
+	Profile *entity.Cell       `d3:"one_to_one:<target_entity:github.com/godzie44/d3/orm/schema/profile,join_on:profile_uuid,delete:cascade>,type:lazy"`
 	Name    string
 }
 
@@ -93,7 +93,7 @@ func (p *profile) D3Token() entity.MetaToken {
 
 type book struct {
 	Id      sql.NullInt32      `d3:"pk:auto"`
-	Authors *entity.Collection `d3:"many_to_many:<target_entity:d3/orm/schema/author,join_on:book_id,reference_on:author_id,join_table:book_author>,type:lazy"`
+	Authors *entity.Collection `d3:"many_to_many:<target_entity:github.com/godzie44/d3/orm/schema/author,join_on:book_id,reference_on:author_id,join_table:book_author>,type:lazy"`
 	Name    string
 }
 
@@ -128,25 +128,25 @@ func TestCreateTables(t *testing.T) {
 		columns:    map[string]ColumnType{"id": NullInt32, "profile_uuid": String, "name": String},
 		pkColumns:  []string{"id"},
 		pkStrategy: entity.Auto,
-	}, commands["d3/orm/schema/shop"])
+	}, commands["github.com/godzie44/d3/orm/schema/shop"])
 	assert.Equal(t, &newTableCmd{
 		tableName:  "profile",
 		columns:    map[string]ColumnType{"uuid": String, "description": String},
 		pkColumns:  []string{"uuid"},
 		pkStrategy: entity.Manual,
-	}, commands["d3/orm/schema/profile"])
+	}, commands["github.com/godzie44/d3/orm/schema/profile"])
 	assert.Equal(t, &newTableCmd{
 		tableName:  "book",
 		columns:    map[string]ColumnType{"id": NullInt32, "shop_id": NullInt32, "name": String},
 		pkColumns:  []string{"id"},
 		pkStrategy: entity.Auto,
-	}, commands["d3/orm/schema/book"])
+	}, commands["github.com/godzie44/d3/orm/schema/book"])
 	assert.Equal(t, &newTableCmd{
 		tableName:  "author",
 		columns:    map[string]ColumnType{"id": NullInt32, "name": String},
 		pkColumns:  []string{"id"},
 		pkStrategy: entity.Auto,
-	}, commands["d3/orm/schema/author"])
+	}, commands["github.com/godzie44/d3/orm/schema/author"])
 	assert.Equal(t, &newTableCmd{
 		tableName: "book_author",
 		columns:   map[string]ColumnType{"book_id": Int32, "author_id": Int32},

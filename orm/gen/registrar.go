@@ -37,7 +37,7 @@ func NewGenerator(out io.Writer, packagePath string) *CodeGenerator {
 func (r *CodeGenerator) commonPreamble() []string {
 	return []string{
 		"fmt",
-		"d3/orm/entity",
+		"github.com/godzie44/d3/orm/entity",
 	}
 }
 

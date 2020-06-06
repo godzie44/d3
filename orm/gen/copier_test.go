@@ -1,7 +1,7 @@
 package gen
 
 import (
-	"d3/orm/entity"
+	"github.com/godzie44/d3/orm/entity"
 	"github.com/stretchr/testify/assert"
 	"reflect"
 	"strings"
@@ -56,5 +56,5 @@ func TestCopierGeneration(t *testing.T) {
 	gen.handle(reflect.TypeOf(copierTestStruct{}))
 
 	assert.Equal(t, expectedCopierCode, strings.Trim(buff.String(), "\n"))
-	assert.Equal(t, []string{"d3/orm/entity"}, gen.preamble())
+	assert.Equal(t, []string{"github.com/godzie44/d3/orm/entity"}, gen.preamble())
 }

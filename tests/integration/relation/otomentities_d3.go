@@ -3,7 +3,7 @@
 package relation
 
 import "fmt"
-import "d3/orm/entity"
+import "github.com/godzie44/d3/orm/entity"
 
 func (s *ShopLR) D3Token() entity.MetaToken {
 	return entity.MetaToken{

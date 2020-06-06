@@ -1,9 +1,9 @@
 package adapter
 
 import (
-	"d3/orm/query"
 	"fmt"
 	"github.com/Masterminds/squirrel"
+	"github.com/godzie44/d3/orm/query"
 )
 
 type SquirrelAdapter struct {
@@ -69,17 +69,17 @@ func toSquirrel(q *query.Query) (*squirrel.SelectBuilder, error) {
 
 			switch p.UType {
 			case "UNION":
-				sb = sb.Suffix("UNION " + sql, args...)
+				sb = sb.Suffix("UNION "+sql, args...)
 			case "UNION ALL":
-				sb = sb.Suffix("UNION ALL " + sql, args...)
+				sb = sb.Suffix("UNION ALL "+sql, args...)
 			case "INTERSECT":
-				sb = sb.Suffix("INTERSECT " + sql, args...)
+				sb = sb.Suffix("INTERSECT "+sql, args...)
 			case "INTERSECT ALL":
-				sb = sb.Suffix("INTERSECT ALL " + sql, args...)
+				sb = sb.Suffix("INTERSECT ALL "+sql, args...)
 			case "EXCEPT":
-				sb = sb.Suffix("EXCEPT " + sql, args...)
+				sb = sb.Suffix("EXCEPT "+sql, args...)
 			case "EXCEPT ALL":
-				sb = sb.Suffix("EXCEPT ALL " + sql, args...)
+				sb = sb.Suffix("EXCEPT ALL "+sql, args...)
 			}
 		case query.GroupBy:
 			sb = sb.GroupBy(string(p))

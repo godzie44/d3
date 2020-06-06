@@ -1,14 +1,14 @@
 package orm
 
 import (
-	"d3/orm/entity"
+	"github.com/godzie44/d3/orm/entity"
 	"github.com/stretchr/testify/assert"
 	"testing"
 )
 
 type testEntity1 struct {
 	Id  int64       `d3:"pk:auto"`
-	Rel interface{} `d3:"one_to_one:<target_entity:d3/orm/testEntity2>"`
+	Rel interface{} `d3:"one_to_one:<target_entity:github.com/godzie44/d3/orm/testEntity2>"`
 }
 
 func (t *testEntity1) D3Token() entity.MetaToken {

@@ -2,10 +2,10 @@ package helpers
 
 import (
 	"context"
-	"d3/orm"
-	"d3/orm/persistence"
-	"d3/orm/query"
 	"fmt"
+	"github.com/godzie44/d3/orm"
+	"github.com/godzie44/d3/orm/persistence"
+	"github.com/godzie44/d3/orm/query"
 	"github.com/jackc/pgx/v4"
 	"github.com/stretchr/testify/assert"
 	"testing"

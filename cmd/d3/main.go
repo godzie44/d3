@@ -1,10 +1,10 @@
 package main
 
 import (
-	d3parser "d3/cmd/d3/parser"
-	"d3/orm/gen/bootstrap"
 	"flag"
 	"fmt"
+	d3parser "github.com/godzie44/d3/cmd/d3/parser"
+	"github.com/godzie44/d3/orm/gen/bootstrap"
 	"golang.org/x/sync/errgroup"
 	"os"
 	"path/filepath"

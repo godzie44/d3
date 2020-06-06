@@ -1,4 +1,4 @@
-module d3
+module github.com/godzie44/d3
 
 go 1.13
 

@@ -1,8 +1,8 @@
 package schema
 
 import (
-	"d3/orm/entity"
 	"database/sql"
+	"github.com/godzie44/d3/orm/entity"
 	"time"
 )
 
@@ -10,8 +10,8 @@ import (
 //d3_table:shop_m
 type shop struct {
 	Id      sql.NullInt32      `d3:"pk:auto"`
-	Books   *entity.Collection `d3:"one_to_many:<target_entity:d3/tests/integration/schema/book,join_on:shop_id,delete:nullable>,type:lazy"`
-	Profile *entity.Cell       `d3:"one_to_one:<target_entity:d3/tests/integration/schema/profile,join_on:profile_id,delete:cascade>,type:lazy"`
+	Books   *entity.Collection `d3:"one_to_many:<target_entity:github.com/godzie44/d3/tests/integration/schema/book,join_on:shop_id,delete:nullable>,type:lazy"`
+	Profile *entity.Cell       `d3:"one_to_one:<target_entity:github.com/godzie44/d3/tests/integration/schema/profile,join_on:profile_id,delete:cascade>,type:lazy"`
 	Name    string
 }
 
@@ -26,7 +26,7 @@ type profile struct {
 //d3_table:book_m
 type book struct {
 	Id      sql.NullInt32      `d3:"pk:auto"`
-	Authors *entity.Collection `d3:"many_to_many:<target_entity:d3/tests/integration/schema/author,join_on:book_id,reference_on:author_id,join_table:book_author_m>,type:lazy"`
+	Authors *entity.Collection `d3:"many_to_many:<target_entity:github.com/godzie44/d3/tests/integration/schema/author,join_on:book_id,reference_on:author_id,join_table:book_author_m>,type:lazy"`
 	Name    string
 }
 

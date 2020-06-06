@@ -11,13 +11,13 @@ type someStruct struct {
 func TestGetStructName(t *testing.T) {
 	n := NameFromEntity(someStruct{})
 
-	assert.Equal(t, "d3/orm/entity/someStruct", string(n))
+	assert.Equal(t, "github.com/godzie44/d3/orm/entity/someStruct", string(n))
 }
 
 func TestGetStructPtrName(t *testing.T) {
 	n := NameFromEntity(&someStruct{})
 
-	assert.Equal(t, "d3/orm/entity/someStruct", string(n))
+	assert.Equal(t, "github.com/godzie44/d3/orm/entity/someStruct", string(n))
 }
 
 func TestShortName(t *testing.T) {

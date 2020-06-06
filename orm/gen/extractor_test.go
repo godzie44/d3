@@ -1,7 +1,7 @@
 package gen
 
 import (
-	"d3/orm/entity"
+	"github.com/godzie44/d3/orm/entity"
 	"github.com/stretchr/testify/assert"
 	"reflect"
 	"strings"

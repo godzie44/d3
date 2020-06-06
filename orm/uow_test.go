@@ -1,15 +1,14 @@
 package orm
 
 import (
-	"d3/orm/entity"
-	"d3/orm/persistence"
-	"d3/orm/query"
 	"errors"
+	"github.com/godzie44/d3/orm/entity"
+	"github.com/godzie44/d3/orm/persistence"
+	"github.com/godzie44/d3/orm/query"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
 	"reflect"
 	"testing"
-	//"testing"
 )
 
 type uowTestEntity struct {

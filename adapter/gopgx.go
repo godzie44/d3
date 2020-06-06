@@ -2,13 +2,13 @@ package adapter
 
 import (
 	"context"
-	"d3/orm"
-	"d3/orm/entity"
-	"d3/orm/persistence"
-	"d3/orm/query"
-	"d3/orm/schema"
 	"errors"
 	"fmt"
+	"github.com/godzie44/d3/orm"
+	"github.com/godzie44/d3/orm/entity"
+	"github.com/godzie44/d3/orm/persistence"
+	"github.com/godzie44/d3/orm/query"
+	"github.com/godzie44/d3/orm/schema"
 	"github.com/jackc/pgx/v4"
 	"reflect"
 	"strconv"

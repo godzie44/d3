@@ -5,7 +5,7 @@ package schema
 import "database/sql/driver"
 import "time"
 import "fmt"
-import "d3/orm/entity"
+import "github.com/godzie44/d3/orm/entity"
 
 func (s *shop) D3Token() entity.MetaToken {
 	return entity.MetaToken{

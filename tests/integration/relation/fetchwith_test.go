@@ -2,9 +2,9 @@ package relation
 
 import (
 	"context"
-	"d3/adapter"
-	"d3/orm"
-	"d3/tests/helpers"
+	"github.com/godzie44/d3/adapter"
+	"github.com/godzie44/d3/orm"
+	"github.com/godzie44/d3/tests/helpers"
 	"github.com/jackc/pgx/v4"
 	"github.com/stretchr/testify/suite"
 	"os"
@@ -17,6 +17,8 @@ type FetchWithRelationTS struct {
 	dbAdapter *helpers.DbAdapterWithQueryCounter
 	orm       *orm.Orm
 }
+
+const d3pkg = "github.com/godzie44/d3"
 
 func (o *FetchWithRelationTS) SetupSuite() {
 	o.pgDb, _ = pgx.Connect(context.Background(), os.Getenv("D3_PG_TEST_DB"))
@@ -110,7 +112,7 @@ func (o *FetchWithRelationTS) TestFetchWithOneToOne() {
 
 	repository, _ := o.orm.MakeRepository((*fwTestEntity1)(nil))
 	q := repository.CreateQuery()
-	_ = q.AndWhere("test_entity_1.id = ?", 1).With("d3/tests/integration/relation/fwTestEntity2")
+	_ = q.AndWhere("test_entity_1.id = ?", 1).With(d3pkg + "/tests/integration/relation/fwTestEntity2")
 	entity, _ := repository.FindOne(ctx, q)
 
 	o.Assert().IsType(&fwTestEntity1{}, entity)
@@ -130,7 +132,7 @@ func (o *FetchWithRelationTS) TestFetchWithOneToMany() {
 	ctx := o.orm.CtxWithSession(context.Background())
 	repository, _ := o.orm.MakeRepository((*fwTestEntity2)(nil))
 	q := repository.CreateQuery()
-	_ = q.AndWhere("test_entity_2.id = ?", 1).With("d3/tests/integration/relation/fwTestEntity3")
+	_ = q.AndWhere("test_entity_2.id = ?", 1).With(d3pkg + "/tests/integration/relation/fwTestEntity3")
 	entity, _ := repository.FindOne(ctx, q)
 
 	o.Assert().IsType(&fwTestEntity2{}, entity)
@@ -152,7 +154,7 @@ func (o *FetchWithRelationTS) TestFetchWithManyToMany() {
 	repository, _ := o.orm.MakeRepository((*fwTestEntity3)(nil))
 
 	q := repository.CreateQuery()
-	_ = q.AndWhere("test_entity_3.id = ?", 1).With("d3/tests/integration/relation/fwTestEntity4")
+	_ = q.AndWhere("test_entity_3.id = ?", 1).With(d3pkg + "/tests/integration/relation/fwTestEntity4")
 	entity, _ := repository.FindOne(ctx, q)
 
 	o.Assert().IsType(&fwTestEntity3{}, entity)
@@ -174,9 +176,9 @@ func (o *FetchWithRelationTS) TestFetchFullGraph() {
 	repository, _ := o.orm.MakeRepository((*fwTestEntity1)(nil))
 
 	q := repository.CreateQuery()
-	_ = q.AndWhere("test_entity_1.id = ?", 1).With("d3/tests/integration/relation/fwTestEntity2")
-	_ = q.With("d3/tests/integration/relation/fwTestEntity3")
-	_ = q.With("d3/tests/integration/relation/fwTestEntity4")
+	_ = q.AndWhere("test_entity_1.id = ?", 1).With(d3pkg + "/tests/integration/relation/fwTestEntity2")
+	_ = q.With(d3pkg + "/tests/integration/relation/fwTestEntity3")
+	_ = q.With(d3pkg + "/tests/integration/relation/fwTestEntity4")
 	entity, _ := repository.FindOne(ctx, q)
 
 	o.Assert().Equal([]interface{}{int32(1), "entity_1_data_1"}, []interface{}{entity.(*fwTestEntity1).Id, entity.(*fwTestEntity1).Data})

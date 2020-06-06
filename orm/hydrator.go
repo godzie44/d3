@@ -1,9 +1,9 @@
 package orm
 
 import (
-	d3entity "d3/orm/entity"
-	"d3/orm/query"
 	"fmt"
+	d3entity "github.com/godzie44/d3/orm/entity"
+	"github.com/godzie44/d3/orm/query"
 	"reflect"
 )
 

@@ -2,7 +2,7 @@ package gen
 
 import "C"
 import (
-	"d3/orm/entity"
+	"github.com/godzie44/d3/orm/entity"
 	"io"
 	"reflect"
 	"strings"

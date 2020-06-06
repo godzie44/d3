@@ -2,9 +2,9 @@ package orm
 
 import (
 	"context"
-	d3Entity "d3/orm/entity"
-	"d3/orm/schema"
 	"fmt"
+	d3Entity "github.com/godzie44/d3/orm/entity"
+	"github.com/godzie44/d3/orm/schema"
 )
 
 const sessionKey = "d3_session"

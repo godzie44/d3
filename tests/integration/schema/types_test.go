@@ -2,9 +2,9 @@ package schema
 
 import (
 	"context"
-	"d3/adapter"
-	"d3/orm"
 	"database/sql"
+	"github.com/godzie44/d3/adapter"
+	"github.com/godzie44/d3/orm"
 	"github.com/jackc/pgx/v4"
 	"github.com/stretchr/testify/assert"
 	"os"
@@ -57,10 +57,10 @@ func initDb(t *testing.T) (*pgx.Conn, *orm.Orm) {
 	d3orm := orm.NewOrm(adapter.NewGoPgXAdapter(pgDb, &adapter.SquirrelAdapter{}))
 	assert.NoError(t, d3orm.Register((*allTypeStruct)(nil)))
 
-	sql, err := d3orm.GenerateSchema()
+	sqlSchema, err := d3orm.GenerateSchema()
 	assert.NoError(t, err)
 
-	_, err = pgDb.Exec(context.Background(), sql)
+	_, err = pgDb.Exec(context.Background(), sqlSchema)
 	assert.NoError(t, err)
 
 	return pgDb, d3orm

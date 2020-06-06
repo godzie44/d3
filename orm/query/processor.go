@@ -1,7 +1,7 @@
 package query
 
 import (
-	"d3/orm/entity"
+	"github.com/godzie44/d3/orm/entity"
 	"strings"
 )
 

@@ -12,7 +12,7 @@ func TestCreateSimpleMeta(t *testing.T) {
 		(*testEntity)(nil),
 	)
 
-	assert.Equal(t, meta.EntityName, Name("d3/orm/entity/testEntity"))
+	assert.Equal(t, meta.EntityName, Name("github.com/godzie44/d3/orm/entity/testEntity"))
 }
 
 func TestCreateMetaFromVariousReflectionsOfOneEntity(t *testing.T) {
@@ -39,7 +39,7 @@ func TestCreateMetaWithRelations(t *testing.T) {
 	meta, err := CreateMeta((*shop)(nil))
 	assert.NoError(t, err)
 
-	assert.Equal(t, Name("d3/orm/entity/shop"), meta.EntityName)
+	assert.Equal(t, Name("github.com/godzie44/d3/orm/entity/shop"), meta.EntityName)
 	assert.Equal(t, "shop", meta.TableName)
 	assert.Equal(t, FieldInfo{
 		Name:           "ID",

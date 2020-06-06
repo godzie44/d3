@@ -2,7 +2,7 @@ package persist
 
 import (
 	"context"
-	"d3/orm"
+	"github.com/godzie44/d3/orm"
 	"github.com/jackc/pgx/v4"
 	"github.com/stretchr/testify/assert"
 )

@@ -1,7 +1,7 @@
 package orm
 
 import (
-	"d3/orm/entity"
+	"github.com/godzie44/d3/orm/entity"
 	"github.com/stretchr/testify/assert"
 	"testing"
 )
@@ -69,7 +69,7 @@ func TestPutEntities(t *testing.T) {
 	im.putEntities(meta, collection)
 
 	assert.Len(t, im.data, 1)
-	assert.Len(t, im.data["d3/orm/imTestEntity1"], 2)
+	assert.Len(t, im.data["github.com/godzie44/d3/orm/imTestEntity1"], 2)
 
 	coll2 := entity.NewCollection(
 		&imTestEntity2{
@@ -83,5 +83,5 @@ func TestPutEntities(t *testing.T) {
 	im.putEntities(meta2, coll2)
 
 	assert.Len(t, im.data, 2)
-	assert.Len(t, im.data["d3/orm/imTestEntity2"], 1)
+	assert.Len(t, im.data["github.com/godzie44/d3/orm/imTestEntity2"], 1)
 }

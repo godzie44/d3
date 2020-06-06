@@ -1,9 +1,9 @@
 package schema
 
 import (
-	"d3/orm/entity"
 	"database/sql"
 	"fmt"
+	"github.com/godzie44/d3/orm/entity"
 	"reflect"
 	"strings"
 	"time"

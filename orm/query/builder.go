@@ -1,9 +1,9 @@
 package query
 
 import (
-	"d3/orm/entity"
 	"errors"
 	"fmt"
+	"github.com/godzie44/d3/orm/entity"
 )
 
 var (

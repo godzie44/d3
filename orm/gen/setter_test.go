@@ -1,8 +1,8 @@
 package gen
 
 import (
-	"d3/orm/query"
 	"database/sql"
+	"github.com/godzie44/d3/orm/query"
 	"github.com/stretchr/testify/assert"
 	"io"
 	"reflect"
@@ -95,5 +95,6 @@ func TestSetterGeneration(t *testing.T) {
 
 	imports := gen.preamble()
 	sort.Strings(imports)
-	assert.Equal(t, []string{"d3/orm/gen", "d3/orm/query", "database/sql/driver", "io", "time"}, imports)
+	assert.Equal(t, []string{"database/sql/driver", "github.com/godzie44/d3/orm/gen",
+		"github.com/godzie44/d3/orm/query", "io", "time"}, imports)
 }

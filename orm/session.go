@@ -1,9 +1,9 @@
 package orm
 
 import (
-	"d3/orm/entity"
-	"d3/orm/persistence"
-	"d3/orm/query"
+	"github.com/godzie44/d3/orm/entity"
+	"github.com/godzie44/d3/orm/persistence"
+	"github.com/godzie44/d3/orm/query"
 )
 
 type Storage interface {

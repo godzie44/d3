@@ -2,7 +2,7 @@ package bootstrap
 
 import (
 	"bytes"
-	"d3/cmd/d3/parser"
+	"github.com/godzie44/d3/cmd/d3/parser"
 	"go/format"
 	"html/template"
 	"io/ioutil"
@@ -70,7 +70,7 @@ import (
 	"fmt"
 	"os"
 	"reflect"
-	"d3/orm/gen"
+	"github.com/godzie44/d3/orm/gen"
 	al "{{.PkgPath}}"
 )
 
