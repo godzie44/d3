@@ -16,8 +16,8 @@ type DbAdapterWithQueryCounter struct {
 	dbAdapter                                                 orm.Storage
 }
 
-func (d *DbAdapterWithQueryCounter) MakeRawDataMapper() orm.RawDataMapper {
-	return d.dbAdapter.MakeRawDataMapper()
+func (d *DbAdapterWithQueryCounter) MakeScalarDataMapper() orm.ScalarDataMapper {
+	return d.dbAdapter.MakeScalarDataMapper()
 }
 
 func (d *DbAdapterWithQueryCounter) MakePusher(tx orm.Transaction) persistence.Pusher {

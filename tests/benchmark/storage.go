@@ -58,7 +58,7 @@ func (i *inMemoryStorage) BeginTx() (orm.Transaction, error) {
 	return &txStub{}, nil
 }
 
-func (i *inMemoryStorage) MakeRawDataMapper() orm.RawDataMapper {
+func (i *inMemoryStorage) MakeScalarDataMapper() orm.ScalarDataMapper {
 	return func(data interface{}, _ reflect.Kind) interface{} {
 		return data
 	}

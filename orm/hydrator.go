@@ -7,13 +7,13 @@ import (
 	"reflect"
 )
 
-type RawDataMapper func(data interface{}, into reflect.Kind) interface{}
+type ScalarDataMapper func(data interface{}, into reflect.Kind) interface{}
 
 type Hydrator struct {
 	session            *session
 	meta               *d3entity.MetaInfo
 	afterHydrateEntity func(b *d3entity.Box)
-	rawMapper          RawDataMapper
+	scalarMapper       ScalarDataMapper
 }
 
 func (h *Hydrator) Hydrate(fetchedData []map[string]interface{}, plan *query.FetchPlan) (*d3entity.Collection, error) {
@@ -48,7 +48,7 @@ func (h *Hydrator) hydrateOne(entity interface{}, entityData []map[string]interf
 			continue
 		}
 
-		if err := h.meta.Tools.SetFieldVal(entity, field.Name, h.rawMapper(fieldValue, field.AssociatedType.Kind())); err != nil {
+		if err := h.meta.Tools.SetFieldVal(entity, field.Name, h.scalarMapper(fieldValue, field.AssociatedType.Kind())); err != nil {
 			return err
 		}
 	}
@@ -84,7 +84,7 @@ func (h *Hydrator) fetchRelation(relation d3entity.Relation, entityData []map[st
 		session:            h.session,
 		meta:               relationMeta,
 		afterHydrateEntity: h.afterHydrateEntity,
-		rawMapper:          h.rawMapper,
+		scalarMapper:       h.scalarMapper,
 	}
 
 	switch relation.(type) {

@@ -22,7 +22,7 @@ type GoPgXAdapter struct {
 	beforeQCallback, afterQCallback []func(query string, args ...interface{})
 }
 
-func (g *GoPgXAdapter) MakeRawDataMapper() orm.RawDataMapper {
+func (g *GoPgXAdapter) MakeScalarDataMapper() orm.ScalarDataMapper {
 	return func(data interface{}, into reflect.Kind) interface{} {
 		switch into {
 		case reflect.Int:

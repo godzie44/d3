@@ -15,7 +15,7 @@ type Storage interface {
 
 	BeginTx() (Transaction, error)
 
-	MakeRawDataMapper() RawDataMapper
+	MakeScalarDataMapper() ScalarDataMapper
 }
 
 type session struct {
@@ -42,7 +42,7 @@ func (s *session) execute(q *query.Query) (*entity.Collection, error) {
 		return nil, err
 	}
 
-	hydrator := &Hydrator{session: s, meta: q.OwnerMeta(), rawMapper: s.storage.MakeRawDataMapper(),
+	hydrator := &Hydrator{session: s, meta: q.OwnerMeta(), scalarMapper: s.storage.MakeScalarDataMapper(),
 		afterHydrateEntity: func(b *entity.Box) {
 			_ = s.uow.registerDirty(b)
 		}}

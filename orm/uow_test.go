@@ -129,7 +129,7 @@ type storageMock struct {
 	mock.Mock
 }
 
-func (s *storageMock) MakeRawDataMapper() RawDataMapper {
+func (s *storageMock) MakeScalarDataMapper() ScalarDataMapper {
 	return func(data interface{}, into reflect.Kind) interface{} {
 		return data
 	}
