@@ -3,6 +3,7 @@ package persist
 import (
 	"context"
 	"github.com/godzie44/d3/adapter"
+	pgx2 "github.com/godzie44/d3/adapter/pgx"
 	"github.com/godzie44/d3/orm"
 	"github.com/godzie44/d3/orm/entity"
 	"github.com/godzie44/d3/tests/helpers"
@@ -51,7 +52,7 @@ func (o *PersistsCircularTS) SetupSuite() {
 	)`)
 	o.Assert().NoError(err)
 
-	o.dbAdapter = helpers.NewDbAdapterWithQueryCounter(adapter.NewGoPgXAdapter(o.pgDb, &adapter.SquirrelAdapter{}))
+	o.dbAdapter = helpers.NewDbAdapterWithQueryCounter(pgx2.NewGoPgXAdapter(o.pgDb, &adapter.SquirrelAdapter{}))
 	o.orm = orm.NewOrm(o.dbAdapter)
 	o.Assert().NoError(o.orm.Register(
 		(*ShopCirc)(nil),

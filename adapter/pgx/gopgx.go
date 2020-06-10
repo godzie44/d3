@@ -1,9 +1,10 @@
-package adapter
+package pgx
 
 import (
 	"context"
 	"errors"
 	"fmt"
+	"github.com/godzie44/d3/adapter"
 	"github.com/godzie44/d3/orm"
 	"github.com/godzie44/d3/orm/entity"
 	"github.com/godzie44/d3/orm/persistence"
@@ -17,7 +18,7 @@ import (
 
 type GoPgXAdapter struct {
 	pgDb         *pgx.Conn
-	queryAdapter *SquirrelAdapter
+	queryAdapter *adapter.SquirrelAdapter
 
 	beforeQCallback, afterQCallback []func(query string, args ...interface{})
 }
@@ -121,7 +122,7 @@ func (g *GoPgXAdapter) CreateIndexSql(name string, table string, columns ...stri
 	panic("implement me")
 }
 
-func NewGoPgXAdapter(pgDb *pgx.Conn, queryAdapter *SquirrelAdapter) *GoPgXAdapter {
+func NewGoPgXAdapter(pgDb *pgx.Conn, queryAdapter *adapter.SquirrelAdapter) *GoPgXAdapter {
 	return &GoPgXAdapter{
 		pgDb:         pgDb,
 		queryAdapter: queryAdapter,

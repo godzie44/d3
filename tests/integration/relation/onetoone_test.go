@@ -3,6 +3,7 @@ package relation
 import (
 	"context"
 	"github.com/godzie44/d3/adapter"
+	pgx2 "github.com/godzie44/d3/adapter/pgx"
 	"github.com/godzie44/d3/orm"
 	"github.com/jackc/pgx/v4"
 	"github.com/stretchr/testify/suite"
@@ -50,7 +51,7 @@ INSERT INTO photo(id, data) VALUES (1, 'entity_3_data');
 `)
 	o.Assert().NoError(err)
 
-	o.orm = orm.NewOrm(adapter.NewGoPgXAdapter(o.pgDb, &adapter.SquirrelAdapter{}))
+	o.orm = orm.NewOrm(pgx2.NewGoPgXAdapter(o.pgDb, &adapter.SquirrelAdapter{}))
 	o.NoError(o.orm.Register(
 		(*ShopLL)(nil),
 		(*ProfileLL)(nil),
