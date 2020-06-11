@@ -15,7 +15,7 @@ import (
 type setterTestStruct2 struct { //nolint
 }
 
-type Email string
+type Email string //nolint
 
 type setterTestStruct struct {
 	int        int                //nolint
