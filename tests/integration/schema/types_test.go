@@ -45,7 +45,7 @@ func TestTypeConversion(t *testing.T) {
 	rep, err = d3orm.MakeRepository(&allTypeStruct{})
 	assert.NoError(t, err)
 
-	fetchedEntity, err := rep.FindOne(ctx2, rep.CreateQuery().AndWhere("id = ?", entity.ID))
+	fetchedEntity, err := rep.FindOne(ctx2, rep.MakeQuery().AndWhere("id = ?", entity.ID))
 	assert.NoError(t, err)
 
 	assert.Equal(t, entity, fetchedEntity)
@@ -94,7 +94,7 @@ func TestCustomTypeConversion(t *testing.T) {
 	rep, err = d3orm.MakeRepository(&entityWithAliases{})
 	assert.NoError(t, err)
 
-	fetchedEntity, err := rep.FindOne(ctx2, rep.CreateQuery().AndWhere("id = ?", entity.ID))
+	fetchedEntity, err := rep.FindOne(ctx2, rep.MakeQuery().AndWhere("id = ?", entity.ID))
 	assert.NoError(t, err)
 
 	assert.Equal(t, entity, fetchedEntity)

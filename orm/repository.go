@@ -80,6 +80,6 @@ func sessionFromCtx(ctx context.Context) (*session, error) {
 	return s, nil
 }
 
-func (r *Repository) CreateQuery() *query.Query {
+func (r *Repository) MakeQuery() *query.Query {
 	return query.NewQuery(&r.entityMeta)
 }

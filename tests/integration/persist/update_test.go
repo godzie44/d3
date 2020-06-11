@@ -167,9 +167,9 @@ func (u *UpdateTs) TestSelectThenSimpleUpdate() {
 	repo, err := u.d3Orm.MakeRepository((*Shop)(nil))
 	u.NoError(err)
 
-	shop1i, err := repo.FindOne(u.ctx, repo.CreateQuery().AndWhere("shop_p.id = 1001"))
+	shop1i, err := repo.FindOne(u.ctx, repo.MakeQuery().AndWhere("shop_p.id = 1001"))
 	u.NoError(err)
-	shop2i, err := repo.FindOne(u.ctx, repo.CreateQuery().AndWhere("shop_p.id = 1002"))
+	shop2i, err := repo.FindOne(u.ctx, repo.MakeQuery().AndWhere("shop_p.id = 1002"))
 	u.NoError(err)
 
 	shop1i.(*Shop).Name = "new shop 1001 name"
@@ -191,7 +191,7 @@ func (u *UpdateTs) TestSelectThenUpdateOtoORelation() {
 	repo, err := u.d3Orm.MakeRepository((*Shop)(nil))
 	u.NoError(err)
 
-	shop1i, err := repo.FindOne(u.ctx, repo.CreateQuery().AndWhere("shop_p.id = 1001"))
+	shop1i, err := repo.FindOne(u.ctx, repo.MakeQuery().AndWhere("shop_p.id = 1001"))
 	u.NoError(err)
 
 	shop1i.(*Shop).Profile.Unwrap().(*ShopProfile).Description = "new shop 1001 profile"
@@ -211,7 +211,7 @@ func (u *UpdateTs) TestSelectThenDeleteOtoORelation() {
 	repo, err := u.d3Orm.MakeRepository((*Shop)(nil))
 	u.NoError(err)
 
-	shop1i, err := repo.FindOne(u.ctx, repo.CreateQuery().AndWhere("shop_p.id = 1001"))
+	shop1i, err := repo.FindOne(u.ctx, repo.MakeQuery().AndWhere("shop_p.id = 1001"))
 	u.NoError(err)
 
 	shop1i.(*Shop).Profile = entity.NewCell(nil)
@@ -231,7 +231,7 @@ func (u *UpdateTs) TestSelectThenChangeOtoORelation() {
 	repo, err := u.d3Orm.MakeRepository((*Shop)(nil))
 	u.NoError(err)
 
-	shop1i, err := repo.FindOne(u.ctx, repo.CreateQuery().AndWhere("shop_p.id = 1001"))
+	shop1i, err := repo.FindOne(u.ctx, repo.MakeQuery().AndWhere("shop_p.id = 1001"))
 	u.NoError(err)
 
 	shop1i.(*Shop).Profile = entity.NewCell(&ShopProfile{
@@ -254,7 +254,7 @@ func (u *UpdateTs) TestSelectThenViewButDontChangeOtoORelation() {
 	repo, err := u.d3Orm.MakeRepository((*Shop)(nil))
 	u.NoError(err)
 
-	shop1i, err := repo.FindOne(u.ctx, repo.CreateQuery().AndWhere("shop_p.id = 1001"))
+	shop1i, err := repo.FindOne(u.ctx, repo.MakeQuery().AndWhere("shop_p.id = 1001"))
 	u.NoError(err)
 
 	// previous description and new are equal, we expect 0 updates
@@ -272,7 +272,7 @@ func (u *UpdateTs) TestSelectThenUpdateOtoMRelation() {
 	repo, err := u.d3Orm.MakeRepository((*Shop)(nil))
 	u.NoError(err)
 
-	shop1, err := repo.FindOne(u.ctx, repo.CreateQuery().AndWhere("shop_p.id = 1001"))
+	shop1, err := repo.FindOne(u.ctx, repo.MakeQuery().AndWhere("shop_p.id = 1001"))
 	u.NoError(err)
 
 	shop1.(*Shop).Books.Get(0).(*Book).Name = "new book 0"
@@ -294,7 +294,7 @@ func (u *UpdateTs) TestSelectThenDeleteOtoMRelation() {
 	repo, err := u.d3Orm.MakeRepository((*Shop)(nil))
 	u.NoError(err)
 
-	shop1, err := repo.FindOne(u.ctx, repo.CreateQuery().AndWhere("shop_p.id = 1001"))
+	shop1, err := repo.FindOne(u.ctx, repo.MakeQuery().AndWhere("shop_p.id = 1001"))
 	u.NoError(err)
 
 	oldBookCount := shop1.(*Shop).Books.Count()
@@ -315,7 +315,7 @@ func (u *UpdateTs) TestSelectThenAddOtoMRelation() {
 	repo, err := u.d3Orm.MakeRepository((*Shop)(nil))
 	u.NoError(err)
 
-	shop1, err := repo.FindOne(u.ctx, repo.CreateQuery().AndWhere("shop_p.id = 1001"))
+	shop1, err := repo.FindOne(u.ctx, repo.MakeQuery().AndWhere("shop_p.id = 1001"))
 	u.NoError(err)
 
 	newBook := &Book{
@@ -339,7 +339,7 @@ func (u *UpdateTs) TestSelectThenViewButDontChangeOtoMRelation() {
 	repo, err := u.d3Orm.MakeRepository((*Shop)(nil))
 	u.NoError(err)
 
-	shop1, err := repo.FindOne(u.ctx, repo.CreateQuery().AndWhere("shop_p.id = 1001"))
+	shop1, err := repo.FindOne(u.ctx, repo.MakeQuery().AndWhere("shop_p.id = 1001"))
 	u.NoError(err)
 
 	sameName := shop1.(*Shop).Books.Get(0).(*Book).Name
@@ -357,7 +357,7 @@ func (u *UpdateTs) TestSelectThenUpdateMtoMRelation() {
 	repo, err := u.d3Orm.MakeRepository((*Book)(nil))
 	u.NoError(err)
 
-	book1, err := repo.FindOne(u.ctx, repo.CreateQuery().AndWhere("book_p.id = 1002"))
+	book1, err := repo.FindOne(u.ctx, repo.MakeQuery().AndWhere("book_p.id = 1002"))
 	u.NoError(err)
 
 	book1.(*Book).Authors.Get(0).(*Author).Name = "new author 1"
@@ -379,7 +379,7 @@ func (u *UpdateTs) TestSelectThenDeleteMtoMRelation() {
 	repo, err := u.d3Orm.MakeRepository((*Book)(nil))
 	u.NoError(err)
 
-	book1, err := repo.FindOne(u.ctx, repo.CreateQuery().AndWhere("book_p.id = 1002"))
+	book1, err := repo.FindOne(u.ctx, repo.MakeQuery().AndWhere("book_p.id = 1002"))
 	u.NoError(err)
 
 	oldAuthorCount := book1.(*Book).Authors.Count()
@@ -400,9 +400,9 @@ func (u *UpdateTs) TestSelectThenAddMtoMRelation() {
 	repo, err := u.d3Orm.MakeRepository((*Book)(nil))
 	u.NoError(err)
 
-	book1, err := repo.FindOne(u.ctx, repo.CreateQuery().AndWhere("book_p.id = 1001"))
+	book1, err := repo.FindOne(u.ctx, repo.MakeQuery().AndWhere("book_p.id = 1001"))
 	u.NoError(err)
-	book2, err := repo.FindOne(u.ctx, repo.CreateQuery().AndWhere("book_p.id = 1002"))
+	book2, err := repo.FindOne(u.ctx, repo.MakeQuery().AndWhere("book_p.id = 1002"))
 	u.NoError(err)
 
 	newAuthor := &Author{
@@ -428,7 +428,7 @@ func (u *UpdateTs) TestSelectThenViewButDontChangeMtoMRelation() {
 	repo, err := u.d3Orm.MakeRepository((*Book)(nil))
 	u.NoError(err)
 
-	book1, err := repo.FindOne(u.ctx, repo.CreateQuery().AndWhere("book_p.id = 1002"))
+	book1, err := repo.FindOne(u.ctx, repo.MakeQuery().AndWhere("book_p.id = 1002"))
 	u.NoError(err)
 
 	sameName := book1.(*Book).Authors.Get(0).(*Author).Name
@@ -446,7 +446,7 @@ func (u *UpdateTs) TestSelectThenFullUpdate() {
 	repo, err := u.d3Orm.MakeRepository((*Shop)(nil))
 	u.NoError(err)
 
-	shop1i, err := repo.FindOne(u.ctx, repo.CreateQuery().AndWhere("shop_p.id = 1001"))
+	shop1i, err := repo.FindOne(u.ctx, repo.MakeQuery().AndWhere("shop_p.id = 1001"))
 	u.NoError(err)
 
 	shop1 := shop1i.(*Shop)

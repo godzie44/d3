@@ -56,7 +56,7 @@ func (d *DeleteTS) TestDeleteEntity() {
 	rep, err := d.d3Orm.MakeRepository((*ShopProfile)(nil))
 	d.NoError(err)
 
-	profile, err := rep.FindOne(d.ctx, rep.CreateQuery().AndWhere("profile_p.id = 1001"))
+	profile, err := rep.FindOne(d.ctx, rep.MakeQuery().AndWhere("profile_p.id = 1001"))
 	d.NoError(err)
 
 	d.NoError(rep.Delete(d.ctx, profile))
@@ -72,7 +72,7 @@ func (d *DeleteTS) TestDeleteWithRelations() {
 	rep, err := d.d3Orm.MakeRepository((*Shop)(nil))
 	d.NoError(err)
 
-	shop, err := rep.FindOne(d.ctx, rep.CreateQuery().AndWhere("shop_p.id = 1001"))
+	shop, err := rep.FindOne(d.ctx, rep.MakeQuery().AndWhere("shop_p.id = 1001"))
 	d.NoError(err)
 
 	d.NoError(rep.Delete(d.ctx, shop))
@@ -93,7 +93,7 @@ func (d *DeleteTS) TestDeleteWithManyToMany() {
 	rep, err := d.d3Orm.MakeRepository((*Book)(nil))
 	d.NoError(err)
 
-	book, err := rep.FindOne(d.ctx, rep.CreateQuery().AndWhere("book_p.id = 1001"))
+	book, err := rep.FindOne(d.ctx, rep.MakeQuery().AndWhere("book_p.id = 1001"))
 	d.NoError(err)
 
 	d.NoError(rep.Delete(d.ctx, book))
