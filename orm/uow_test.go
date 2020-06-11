@@ -56,7 +56,7 @@ func (u *uowTestEntity) D3Token() entity.MetaToken {
 	}
 }
 
-var testEntityMeta, _ = entity.CreateMeta((*uowTestEntity)(nil))
+var testEntityMeta, _ = entity.NewMeta((*uowTestEntity)(nil))
 
 func TestRegisterNewEntity(t *testing.T) {
 	uow := NewUOW(nil)

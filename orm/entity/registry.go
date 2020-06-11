@@ -35,7 +35,7 @@ func (r *MetaRegistry) Add(entities ...interface{}) error {
 	r.mutex.Lock()
 	defer r.mutex.Unlock()
 	for _, entity := range entities {
-		meta, err := CreateMeta(entity)
+		meta, err := NewMeta(entity)
 		if err != nil {
 			return err
 		}

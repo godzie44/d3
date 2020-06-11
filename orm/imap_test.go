@@ -53,7 +53,7 @@ func (i *imTestEntity2) D3Token() entity.MetaToken {
 func TestPutEntities(t *testing.T) {
 	im := newIdentityMap()
 
-	meta, err := entity.CreateMeta((*imTestEntity1)(nil))
+	meta, err := entity.NewMeta((*imTestEntity1)(nil))
 	assert.NoError(t, err)
 
 	collection := entity.NewCollection()
@@ -78,7 +78,7 @@ func TestPutEntities(t *testing.T) {
 		},
 	)
 
-	meta2, err := entity.CreateMeta((*imTestEntity2)(nil))
+	meta2, err := entity.NewMeta((*imTestEntity2)(nil))
 	assert.NoError(t, err)
 	im.putEntities(meta2, coll2)
 

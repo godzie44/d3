@@ -65,7 +65,7 @@ var (
 	ErrInvalidType = errors.New("invalid type, must be struct or pointer to struct")
 )
 
-func CreateMeta(e interface{}) (*MetaInfo, error) {
+func NewMeta(e interface{}) (*MetaInfo, error) {
 	eType := reflect.TypeOf(e)
 	if eType.Kind() == reflect.Ptr {
 		eType = eType.Elem()

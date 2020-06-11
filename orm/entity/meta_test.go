@@ -7,17 +7,17 @@ import (
 	"testing"
 )
 
-func TestCreateSimpleMeta(t *testing.T) {
-	meta, _ := CreateMeta(
+func TestNewSimpleMeta(t *testing.T) {
+	meta, _ := NewMeta(
 		(*testEntity)(nil),
 	)
 
 	assert.Equal(t, meta.EntityName, Name("github.com/godzie44/d3/orm/entity/testEntity"))
 }
 
-func TestCreateMetaFromVariousReflectionsOfOneEntity(t *testing.T) {
-	meta1, _ := CreateMeta((*testEntity)(nil))
-	meta2, _ := CreateMeta(&testEntity{})
+func TestNewMetaFromVariousReflectionsOfOneEntity(t *testing.T) {
+	meta1, _ := NewMeta((*testEntity)(nil))
+	meta2, _ := NewMeta(&testEntity{})
 
 	//cause (*testEntity)(nil) != &testEntity{} do this
 	meta2.Tpl = meta1.Tpl
@@ -35,8 +35,8 @@ func (s *shop) D3Token() MetaToken {
 	return MetaToken{}
 }
 
-func TestCreateMetaWithRelations(t *testing.T) {
-	meta, err := CreateMeta((*shop)(nil))
+func TestNewMetaWithRelations(t *testing.T) {
+	meta, err := NewMeta((*shop)(nil))
 	assert.NoError(t, err)
 
 	assert.Equal(t, Name("github.com/godzie44/d3/orm/entity/shop"), meta.EntityName)
@@ -85,8 +85,8 @@ func (a *author) D3Token() MetaToken {
 	return MetaToken{}
 }
 
-func TestCreateMetaWithFieldAlias(t *testing.T) {
-	meta, _ := CreateMeta((*author)(nil))
+func TestNewMetaWithFieldAlias(t *testing.T) {
+	meta, _ := NewMeta((*author)(nil))
 
 	assert.Equal(t, FieldInfo{
 		Name:           "Name",
