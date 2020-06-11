@@ -28,7 +28,7 @@ func newSession(storage Storage, uow *UnitOfWork) *session {
 }
 
 func (s *session) execute(q *query.Query) (*entity.Collection, error) {
-	fetchPlan := query.Preprocessor.CreateFetchPlan(q)
+	fetchPlan := query.Preprocessor.MakeFetchPlan(q)
 
 	if s.uow.identityMap.canApply(fetchPlan) {
 		entities, err := s.uow.identityMap.executePlan(fetchPlan)

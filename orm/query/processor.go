@@ -9,7 +9,7 @@ var Preprocessor preprocessor
 
 type preprocessor struct{}
 
-func (preprocessor) CreateFetchPlan(q *Query) *FetchPlan {
+func (preprocessor) MakeFetchPlan(q *Query) *FetchPlan {
 	return &FetchPlan{
 		query:         q,
 		pks:           extractIdsIfPossible(q),
