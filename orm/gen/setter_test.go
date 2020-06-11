@@ -15,6 +15,8 @@ import (
 type setterTestStruct2 struct { //nolint
 }
 
+type Email string
+
 type setterTestStruct struct {
 	int        int                //nolint
 	intPtr     *int               //nolint
@@ -26,6 +28,7 @@ type setterTestStruct struct {
 	t          time.Time          //nolint
 	tPtr       *time.Time         //nolint
 	q          query.Query        //nolint
+	mail       Email              //nolint
 }
 
 var expectedSetter = `func (s *setterTestStruct) __d3_makeFieldSetter() entity.FieldSetter {
@@ -59,6 +62,10 @@ var expectedSetter = `func (s *setterTestStruct) __d3_makeFieldSetter() entity.F
 			return nil 
 		case "q":
 			eTyped.q = val.(query.Query)
+			return nil 
+		
+		case "mail":
+			eTyped.mail = gen.Email(val.(string))
 			return nil 
 		
 		case "nullInt":

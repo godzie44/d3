@@ -56,7 +56,7 @@ func initDb(t *testing.T) (*pgx.Conn, *orm.Orm) {
 	pgDb, _ := pgx.Connect(context.Background(), os.Getenv("D3_PG_TEST_DB"))
 
 	d3orm := orm.NewOrm(pgx2.NewGoPgXAdapter(pgDb, &adapter.SquirrelAdapter{}))
-	assert.NoError(t, d3orm.Register((*allTypeStruct)(nil)))
+	assert.NoError(t, d3orm.Register((*allTypeStruct)(nil), (*entityWithAliases)(nil)))
 
 	sqlSchema, err := d3orm.GenerateSchema()
 	assert.NoError(t, err)
@@ -70,6 +70,33 @@ func initDb(t *testing.T) (*pgx.Conn, *orm.Orm) {
 func dropDb(t *testing.T, db *pgx.Conn) {
 	_, err := db.Exec(context.Background(), `
 DROP TABLE IF EXISTS all_types;
+DROP TABLE IF EXISTS test_aliases;
 `)
 	assert.NoError(t, err)
+}
+
+func TestCustomTypeConversion(t *testing.T) {
+	pgDb, d3orm := initDb(t)
+
+	ctx := d3orm.CtxWithSession(context.Background())
+	rep, err := d3orm.MakeRepository(&entityWithAliases{})
+	assert.NoError(t, err)
+
+	entity := &entityWithAliases{
+		email:       Email("mail"),
+		secretEmail: myEmail("mail"),
+	}
+
+	assert.NoError(t, rep.Persists(ctx, entity))
+	assert.NoError(t, orm.Session(ctx).Flush())
+
+	ctx2 := d3orm.CtxWithSession(context.Background())
+	rep, err = d3orm.MakeRepository(&entityWithAliases{})
+	assert.NoError(t, err)
+
+	fetchedEntity, err := rep.FindOne(ctx2, rep.CreateQuery().AndWhere("id = ?", entity.ID))
+	assert.NoError(t, err)
+
+	assert.Equal(t, entity, fetchedEntity)
+	dropDb(t, pgDb)
 }

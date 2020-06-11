@@ -56,3 +56,14 @@ type allTypeStruct struct {
 	NullStringField  sql.NullString
 	NullTimeField    sql.NullTime
 }
+
+type Email string
+type myEmail Email
+
+//d3:entity
+//d3_table:test_aliases
+type entityWithAliases struct {
+	ID          sql.NullInt32 `d3:"pk:auto"`
+	email       Email
+	secretEmail myEmail
+}

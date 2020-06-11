@@ -749,3 +749,124 @@ func (a *allTypeStruct) __d3_makeComparator() entity.FieldComparator {
 		}
 	}
 }
+
+func (e *entityWithAliases) D3Token() entity.MetaToken {
+	return entity.MetaToken{
+		Tpl:       (*entityWithAliases)(nil),
+		TableName: "test_aliases",
+		Tools: entity.InternalTools{
+			ExtractField:  e.__d3_makeFieldExtractor(),
+			SetFieldVal:   e.__d3_makeFieldSetter(),
+			CompareFields: e.__d3_makeComparator(),
+			NewInstance:   e.__d3_makeInstantiator(),
+			Copy:          e.__d3_makeCopier(),
+		},
+	}
+}
+
+func (e *entityWithAliases) __d3_makeFieldExtractor() entity.FieldExtractor {
+	return func(s interface{}, name string) (interface{}, error) {
+		sTyped, ok := s.(*entityWithAliases)
+		if !ok {
+			return nil, fmt.Errorf("invalid entity type")
+		}
+
+		switch name {
+
+		case "ID":
+			return sTyped.ID, nil
+
+		case "email":
+			return sTyped.email, nil
+
+		case "secretEmail":
+			return sTyped.secretEmail, nil
+
+		default:
+			return nil, fmt.Errorf("field %s not found", name)
+		}
+	}
+}
+
+func (e *entityWithAliases) __d3_makeInstantiator() entity.Instantiator {
+	return func() interface{} {
+		return &entityWithAliases{}
+	}
+}
+
+func (e *entityWithAliases) __d3_makeFieldSetter() entity.FieldSetter {
+	return func(s interface{}, name string, val interface{}) error {
+		eTyped, ok := s.(*entityWithAliases)
+		if !ok {
+			return fmt.Errorf("invalid entity type")
+		}
+
+		switch name {
+
+		case "email":
+			eTyped.email = Email(val.(string))
+			return nil
+		case "secretEmail":
+			eTyped.secretEmail = myEmail(val.(string))
+			return nil
+
+		case "ID":
+			if valuer, isValuer := val.(driver.Valuer); isValuer {
+				v, err := valuer.Value()
+				if err != nil {
+					return eTyped.ID.Scan(nil)
+				}
+				return eTyped.ID.Scan(v)
+			}
+			return eTyped.ID.Scan(val)
+		default:
+			return fmt.Errorf("field %s not found", name)
+		}
+	}
+}
+
+func (e *entityWithAliases) __d3_makeCopier() entity.Copier {
+	return func(src interface{}) interface{} {
+		srcTyped, ok := src.(*entityWithAliases)
+		if !ok {
+			return fmt.Errorf("invalid entity type")
+		}
+
+		copy := &entityWithAliases{}
+
+		copy.ID = srcTyped.ID
+		copy.email = srcTyped.email
+		copy.secretEmail = srcTyped.secretEmail
+
+		return copy
+	}
+}
+
+func (e *entityWithAliases) __d3_makeComparator() entity.FieldComparator {
+	return func(e1, e2 interface{}, fName string) bool {
+		if e1 == nil || e2 == nil {
+			return e1 == e2
+		}
+
+		e1Typed, ok := e1.(*entityWithAliases)
+		if !ok {
+			return false
+		}
+		e2Typed, ok := e2.(*entityWithAliases)
+		if !ok {
+			return false
+		}
+
+		switch fName {
+
+		case "ID":
+			return e1Typed.ID == e2Typed.ID
+		case "email":
+			return e1Typed.email == e2Typed.email
+		case "secretEmail":
+			return e1Typed.secretEmail == e2Typed.secretEmail
+		default:
+			return false
+		}
+	}
+}

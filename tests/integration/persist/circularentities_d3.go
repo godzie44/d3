@@ -2,9 +2,9 @@
 
 package persist
 
+import "database/sql/driver"
 import "fmt"
 import "github.com/godzie44/d3/orm/entity"
-import "database/sql/driver"
 
 func (s *ShopCirc) D3Token() entity.MetaToken {
 	return entity.MetaToken{

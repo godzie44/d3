@@ -64,6 +64,7 @@ func (r *registrarTestStruct) __d3_makeFieldSetter() entity.FieldSetter {
 			eTyped.int = val.(int)
 			return nil 
 		
+		
 		default:
 			return fmt.Errorf("field %s not found", name)
 		}
