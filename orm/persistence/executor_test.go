@@ -29,7 +29,7 @@ type queryStub struct {
 	values    map[string]interface{}
 }
 
-func (s *pusherStub) Insert(table string, cols []string, values []interface{}) error {
+func (s *pusherStub) Insert(table string, cols []string, values []interface{}, _ OnConflict) error {
 	qValues := map[string]interface{}{}
 	for i, val := range values {
 		if fn, ok := val.(func() (interface{}, error)); ok {

@@ -48,7 +48,8 @@ func (o *PersistsCircularTS) SetupSuite() {
 
 	_, err = o.pgDb.Exec(context.Background(), `CREATE TABLE IF NOT EXISTS known_shop_seller_c(
 		shop_id integer NOT NULL,
-		seller_id integer NOT NULL
+		seller_id integer NOT NULL,
+		PRIMARY KEY (shop_id,seller_id)
 	)`)
 	o.Assert().NoError(err)
 

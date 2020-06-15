@@ -89,9 +89,9 @@ type persistStoreWithCounters struct {
 	onInsert, onUpdate, onDelete func()
 }
 
-func (p *persistStoreWithCounters) Insert(table string, cols []string, values []interface{}) error {
+func (p *persistStoreWithCounters) Insert(table string, cols []string, values []interface{}, onConflict persistence.OnConflict) error {
 	p.onInsert()
-	return p.ps.Insert(table, cols, values)
+	return p.ps.Insert(table, cols, values, onConflict)
 }
 
 func (p *persistStoreWithCounters) InsertWithReturn(table string, cols []string, values []interface{}, returnCols []string, withReturned func(scanner persistence.Scanner) error) error {

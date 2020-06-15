@@ -105,7 +105,7 @@ func (g *GoPgXAdapter) CreateTableSql(name string, columns map[string]schema.Col
 			colSql.WriteString("TIMESTAMP WITH TIME ZONE")
 		}
 
-		if isPkCol(col) {
+		if isPkCol(col) && len(pkColumns) == 1 {
 			colSql.WriteRune(' ')
 			colSql.WriteString("PRIMARY KEY")
 		}
@@ -113,6 +113,12 @@ func (g *GoPgXAdapter) CreateTableSql(name string, columns map[string]schema.Col
 		colsSql = append(colsSql, colSql.String())
 	}
 	sql.WriteString(strings.Join(colsSql, ",\n"))
+
+	if len(pkColumns) > 1 {
+		sql.WriteString(",\n")
+		sql.WriteString(fmt.Sprintf("PRIMARY KEY (%s)", strings.Join(pkColumns, ",")))
+	}
+
 	sql.WriteString("\n);\n")
 
 	return sql.String()
@@ -187,15 +193,23 @@ type pgxPusher struct {
 	tx *pgxTransaction
 }
 
-func (p *pgxPusher) Insert(table string, cols []string, values []interface{}) error {
+func (p *pgxPusher) Insert(table string, cols []string, values []interface{}, onConflict persistence.OnConflict) error {
 	argsPlaceHolders := make([]string, len(values))
 	for i := 0; i < len(values); i++ {
 		argsPlaceHolders[i] = "$" + strconv.Itoa(i+1)
 	}
 
+	sql := fmt.Sprintf("INSERT INTO %s(%s) VALUES(%s)", table, strings.Join(cols, ","), strings.Join(argsPlaceHolders, ","))
+	switch onConflict {
+	case persistence.DoNothing:
+		sql += " ON CONFLICT DO NOTHING"
+	case persistence.Undefined:
+		break
+	}
+
 	_, err := p.tx.tx.Exec(
 		context.Background(),
-		fmt.Sprintf("INSERT INTO %s(%s) VALUES(%s)", table, strings.Join(cols, ","), strings.Join(argsPlaceHolders, ",")),
+		sql,
 		values...,
 	)
 
@@ -206,7 +220,13 @@ func (p *pgxPusher) Insert(table string, cols []string, values []interface{}) er
 	return nil
 }
 
-func (p *pgxPusher) InsertWithReturn(table string, cols []string, values []interface{}, returnCols []string, withReturned func(scanner persistence.Scanner) error) error {
+func (p *pgxPusher) InsertWithReturn(
+	table string,
+	cols []string,
+	values []interface{},
+	returnCols []string,
+	withReturned func(scanner persistence.Scanner) error,
+) error {
 	argsPlaceHolders := make([]string, len(values))
 	for i := 0; i < len(values); i++ {
 		argsPlaceHolders[i] = "$" + strconv.Itoa(i+1)

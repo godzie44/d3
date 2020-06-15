@@ -187,6 +187,7 @@ func (b *Builder) createNewTableCommands(registry *entity.MetaRegistry) (map[ent
 			createTableCmdQueue[entity.Name(rel.JoinTable)] = &newTableCmd{
 				tableName: rel.JoinTable,
 				columns:   map[string]ColumnType{rel.JoinColumn: toNotNullEquivalent(joinColType), rel.ReferenceColumn: toNotNullEquivalent(refColType)},
+				pkColumns: []string{rel.JoinColumn, rel.ReferenceColumn},
 			}
 		}
 

@@ -150,6 +150,6 @@ func TestCreateTables(t *testing.T) {
 	assert.Equal(t, &newTableCmd{
 		tableName: "book_author",
 		columns:   map[string]ColumnType{"book_id": Int32, "author_id": Int32},
-		pkColumns: nil,
+		pkColumns: []string{"book_id", "author_id"},
 	}, commands["book_author"])
 }

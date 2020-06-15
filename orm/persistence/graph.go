@@ -345,6 +345,7 @@ func (p *PersistGraph) persistManyToManyRel(ownerBox *persistBox, relation *d3en
 			ActionField(relation.JoinColumn, createIDPromise(ownerBox)),
 			ActionField(relation.ReferenceColumn, createIDPromise(relatedBox)),
 		)
+		linkTableInsertAction.onConflict = DoNothing
 
 		if !relatedBox.action.hasChild(linkTableInsertAction) && !ownerBox.action.hasChild(linkTableInsertAction) {
 			relatedBox.action.addChild(linkTableInsertAction)

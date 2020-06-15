@@ -477,3 +477,30 @@ func (u *UpdateTs) TestSelectThenFullUpdate() {
 		SeeOne("SELECT * FROM author_p WHERE id = $1", newAuthor.Id).
 		SeeOne("SELECT * FROM book_author_p WHERE book_id = $1 and author_id = $2", newBook.Id, newAuthor.Id)
 }
+
+func (u *UpdateTs) TestDoubleAddMToMIsIdempotence() {
+	repo, err := u.d3Orm.MakeRepository((*Book)(nil))
+	u.NoError(err)
+
+	author := &Author{Name: "author"}
+	book := &Book{
+		Authors: entity.NewCollection(author),
+		Name:    "book",
+	}
+
+	u.NoError(repo.Persists(u.ctx, book))
+	u.NoError(orm.Session(u.ctx).Flush())
+
+	newCtx := u.d3Orm.CtxWithSession(context.Background())
+	fetchedEntity, err := repo.FindOne(newCtx, repo.MakeQuery().AndWhere("id=?", book.Id))
+	u.NoError(err)
+
+	fetchedBook := fetchedEntity.(*Book)
+	fetchedBook.Authors.Add(author)
+
+	u.NoError(repo.Persists(newCtx, book))
+	u.NoError(orm.Session(newCtx).Flush())
+
+	helpers.NewPgTester(u.T(), u.pgDb).
+		SeeOne("SELECT * FROM book_author_p")
+}

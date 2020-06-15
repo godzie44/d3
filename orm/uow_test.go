@@ -160,7 +160,7 @@ type alwaysErrPusher struct {
 
 var pusherErr = errors.New("pusher err")
 
-func (a *alwaysErrPusher) Insert(_ string, _ []string, _ []interface{}) error {
+func (a *alwaysErrPusher) Insert(_ string, _ []string, _ []interface{}, _ persistence.OnConflict) error {
 	return pusherErr
 }
 
@@ -179,7 +179,7 @@ func (a alwaysErrPusher) Remove(_ string, _ map[string]interface{}) error {
 type alwaysOkPusher struct {
 }
 
-func (a alwaysOkPusher) Insert(_ string, _ []string, _ []interface{}) error {
+func (a alwaysOkPusher) Insert(_ string, _ []string, _ []interface{}, _ persistence.OnConflict) error {
 	return nil
 }
 

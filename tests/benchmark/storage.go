@@ -80,7 +80,7 @@ type pusherStub struct {
 	idCounters map[string]int
 }
 
-func (p *pusherStub) Insert(table string, cols []string, values []interface{}) error {
+func (p *pusherStub) Insert(table string, cols []string, values []interface{}, _ persistence.OnConflict) error {
 	colsVals := make(map[string]interface{})
 	for i, col := range cols {
 		colsVals[col] = values[i]
@@ -107,7 +107,7 @@ func (p *pusherStub) InsertWithReturn(table string, cols []string, values []inte
 	}
 
 	newId := p.idCounters[table] + 1
-	if err := p.Insert(table, append(cols, returnCols...), append(values, newId)); err != nil {
+	if err := p.Insert(table, append(cols, returnCols...), append(values, newId), persistence.Undefined); err != nil {
 		return err
 	}
 

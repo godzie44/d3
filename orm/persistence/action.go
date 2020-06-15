@@ -191,10 +191,17 @@ type InsertAction struct {
 	pkCols        []string
 
 	box *persistBox
+
+	onConflict OnConflict
 }
 
 func NewInsertAction(pkHydrator func([]interface{}) error, box *persistBox) *InsertAction {
-	action := &InsertAction{pkHydrateFn: pkHydrator, box: box, baseAction: baseAction{Values: make(map[string]interface{})}}
+	action := &InsertAction{
+		pkHydrateFn: pkHydrator,
+		box:         box,
+		baseAction:  baseAction{Values: make(map[string]interface{})},
+		onConflict:  Undefined,
+	}
 
 	if box != nil {
 		action.pkGenStrategy = box.Meta.Pk.Strategy
@@ -237,7 +244,7 @@ func (i *InsertAction) exec(pusher Pusher) error {
 			return err
 		}
 	} else {
-		err := pusher.Insert(i.TableName, columns, values)
+		err := pusher.Insert(i.TableName, columns, values, i.onConflict)
 		if err != nil {
 			return err
 		}
