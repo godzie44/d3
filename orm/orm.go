@@ -22,12 +22,7 @@ func NewOrm(adapter Storage) *Orm {
 }
 
 func (o *Orm) Register(entities ...interface{}) error {
-	err := o.metaRegistry.Add(entities...)
-	if err != nil {
-		return err
-	}
-
-	return nil
+	return o.metaRegistry.Add(entities...)
 }
 
 func (o *Orm) CtxWithSession(ctx context.Context) context.Context {
