@@ -10,13 +10,13 @@ import (
 const sessionKey = "d3_session"
 
 type Orm struct {
-	PgDb         Storage
+	storage      Storage
 	metaRegistry *d3Entity.MetaRegistry
 }
 
 func NewOrm(adapter Storage) *Orm {
 	return &Orm{
-		PgDb:         adapter,
+		storage:      adapter,
 		metaRegistry: d3Entity.NewMetaRegistry(),
 	}
 }
@@ -42,7 +42,7 @@ func Session(ctx context.Context) *session {
 }
 
 func (o *Orm) MakeSession() *session {
-	return newSession(o.PgDb, NewUOW(o.PgDb))
+	return newSession(o.storage, NewUOW(o.storage))
 }
 
 func (o *Orm) MakeRepository(entity interface{}) (*Repository, error) {
@@ -57,7 +57,7 @@ func (o *Orm) MakeRepository(entity interface{}) (*Repository, error) {
 }
 
 func (o *Orm) GenerateSchema() (string, error) {
-	generator, adapterCanGenerateSchema := o.PgDb.(schema.StorageSchemaGenerator)
+	generator, adapterCanGenerateSchema := o.storage.(schema.StorageSchemaGenerator)
 	if !adapterCanGenerateSchema {
 		return "", fmt.Errorf("adapter unsupport schema generation")
 	}
