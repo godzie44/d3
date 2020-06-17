@@ -2,8 +2,8 @@
 
 package cache
 
-import "github.com/godzie44/d3/orm/entity"
 import "fmt"
+import "github.com/godzie44/d3/orm/entity"
 
 func (e *entity1) D3Token() entity.MetaToken {
 	return entity.MetaToken{

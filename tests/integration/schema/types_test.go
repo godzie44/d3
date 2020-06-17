@@ -6,6 +6,7 @@ import (
 	"github.com/godzie44/d3/adapter"
 	pgx2 "github.com/godzie44/d3/adapter/pgx"
 	"github.com/godzie44/d3/orm"
+	"github.com/gofrs/uuid"
 	"github.com/jackc/pgx/v4"
 	"github.com/stretchr/testify/assert"
 	"os"
@@ -20,8 +21,11 @@ func TestTypeConversion(t *testing.T) {
 	rep, err := d3orm.MakeRepository(&allTypeStruct{})
 	assert.NoError(t, err)
 
+	uuidVal, _ := uuid.FromString("a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11")
+
 	currTime := time.Unix(time.Now().Unix(), 0)
 	entity := &allTypeStruct{
+		Uuid:             uuidVal,
 		BoolField:        true,
 		IntField:         1,
 		Int32Field:       2,

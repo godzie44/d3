@@ -5,6 +5,8 @@ go 1.13
 require (
 	github.com/Masterminds/squirrel v1.1.0
 	github.com/go-sql-driver/mysql v1.4.1 // indirect
+	github.com/gofrs/uuid v3.2.0+incompatible
+	github.com/jackc/pgtype v1.1.0
 	github.com/jackc/pgx/v4 v4.2.1
 	github.com/mattn/go-sqlite3 v1.11.0 // indirect
 	github.com/stretchr/testify v1.4.0

@@ -3,6 +3,7 @@ package schema
 import (
 	"database/sql"
 	"github.com/godzie44/d3/orm/entity"
+	"github.com/gofrs/uuid"
 	"time"
 )
 
@@ -41,6 +42,7 @@ type author struct {
 //d3_table:all_types
 type allTypeStruct struct {
 	ID               sql.NullInt32 `d3:"pk:auto"`
+	Uuid             uuid.UUID
 	BoolField        bool
 	IntField         int
 	Int32Field       int32

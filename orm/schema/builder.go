@@ -24,6 +24,8 @@ const (
 
 	Time ColumnType = "time"
 
+	UUID ColumnType = "uuid"
+
 	NullBool  ColumnType = "null-bool"
 	NullInt32 ColumnType = "null-int32"
 	NullInt64 ColumnType = "null-int64"
@@ -198,6 +200,10 @@ func (b *Builder) createNewTableCommands(registry *entity.MetaRegistry) (map[ent
 }
 
 func reflectTypeToDbType(t reflect.Type) (ColumnType, error) {
+	if t.Name() == "UUID" {
+		return UUID, nil
+	}
+
 	switch t.Kind() {
 	case reflect.Bool:
 		return Bool, nil

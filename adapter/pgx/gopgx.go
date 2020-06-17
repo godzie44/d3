@@ -10,6 +10,8 @@ import (
 	"github.com/godzie44/d3/orm/persistence"
 	"github.com/godzie44/d3/orm/query"
 	"github.com/godzie44/d3/orm/schema"
+	"github.com/jackc/pgtype"
+	pgtypeuuid "github.com/jackc/pgtype/ext/gofrs-uuid"
 	"github.com/jackc/pgx/v4"
 	"reflect"
 	"strconv"
@@ -55,6 +57,8 @@ func (g *GoPgXAdapter) CreateTableSql(name string, columns map[string]schema.Col
 		colSql.WriteRune(' ')
 
 		switch ctype {
+		case schema.UUID:
+			colSql.WriteString("UUID")
 		case schema.Bool:
 			colSql.WriteString("BOOLEAN NOT NULL")
 		case schema.Int:
@@ -129,6 +133,12 @@ func (g *GoPgXAdapter) CreateIndexSql(name string, table string, columns ...stri
 }
 
 func NewGoPgXAdapter(pgDb *pgx.Conn, queryAdapter *adapter.SquirrelAdapter) *GoPgXAdapter {
+	pgDb.ConnInfo().RegisterDataType(pgtype.DataType{
+		Value: &pgtypeuuid.UUID{},
+		Name:  "uuid",
+		OID:   pgtype.UUIDOID,
+	})
+
 	return &GoPgXAdapter{
 		pgDb:         pgDb,
 		queryAdapter: queryAdapter,

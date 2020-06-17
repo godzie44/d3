@@ -2,10 +2,10 @@
 
 package schema
 
-import "database/sql/driver"
-import "time"
 import "fmt"
 import "github.com/godzie44/d3/orm/entity"
+import "database/sql/driver"
+import "time"
 
 func (s *shop) D3Token() entity.MetaToken {
 	return entity.MetaToken{
@@ -512,6 +512,9 @@ func (a *allTypeStruct) __d3_makeFieldExtractor() entity.FieldExtractor {
 		case "ID":
 			return sTyped.ID, nil
 
+		case "Uuid":
+			return sTyped.Uuid, nil
+
 		case "BoolField":
 			return sTyped.BoolField, nil
 
@@ -608,6 +611,15 @@ func (a *allTypeStruct) __d3_makeFieldSetter() entity.FieldSetter {
 				return eTyped.ID.Scan(v)
 			}
 			return eTyped.ID.Scan(val)
+		case "Uuid":
+			if valuer, isValuer := val.(driver.Valuer); isValuer {
+				v, err := valuer.Value()
+				if err != nil {
+					return eTyped.Uuid.Scan(nil)
+				}
+				return eTyped.Uuid.Scan(v)
+			}
+			return eTyped.Uuid.Scan(val)
 		case "NullBoolField":
 			if valuer, isValuer := val.(driver.Valuer); isValuer {
 				v, err := valuer.Value()
@@ -678,6 +690,7 @@ func (a *allTypeStruct) __d3_makeCopier() entity.Copier {
 		copy := &allTypeStruct{}
 
 		copy.ID = srcTyped.ID
+		copy.Uuid = srcTyped.Uuid
 		copy.BoolField = srcTyped.BoolField
 		copy.IntField = srcTyped.IntField
 		copy.Int32Field = srcTyped.Int32Field
@@ -716,6 +729,8 @@ func (a *allTypeStruct) __d3_makeComparator() entity.FieldComparator {
 
 		case "ID":
 			return e1Typed.ID == e2Typed.ID
+		case "Uuid":
+			return e1Typed.Uuid == e2Typed.Uuid
 		case "BoolField":
 			return e1Typed.BoolField == e2Typed.BoolField
 		case "IntField":
