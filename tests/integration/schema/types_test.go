@@ -59,7 +59,7 @@ func TestTypeConversion(t *testing.T) {
 func initDb(t *testing.T) (*pgx.Conn, *orm.Orm) {
 	pgDb, _ := pgx.Connect(context.Background(), os.Getenv("D3_PG_TEST_DB"))
 
-	d3orm := orm.NewOrm(pgx2.NewGoPgXAdapter(pgDb, &adapter.SquirrelAdapter{}))
+	d3orm := orm.NewOrm(pgx2.NewPgxDriver(pgDb, &adapter.SquirrelAdapter{}))
 	assert.NoError(t, d3orm.Register((*allTypeStruct)(nil), (*entityWithAliases)(nil)))
 
 	sqlSchema, err := d3orm.GenerateSchema()

@@ -18,14 +18,27 @@ import (
 	"strings"
 )
 
-type GoPgXAdapter struct {
+type pgxDriver struct {
 	pgDb         *pgx.Conn
 	queryAdapter *adapter.SquirrelAdapter
 
 	beforeQCallback, afterQCallback []func(query string, args ...interface{})
 }
 
-func (g *GoPgXAdapter) MakeScalarDataMapper() orm.ScalarDataMapper {
+func NewPgxDriver(pgDb *pgx.Conn, queryAdapter *adapter.SquirrelAdapter) *pgxDriver {
+	pgDb.ConnInfo().RegisterDataType(pgtype.DataType{
+		Value: &pgtypeuuid.UUID{},
+		Name:  "uuid",
+		OID:   pgtype.UUIDOID,
+	})
+
+	return &pgxDriver{
+		pgDb:         pgDb,
+		queryAdapter: queryAdapter,
+	}
+}
+
+func (g *pgxDriver) MakeScalarDataMapper() orm.ScalarDataMapper {
 	return func(data interface{}, into reflect.Kind) interface{} {
 		switch into {
 		case reflect.Int:
@@ -36,7 +49,7 @@ func (g *GoPgXAdapter) MakeScalarDataMapper() orm.ScalarDataMapper {
 	}
 }
 
-func (g *GoPgXAdapter) CreateTableSql(name string, columns map[string]schema.ColumnType, pkColumns []string, pkStrategy entity.PkStrategy) string {
+func (g *pgxDriver) CreateTableSql(name string, columns map[string]schema.ColumnType, pkColumns []string, pkStrategy entity.PkStrategy) string {
 	isPkCol := func(colName string) bool {
 		for _, pkCol := range pkColumns {
 			if pkCol == colName {
@@ -128,32 +141,19 @@ func (g *GoPgXAdapter) CreateTableSql(name string, columns map[string]schema.Col
 	return sql.String()
 }
 
-func (g *GoPgXAdapter) CreateIndexSql(name string, table string, columns ...string) string {
+func (g *pgxDriver) CreateIndexSql(name string, table string, columns ...string) string {
 	panic("implement me")
 }
 
-func NewGoPgXAdapter(pgDb *pgx.Conn, queryAdapter *adapter.SquirrelAdapter) *GoPgXAdapter {
-	pgDb.ConnInfo().RegisterDataType(pgtype.DataType{
-		Value: &pgtypeuuid.UUID{},
-		Name:  "uuid",
-		OID:   pgtype.UUIDOID,
-	})
-
-	return &GoPgXAdapter{
-		pgDb:         pgDb,
-		queryAdapter: queryAdapter,
-	}
-}
-
-func (g *GoPgXAdapter) BeforeQuery(fn func(query string, args ...interface{})) {
+func (g *pgxDriver) BeforeQuery(fn func(query string, args ...interface{})) {
 	g.beforeQCallback = append(g.beforeQCallback, fn)
 }
 
-func (g *GoPgXAdapter) AfterQuery(fn func(query string, args ...interface{})) {
+func (g *pgxDriver) AfterQuery(fn func(query string, args ...interface{})) {
 	g.afterQCallback = append(g.afterQCallback, fn)
 }
 
-func (g *GoPgXAdapter) ExecuteQuery(query *query.Query) ([]map[string]interface{}, error) {
+func (g *pgxDriver) ExecuteQuery(query *query.Query) ([]map[string]interface{}, error) {
 	q, args, err := g.queryAdapter.ToSql(query)
 	if err != nil {
 		return nil, err
@@ -190,7 +190,7 @@ func (g *GoPgXAdapter) ExecuteQuery(query *query.Query) ([]map[string]interface{
 	return result, nil
 }
 
-func (g *GoPgXAdapter) MakePusher(tx orm.Transaction) persistence.Pusher {
+func (g *pgxDriver) MakePusher(tx orm.Transaction) persistence.Pusher {
 	pgxTx, ok := tx.(*pgxTransaction)
 	if !ok {
 		panic(errors.New("transaction type must be pgxTransaction"))
@@ -312,7 +312,7 @@ func (p *pgxTransaction) Rollback() error {
 	return p.tx.Rollback(context.Background())
 }
 
-func (g *GoPgXAdapter) BeginTx() (orm.Transaction, error) {
+func (g *pgxDriver) BeginTx() (orm.Transaction, error) {
 	tx, err := g.pgDb.Begin(context.Background())
 	if err != nil {
 		return nil, err

@@ -21,7 +21,7 @@ type MigrationTestSuite struct {
 func (m *MigrationTestSuite) SetupSuite() {
 	m.pgDb, _ = pgx.Connect(context.Background(), os.Getenv("D3_PG_TEST_DB"))
 
-	m.orm = orm.NewOrm(pgx2.NewGoPgXAdapter(m.pgDb, &adapter.SquirrelAdapter{}))
+	m.orm = orm.NewOrm(pgx2.NewPgxDriver(m.pgDb, &adapter.SquirrelAdapter{}))
 	m.Assert().NoError(m.orm.Register(
 		(*shop)(nil),
 		(*profile)(nil),

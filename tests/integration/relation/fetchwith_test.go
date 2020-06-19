@@ -79,7 +79,7 @@ INSERT INTO t3_t4(t3_id, t4_id) VALUES (2, 2);
 `)
 	o.Assert().NoError(err)
 
-	o.dbAdapter = helpers.NewDbAdapterWithQueryCounter(pgx2.NewGoPgXAdapter(o.pgDb, &adapter.SquirrelAdapter{}))
+	o.dbAdapter = helpers.NewDbAdapterWithQueryCounter(pgx2.NewPgxDriver(o.pgDb, &adapter.SquirrelAdapter{}))
 	o.orm = orm.NewOrm(o.dbAdapter)
 	o.Assert().NoError(o.orm.Register(
 		(*fwTestEntity1)(nil),

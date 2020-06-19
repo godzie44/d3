@@ -52,7 +52,7 @@ INSERT INTO discount(id, value, t2_id) VALUES (1, 33, 1);
 `)
 	o.Assert().NoError(err)
 
-	o.orm = orm.NewOrm(pgx2.NewGoPgXAdapter(o.pgDb, &adapter.SquirrelAdapter{}))
+	o.orm = orm.NewOrm(pgx2.NewPgxDriver(o.pgDb, &adapter.SquirrelAdapter{}))
 	o.NoError(o.orm.Register(
 		(*ShopLR)(nil),
 		(*BookLR)(nil),

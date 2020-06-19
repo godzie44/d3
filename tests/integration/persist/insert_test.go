@@ -26,7 +26,7 @@ func (o *PersistsTS) SetupSuite() {
 
 	err := createSchema(o.pgDb)
 
-	o.dbAdapter = helpers.NewDbAdapterWithQueryCounter(pgx2.NewGoPgXAdapter(o.pgDb, &adapter.SquirrelAdapter{}))
+	o.dbAdapter = helpers.NewDbAdapterWithQueryCounter(pgx2.NewPgxDriver(o.pgDb, &adapter.SquirrelAdapter{}))
 	o.d3Orm = orm.NewOrm(o.dbAdapter)
 	o.NoError(o.d3Orm.Register(
 		(*Book)(nil),

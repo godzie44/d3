@@ -51,7 +51,7 @@ INSERT INTO photo(id, data) VALUES (1, 'entity_3_data');
 `)
 	o.Assert().NoError(err)
 
-	o.orm = orm.NewOrm(pgx2.NewGoPgXAdapter(o.pgDb, &adapter.SquirrelAdapter{}))
+	o.orm = orm.NewOrm(pgx2.NewPgxDriver(o.pgDb, &adapter.SquirrelAdapter{}))
 	o.NoError(o.orm.Register(
 		(*ShopLL)(nil),
 		(*ProfileLL)(nil),

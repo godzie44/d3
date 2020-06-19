@@ -58,7 +58,7 @@ func TestIdentityMapCacheSuite(t *testing.T) {
 }
 
 func (o *IMCacheTS) TestNoQueryCreateForCachedEntities() {
-	wrappedDbAdapter := helpers.NewDbAdapterWithQueryCounter(pgx2.NewGoPgXAdapter(o.pgDb, &adapter.SquirrelAdapter{}))
+	wrappedDbAdapter := helpers.NewDbAdapterWithQueryCounter(pgx2.NewPgxDriver(o.pgDb, &adapter.SquirrelAdapter{}))
 	d3Orm := orm.NewOrm(wrappedDbAdapter)
 	err := d3Orm.Register(
 		(*entity1)(nil),

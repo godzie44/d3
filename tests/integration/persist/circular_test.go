@@ -53,7 +53,7 @@ func (o *PersistsCircularTS) SetupSuite() {
 	)`)
 	o.Assert().NoError(err)
 
-	o.dbAdapter = helpers.NewDbAdapterWithQueryCounter(pgx2.NewGoPgXAdapter(o.pgDb, &adapter.SquirrelAdapter{}))
+	o.dbAdapter = helpers.NewDbAdapterWithQueryCounter(pgx2.NewPgxDriver(o.pgDb, &adapter.SquirrelAdapter{}))
 	o.orm = orm.NewOrm(o.dbAdapter)
 	o.Assert().NoError(o.orm.Register(
 		(*ShopCirc)(nil),

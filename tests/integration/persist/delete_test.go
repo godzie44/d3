@@ -25,7 +25,7 @@ func (d *DeleteTS) SetupSuite() {
 
 	err := createSchema(d.pgDb)
 
-	d.dbAdapter = helpers.NewDbAdapterWithQueryCounter(pgx2.NewGoPgXAdapter(d.pgDb, &adapter.SquirrelAdapter{}))
+	d.dbAdapter = helpers.NewDbAdapterWithQueryCounter(pgx2.NewPgxDriver(d.pgDb, &adapter.SquirrelAdapter{}))
 	d.d3Orm = orm.NewOrm(d.dbAdapter)
 	d.NoError(d.d3Orm.Register(
 		(*Book)(nil),

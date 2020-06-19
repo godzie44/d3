@@ -68,7 +68,7 @@ INSERT INTO author_redactor(author_id, redactor_id) VALUES (1, 1);
 `)
 	o.Assert().NoError(err)
 
-	o.orm = orm.NewOrm(pgx2.NewGoPgXAdapter(o.pgDb, &adapter.SquirrelAdapter{}))
+	o.orm = orm.NewOrm(pgx2.NewPgxDriver(o.pgDb, &adapter.SquirrelAdapter{}))
 	o.Assert().NoError(o.orm.Register(
 		(*BookLL)(nil),
 		(*AuthorLL)(nil),
