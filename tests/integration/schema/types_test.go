@@ -3,8 +3,7 @@ package schema
 import (
 	"context"
 	"database/sql"
-	"github.com/godzie44/d3/adapter"
-	pgx2 "github.com/godzie44/d3/adapter/pgx"
+	d3pgx "github.com/godzie44/d3/adapter/pgx"
 	"github.com/godzie44/d3/orm"
 	"github.com/gofrs/uuid"
 	"github.com/jackc/pgx/v4"
@@ -59,7 +58,7 @@ func TestTypeConversion(t *testing.T) {
 func initDb(t *testing.T) (*pgx.Conn, *orm.Orm) {
 	pgDb, _ := pgx.Connect(context.Background(), os.Getenv("D3_PG_TEST_DB"))
 
-	d3orm := orm.NewOrm(pgx2.NewPgxDriver(pgDb, &adapter.SquirrelAdapter{}))
+	d3orm := orm.NewOrm(d3pgx.NewPgxDriver(pgDb))
 	assert.NoError(t, d3orm.Register((*allTypeStruct)(nil), (*entityWithAliases)(nil)))
 
 	sqlSchema, err := d3orm.GenerateSchema()

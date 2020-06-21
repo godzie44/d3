@@ -2,8 +2,7 @@ package relation
 
 import (
 	"context"
-	"github.com/godzie44/d3/adapter"
-	pgx2 "github.com/godzie44/d3/adapter/pgx"
+	d3pgx "github.com/godzie44/d3/adapter/pgx"
 	"github.com/godzie44/d3/orm"
 	"github.com/jackc/pgx/v4"
 	"github.com/stretchr/testify/suite"
@@ -52,7 +51,7 @@ INSERT INTO discount(id, value, t2_id) VALUES (1, 33, 1);
 `)
 	o.Assert().NoError(err)
 
-	o.orm = orm.NewOrm(pgx2.NewPgxDriver(o.pgDb, &adapter.SquirrelAdapter{}))
+	o.orm = orm.NewOrm(d3pgx.NewPgxDriver(o.pgDb))
 	o.NoError(o.orm.Register(
 		(*ShopLR)(nil),
 		(*BookLR)(nil),

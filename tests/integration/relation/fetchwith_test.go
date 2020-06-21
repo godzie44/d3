@@ -2,8 +2,7 @@ package relation
 
 import (
 	"context"
-	"github.com/godzie44/d3/adapter"
-	pgx2 "github.com/godzie44/d3/adapter/pgx"
+	d3pgx "github.com/godzie44/d3/adapter/pgx"
 	"github.com/godzie44/d3/orm"
 	"github.com/godzie44/d3/tests/helpers"
 	"github.com/jackc/pgx/v4"
@@ -79,7 +78,7 @@ INSERT INTO t3_t4(t3_id, t4_id) VALUES (2, 2);
 `)
 	o.Assert().NoError(err)
 
-	o.dbAdapter = helpers.NewDbAdapterWithQueryCounter(pgx2.NewPgxDriver(o.pgDb, &adapter.SquirrelAdapter{}))
+	o.dbAdapter = helpers.NewDbAdapterWithQueryCounter(d3pgx.NewPgxDriver(o.pgDb))
 	o.orm = orm.NewOrm(o.dbAdapter)
 	o.Assert().NoError(o.orm.Register(
 		(*fwTestEntity1)(nil),

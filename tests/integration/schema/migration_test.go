@@ -2,8 +2,7 @@ package schema
 
 import (
 	"context"
-	"github.com/godzie44/d3/adapter"
-	pgx2 "github.com/godzie44/d3/adapter/pgx"
+	d3pgx "github.com/godzie44/d3/adapter/pgx"
 	"github.com/godzie44/d3/orm"
 	"github.com/godzie44/d3/tests/helpers"
 	"github.com/jackc/pgx/v4"
@@ -21,7 +20,7 @@ type MigrationTestSuite struct {
 func (m *MigrationTestSuite) SetupSuite() {
 	m.pgDb, _ = pgx.Connect(context.Background(), os.Getenv("D3_PG_TEST_DB"))
 
-	m.orm = orm.NewOrm(pgx2.NewPgxDriver(m.pgDb, &adapter.SquirrelAdapter{}))
+	m.orm = orm.NewOrm(d3pgx.NewPgxDriver(m.pgDb))
 	m.Assert().NoError(m.orm.Register(
 		(*shop)(nil),
 		(*profile)(nil),

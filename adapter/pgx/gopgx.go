@@ -25,7 +25,7 @@ type pgxDriver struct {
 	beforeQCallback, afterQCallback []func(query string, args ...interface{})
 }
 
-func NewPgxDriver(pgDb *pgx.Conn, queryAdapter *adapter.SquirrelAdapter) *pgxDriver {
+func NewPgxDriver(pgDb *pgx.Conn) *pgxDriver {
 	pgDb.ConnInfo().RegisterDataType(pgtype.DataType{
 		Value: &pgtypeuuid.UUID{},
 		Name:  "uuid",
@@ -34,7 +34,7 @@ func NewPgxDriver(pgDb *pgx.Conn, queryAdapter *adapter.SquirrelAdapter) *pgxDri
 
 	return &pgxDriver{
 		pgDb:         pgDb,
-		queryAdapter: queryAdapter,
+		queryAdapter: &adapter.SquirrelAdapter{},
 	}
 }
 

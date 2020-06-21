@@ -2,8 +2,7 @@ package cache
 
 import (
 	"context"
-	"github.com/godzie44/d3/adapter"
-	pgx2 "github.com/godzie44/d3/adapter/pgx"
+	d3pgx "github.com/godzie44/d3/adapter/pgx"
 	"github.com/godzie44/d3/orm"
 	"github.com/godzie44/d3/tests/helpers"
 	"github.com/jackc/pgx/v4"
@@ -58,7 +57,7 @@ func TestIdentityMapCacheSuite(t *testing.T) {
 }
 
 func (o *IMCacheTS) TestNoQueryCreateForCachedEntities() {
-	wrappedDbAdapter := helpers.NewDbAdapterWithQueryCounter(pgx2.NewPgxDriver(o.pgDb, &adapter.SquirrelAdapter{}))
+	wrappedDbAdapter := helpers.NewDbAdapterWithQueryCounter(d3pgx.NewPgxDriver(o.pgDb))
 	d3Orm := orm.NewOrm(wrappedDbAdapter)
 	err := d3Orm.Register(
 		(*entity1)(nil),

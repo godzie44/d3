@@ -2,8 +2,7 @@ package persist
 
 import (
 	"context"
-	"github.com/godzie44/d3/adapter"
-	pgx2 "github.com/godzie44/d3/adapter/pgx"
+	d3pgx "github.com/godzie44/d3/adapter/pgx"
 	"github.com/godzie44/d3/orm"
 	"github.com/godzie44/d3/orm/entity"
 	"github.com/godzie44/d3/tests/helpers"
@@ -26,7 +25,7 @@ func (u *UpdateTs) SetupSuite() {
 
 	err := createSchema(u.pgDb)
 
-	u.dbAdapter = helpers.NewDbAdapterWithQueryCounter(pgx2.NewPgxDriver(u.pgDb, &adapter.SquirrelAdapter{}))
+	u.dbAdapter = helpers.NewDbAdapterWithQueryCounter(d3pgx.NewPgxDriver(u.pgDb))
 	u.d3Orm = orm.NewOrm(u.dbAdapter)
 	u.NoError(u.d3Orm.Register(
 		(*Book)(nil),
