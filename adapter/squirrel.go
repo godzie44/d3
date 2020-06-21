@@ -6,10 +6,7 @@ import (
 	"github.com/godzie44/d3/orm/query"
 )
 
-type SquirrelAdapter struct {
-}
-
-func (s *SquirrelAdapter) ToSql(q *query.Query) (string, []interface{}, error) {
+func QueryToSql(q *query.Query) (string, []interface{}, error) {
 	sqQuery, err := toSquirrel(q)
 	if err != nil {
 		return "", nil, err

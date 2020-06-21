@@ -38,10 +38,8 @@ var testCases = []testCase{
 }
 
 func TestQueryToSquirrelSql(t *testing.T) {
-	adapter := SquirrelAdapter{}
-
 	for _, tCase := range testCases {
-		sql, args, _ := adapter.ToSql(tCase.query)
+		sql, args, _ := QueryToSql(tCase.query)
 		assert.Equal(t, tCase.sql, sql)
 		assert.Equal(t, tCase.args, args)
 	}

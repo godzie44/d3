@@ -19,8 +19,7 @@ import (
 )
 
 type pgxDriver struct {
-	pgDb         *pgx.Conn
-	queryAdapter *adapter.SquirrelAdapter
+	pgDb *pgx.Conn
 
 	beforeQCallback, afterQCallback []func(query string, args ...interface{})
 }
@@ -33,8 +32,7 @@ func NewPgxDriver(pgDb *pgx.Conn) *pgxDriver {
 	})
 
 	return &pgxDriver{
-		pgDb:         pgDb,
-		queryAdapter: &adapter.SquirrelAdapter{},
+		pgDb: pgDb,
 	}
 }
 
@@ -154,7 +152,7 @@ func (g *pgxDriver) AfterQuery(fn func(query string, args ...interface{})) {
 }
 
 func (g *pgxDriver) ExecuteQuery(query *query.Query) ([]map[string]interface{}, error) {
-	q, args, err := g.queryAdapter.ToSql(query)
+	q, args, err := adapter.QueryToSql(query)
 	if err != nil {
 		return nil, err
 	}
