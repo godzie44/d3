@@ -13,7 +13,7 @@ import (
 
 type DbAdapterWithQueryCounter struct {
 	queryCounter, insertCounter, updateCounter, deleteCounter int
-	dbAdapter                                                 orm.Storage
+	dbAdapter                                                 orm.Driver
 }
 
 func (d *DbAdapterWithQueryCounter) MakeScalarDataMapper() orm.ScalarDataMapper {
@@ -40,7 +40,7 @@ func (d *DbAdapterWithQueryCounter) BeginTx() (orm.Transaction, error) {
 	return d.dbAdapter.BeginTx()
 }
 
-func NewDbAdapterWithQueryCounter(dbAdapter orm.Storage) *DbAdapterWithQueryCounter {
+func NewDbAdapterWithQueryCounter(dbAdapter orm.Driver) *DbAdapterWithQueryCounter {
 	wrappedAdapter := &DbAdapterWithQueryCounter{dbAdapter: dbAdapter}
 
 	dbAdapter.AfterQuery(func(_ string, _ ...interface{}) {

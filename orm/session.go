@@ -6,7 +6,7 @@ import (
 	"github.com/godzie44/d3/orm/query"
 )
 
-type Storage interface {
+type Driver interface {
 	MakePusher(tx Transaction) persistence.Pusher
 
 	ExecuteQuery(query *query.Query) ([]map[string]interface{}, error)
@@ -19,11 +19,11 @@ type Storage interface {
 }
 
 type session struct {
-	storage Storage
+	storage Driver
 	uow     *UnitOfWork
 }
 
-func newSession(storage Storage, uow *UnitOfWork) *session {
+func newSession(storage Driver, uow *UnitOfWork) *session {
 	return &session{storage: storage, uow: uow}
 }
 

@@ -10,13 +10,13 @@ import (
 const sessionKey = "d3_session"
 
 type Orm struct {
-	storage      Storage
+	storage      Driver
 	metaRegistry *d3Entity.MetaRegistry
 }
 
-func NewOrm(adapter Storage) *Orm {
+func NewOrm(driver Driver) *Orm {
 	return &Orm{
-		storage:      adapter,
+		storage:      driver,
 		metaRegistry: d3Entity.NewMetaRegistry(),
 	}
 }

@@ -16,13 +16,13 @@ type UnitOfWork struct {
 	dirtyEntities   map[entity.Name]map[interface{}]*dirtyEl
 	deletedEntities map[entity.Name]map[interface{}]*entity.Box
 
-	storage     Storage
+	storage     Driver
 	identityMap *identityMap
 
 	currentTx Transaction
 }
 
-func NewUOW(storage Storage) *UnitOfWork {
+func NewUOW(storage Driver) *UnitOfWork {
 	return &UnitOfWork{
 		newEntities:     make(map[entity.Name][]*entity.Box),
 		dirtyEntities:   make(map[entity.Name]map[interface{}]*dirtyEl),

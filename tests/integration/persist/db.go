@@ -73,7 +73,7 @@ delete from profile_p;
 	return err
 }
 
-func fillDb(assert *assert.Assertions, s orm.Storage) {
+func fillDb(assert *assert.Assertions, s orm.Driver) {
 	tx, err := s.BeginTx()
 	assert.NoError(err)
 
