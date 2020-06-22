@@ -9,11 +9,15 @@ import (
 
 const sessionKey = "d3_session"
 
+// Orm - d3 orm instance.
 type Orm struct {
 	storage      Driver
 	metaRegistry *d3Entity.MetaRegistry
 }
 
+// NewOrm create an instance of d3 orm.
+//
+// driver - d3 wrapper on database driver. Find it in adapter package.
 func NewOrm(driver Driver) *Orm {
 	return &Orm{
 		storage:      driver,
@@ -21,14 +25,19 @@ func NewOrm(driver Driver) *Orm {
 	}
 }
 
+// Register - register entities in d3 orm.
+// Note that entity must be structure and must implement D3Entity interface (it's implement it after use code generation tool).
+// Besides if you register entity with dependencies (for example: one to one relation) you must registered depended entities too, in the same call.
 func (o *Orm) Register(entities ...interface{}) error {
 	return o.metaRegistry.Add(entities...)
 }
 
+// CtxWithSession append new session instance to context.
 func (o *Orm) CtxWithSession(ctx context.Context) context.Context {
 	return context.WithValue(ctx, sessionKey, o.MakeSession())
 }
 
+// Session extract session from context, return nil if session not found.
 func Session(ctx context.Context) *session {
 	if sess, ok := ctx.Value(sessionKey).(*session); ok {
 		return sess
@@ -36,10 +45,14 @@ func Session(ctx context.Context) *session {
 	return nil
 }
 
+// MakeSession - create new instance of session.
 func (o *Orm) MakeSession() *session {
 	return newSession(o.storage, NewUOW(o.storage))
 }
 
+// MakeRepository - create new repository for entity.
+//
+// entity - entity to store in repository.
 func (o *Orm) MakeRepository(entity interface{}) (*Repository, error) {
 	entityMeta, err := o.metaRegistry.GetMeta(entity)
 	if err != nil {
@@ -51,6 +64,8 @@ func (o *Orm) MakeRepository(entity interface{}) (*Repository, error) {
 	}, nil
 }
 
+// GenerateSchema - create sql DDL for persist all registered entities in database.
+// May return error if driver nonsupport schema generation.
 func (o *Orm) GenerateSchema() (string, error) {
 	generator, adapterCanGenerateSchema := o.storage.(schema.StorageSchemaGenerator)
 	if !adapterCanGenerateSchema {
