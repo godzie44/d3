@@ -3,7 +3,7 @@
 # D3 ORM
 
 D3 is golang ORM and DataMapper. This project was design with respect to such 
-ORM's like hybernate and doctrine. Main task - give an instrument for create 
+ORM's like hibernate and doctrine. Main task - give an instrument for create 
 nice domain layer. If your business code not expressive enough, or if you want unit 
 tests without a database, or if in your application, for some reason, you need aggregates, 
 repositories, entities and value objects - d3 can be a good choice.
@@ -11,8 +11,8 @@ repositories, entities and value objects - d3 can be a good choice.
 ## Motivation. Why another ORM?
 
 In my opinion in GO have a lot of good ORM's. They are pretty fast and 
-may save the developer from a lot of boilerplate code. But, if you want write code
-in DDD style (using DDD patterns and philosophy) it's not enought, 
+may save the developer from a lot of boilerplate code. But, if you want to write code
+in DDD style (using DDD patterns and philosophy) it's not enough, 
 because DDD approach imposes certain requirements. Main requirement - 
 persistence ignorance. Current GO ORM's do not provide sufficient level of abstraction for this.
 Other words, we need keep business logic free of data access code. That's why D3 created.
@@ -29,12 +29,17 @@ Other words, we need keep business logic free of data access code. That's why D3
 - cascade remove and update of related entities
 - application level transaction (UnitOfWork)
 - db transactions support
-- smart persist layer dont generate redundant queries on entity updates
+- smart persist layer don't generate redundant queries on entity updates
 - UUID support
 
 ## Documentation
 
 All documentation is on project [wiki](https://github.com/godzie44/d3/wiki/Table-of-contents).
+
+## Example of usage
+
+Full example of usage u can see in [this](https://github.com/godzie44/last-wish) project. Note, that is it is a test project
+with main responsibility show d3 orm in action.
 
 ## Tests
 
