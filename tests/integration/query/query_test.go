@@ -4,6 +4,7 @@ import (
 	"context"
 	d3pgx "github.com/godzie44/d3/adapter/pgx"
 	"github.com/godzie44/d3/orm"
+	"github.com/godzie44/d3/orm/query"
 	"github.com/godzie44/d3/tests/helpers"
 	"github.com/jackc/pgx/v4"
 	"github.com/stretchr/testify/suite"
@@ -180,4 +181,18 @@ func (q *QueryTS) TestQueryWith() {
 	q.Assert().Equal(2, users.Get(0).(*User).photos.Count())
 
 	q.Assert().Equal(1, q.driver.QueryCounter())
+}
+
+func (q *QueryTS) TestQueryJoin() {
+	ctx := q.orm.CtxWithSession(context.Background())
+
+	rep, err := q.orm.MakeRepository((*User)(nil))
+	q.Assert().NoError(err)
+
+	query := rep.MakeQuery().Join(query.JoinInner, "q_photo", "q_user.id=q_photo.user_id")
+
+	res, err := rep.FindAll(ctx, query)
+	q.Assert().NoError(err)
+
+	q.Assert().Equal(3, res.Count())
 }
