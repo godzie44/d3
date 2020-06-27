@@ -12,8 +12,7 @@ var (
 )
 
 type Union struct {
-	UType string
-	Q     *Query
+	Q *Query
 }
 
 type Where struct {
@@ -145,10 +144,9 @@ func (q *Query) Join(joinType JoinType, table string, on string) *Query {
 	return q
 }
 
-func (q *Query) Union(query *Query, utype string) *Query {
+func (q *Query) Union(query *Query) *Query {
 	q.union = append(q.union, &Union{
-		Q:     query,
-		UType: utype,
+		Q: query,
 	})
 	return q
 }

@@ -65,20 +65,7 @@ func toSquirrel(q *query.Query) (*squirrel.SelectBuilder, error) {
 				return
 			}
 
-			switch p.UType {
-			case "UNION":
-				sb = sb.Suffix("UNION "+sql, args...)
-			case "UNION ALL":
-				sb = sb.Suffix("UNION ALL "+sql, args...)
-			case "INTERSECT":
-				sb = sb.Suffix("INTERSECT "+sql, args...)
-			case "INTERSECT ALL":
-				sb = sb.Suffix("INTERSECT ALL "+sql, args...)
-			case "EXCEPT":
-				sb = sb.Suffix("EXCEPT "+sql, args...)
-			case "EXCEPT ALL":
-				sb = sb.Suffix("EXCEPT ALL "+sql, args...)
-			}
+			sb = sb.Suffix("UNION "+sql, args...)
 		case query.GroupBy:
 			sb = sb.GroupBy(string(p))
 		case query.Limit:
