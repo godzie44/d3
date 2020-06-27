@@ -76,6 +76,7 @@ type Query struct {
 	offset Offset
 }
 
+// NewQuery - create new query. For client code use repository.MakeQuery instead.
 func NewQuery(targetEntityMeta *entity.MetaInfo) *Query {
 	q := &Query{
 		relationsMeta: make(map[entity.Name]*entity.MetaInfo),
@@ -114,6 +115,10 @@ func (q *Query) addEntityFieldsToSelect(meta *entity.MetaInfo) {
 	}
 }
 
+// AndWhere add WHERE expression in select query. If WHERE expression exists - append new clause with AND operator.
+// Example:
+// q.AndWhere("a=?", 1).AndWhere("b=?",2)
+// will generate sql: WHERE a=? AND b=?
 func (q *Query) AndWhere(expr string, params ...interface{}) *Query {
 	q.andWhere = append(q.andWhere, &AndWhere{Where{
 		Expr:   expr,
@@ -123,6 +128,10 @@ func (q *Query) AndWhere(expr string, params ...interface{}) *Query {
 	return q
 }
 
+// OrWhere add WHERE expression in select query. If WHERE expression exists - append new clause with OR operator.
+// Example:
+// q.AndWhere("a=?", 1).OrWhere("b=?",2)
+// will generate sql: WHERE a=? OR b=?
 func (q *Query) OrWhere(expr string, params ...interface{}) *Query {
 	q.orWhere = append(q.orWhere, &OrWhere{Where{
 		Expr:   expr,
@@ -144,6 +153,9 @@ func (q *Query) Having(expr string, params ...interface{}) *Query {
 	return q
 }
 
+// Join - add JOIN clause to query.
+// Example:
+// q.Join(JoinRight, "profile", "user.id=profile.user_id")
 func (q *Query) Join(joinType JoinType, table string, on string) *Query {
 	q.join = append(q.join, &Join{
 		Join: table,
@@ -153,6 +165,9 @@ func (q *Query) Join(joinType JoinType, table string, on string) *Query {
 	return q
 }
 
+// Union - add UNION operator to query.
+// Example:
+// q.Union(q2.AndWhere("a=?", 1))
 func (q *Query) Union(query *Query) *Query {
 	q.union = append(q.union, &Union{
 		Q: query,
@@ -160,21 +175,27 @@ func (q *Query) Union(query *Query) *Query {
 	return q
 }
 
+// Limit - add LIMIT clause to query.
 func (q *Query) Limit(l int) *Query {
 	q.limit = Limit(l)
 	return q
 }
 
+// Offset - add OFFSET clause to query.
 func (q *Query) Offset(o int) *Query {
 	q.offset = Offset(o)
 	return q
 }
 
+// OrderBy - add ORDER BY clause to query.
 func (q *Query) OrderBy(stmts ...string) *Query {
 	q.orderBy = stmts
 	return q
 }
 
+// With - d3 will load with main entity related entity in same query.
+// Example:
+// q.With("myPkg/Entity2")
 func (q *Query) With(entityName entity.Name) error {
 	defer func() {
 		q.withList[entityName] = struct{}{}
