@@ -62,19 +62,23 @@ func (s *session) Flush() error {
 	return s.uow.Commit()
 }
 
+// Transaction for control transaction driver must provide instance of this interface.
 type Transaction interface {
 	Commit() error
 	Rollback() error
 }
 
+// BeginTx - start transaction manually.
 func (s *session) BeginTx() error {
 	return s.uow.beginTx()
 }
 
+// CommitTx - commit transaction manually.
 func (s *session) CommitTx() error {
 	return s.uow.commitTx()
 }
 
+// RollbackTx - rollback transaction manually.
 func (s *session) RollbackTx() error {
 	return s.uow.rollbackTx()
 }
