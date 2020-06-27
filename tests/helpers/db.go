@@ -4,8 +4,10 @@ import (
 	"context"
 	"fmt"
 	"github.com/godzie44/d3/orm"
+	"github.com/godzie44/d3/orm/entity"
 	"github.com/godzie44/d3/orm/persistence"
 	"github.com/godzie44/d3/orm/query"
+	"github.com/godzie44/d3/orm/schema"
 	"github.com/jackc/pgx/v4"
 	"github.com/stretchr/testify/assert"
 	"testing"
@@ -14,6 +16,20 @@ import (
 type DbAdapterWithQueryCounter struct {
 	queryCounter, insertCounter, updateCounter, deleteCounter int
 	dbAdapter                                                 orm.Driver
+}
+
+func (d *DbAdapterWithQueryCounter) CreateTableSql(name string, columns map[string]schema.ColumnType, pkColumns []string, pkStrategy entity.PkStrategy) string {
+	if generator, ok := d.dbAdapter.(schema.StorageSchemaGenerator); ok {
+		return generator.CreateTableSql(name, columns, pkColumns, pkStrategy)
+	}
+	panic("not implemented")
+}
+
+func (d *DbAdapterWithQueryCounter) CreateIndexSql(name string, table1 string, columns ...string) string {
+	if generator, ok := d.dbAdapter.(schema.StorageSchemaGenerator); ok {
+		return generator.CreateIndexSql(name, table1, columns...)
+	}
+	panic("not implemented")
 }
 
 func (d *DbAdapterWithQueryCounter) MakeScalarDataMapper() orm.ScalarDataMapper {

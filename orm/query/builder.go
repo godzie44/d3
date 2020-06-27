@@ -4,6 +4,7 @@ import (
 	"errors"
 	"fmt"
 	"github.com/godzie44/d3/orm/entity"
+	"sort"
 )
 
 var (
@@ -96,10 +97,18 @@ func (q *Query) OwnerMeta() *entity.MetaInfo {
 }
 
 func (q *Query) addEntityFieldsToSelect(meta *entity.MetaInfo) {
+	fields := make([]*entity.FieldInfo, 0, len(meta.Fields))
 	for _, field := range meta.Fields {
-		q.columns = append(q.columns, field.FullDbAlias)
+		fields = append(fields, field)
 	}
 
+	sort.SliceStable(fields, func(i, j int) bool {
+		return fields[i].Name > fields[j].Name
+	})
+
+	for _, f := range fields {
+		q.columns = append(q.columns, f.FullDbAlias)
+	}
 	for _, rel := range meta.OneToOneRelations() {
 		q.columns = append(q.columns, meta.FullColumnAlias(rel.JoinColumn))
 	}
