@@ -17,11 +17,19 @@ type Hydrator struct {
 }
 
 func (h *Hydrator) Hydrate(fetchedData []map[string]interface{}, plan *query.FetchPlan) (*d3entity.Collection, error) {
-	groupByEntityData := make(map[interface{}][]map[string]interface{})
+	groupByEntityData := make([][]map[string]interface{}, 0)
+	entityKeyIndexMap := make(map[interface{}]int)
 
 	for _, rowData := range fetchedData {
 		pkVal := rowData[h.meta.Pk.FullDbAlias()]
-		groupByEntityData[pkVal] = append(groupByEntityData[pkVal], rowData)
+
+		if ind, exists := entityKeyIndexMap[pkVal]; exists {
+			groupByEntityData[ind] = append(groupByEntityData[ind], rowData)
+		} else {
+			groupByEntityData = append(groupByEntityData, []map[string]interface{}{rowData})
+			entityKeyIndexMap[pkVal] = len(groupByEntityData) - 1
+		}
+
 	}
 
 	collection := d3entity.NewCollection()

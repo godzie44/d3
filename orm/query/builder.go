@@ -55,6 +55,7 @@ type Limit int
 type Offset int
 
 type Columns []string
+type Order []string
 
 type Query struct {
 	mainMeta      *entity.MetaInfo
@@ -69,6 +70,7 @@ type Query struct {
 	join     []*Join
 	union    []*Union
 	group    GroupBy
+	orderBy  Order
 
 	limit  Limit
 	offset Offset
@@ -161,6 +163,11 @@ func (q *Query) Offset(o int) *Query {
 	return q
 }
 
+func (q *Query) OrderBy(stmts ...string) *Query {
+	q.orderBy = stmts
+	return q
+}
+
 func (q *Query) With(entityName entity.Name) error {
 	defer func() {
 		q.withList[entityName] = struct{}{}
@@ -182,6 +189,7 @@ func (q *Query) With(entityName entity.Name) error {
 func (q *Query) Visit(visitor func(pred interface{})) {
 	visitor(q.from)
 	visitor(q.columns)
+	visitor(q.orderBy)
 
 	for _, andWhere := range q.andWhere {
 		visitor(andWhere)

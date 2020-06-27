@@ -38,7 +38,7 @@ All documentation is on project [wiki](https://github.com/godzie44/d3/wiki/Table
 
 ## Example of usage
 
-Full example of usage u can see in [this](https://github.com/godzie44/last-wish) project. Note, that is it is a test project
+Full example of usage you can see in [this](https://github.com/godzie44/last-wish) project. Note, that is it is a test project
 with main responsibility show d3 orm in action.
 
 ## Tests

@@ -53,7 +53,8 @@ func toSquirrel(q *query.Query) (*squirrel.SelectBuilder, error) {
 			case query.JoinRight:
 				sb = sb.RightJoin(p.Join + " ON " + p.On)
 			}
-
+		case query.Order:
+			sb = sb.OrderBy(p...)
 		case *query.Union:
 			sqQuery, err := toSquirrel(p.Q)
 			if err != nil {
