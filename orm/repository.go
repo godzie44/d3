@@ -16,6 +16,7 @@ type Repository struct {
 	entityMeta d3entity.MetaInfo
 }
 
+// FindOne - return one entity fetched by query. If entity not found ErrEntityNotFound will returned.
 func (r *Repository) FindOne(ctx context.Context, q *query.Query) (interface{}, error) {
 	session, err := sessionFromCtx(ctx)
 	if err != nil {
@@ -34,6 +35,7 @@ func (r *Repository) FindOne(ctx context.Context, q *query.Query) (interface{}, 
 	return coll.Get(0), nil
 }
 
+// FindOne - return collection of entities fetched by query.
 func (r *Repository) FindAll(ctx context.Context, q *query.Query) (*d3entity.Collection, error) {
 	session, err := sessionFromCtx(ctx)
 	if err != nil {
@@ -43,6 +45,7 @@ func (r *Repository) FindAll(ctx context.Context, q *query.Query) (*d3entity.Col
 	return session.execute(q)
 }
 
+// Persists - add entities to repository.
 func (r *Repository) Persists(ctx context.Context, entities ...interface{}) error {
 	session, err := sessionFromCtx(ctx)
 	if err != nil {
@@ -57,6 +60,7 @@ func (r *Repository) Persists(ctx context.Context, entities ...interface{}) erro
 	return nil
 }
 
+// Delete - delete entities from repository.
 func (r *Repository) Delete(ctx context.Context, entities ...interface{}) error {
 	session, err := sessionFromCtx(ctx)
 	if err != nil {
@@ -80,6 +84,7 @@ func sessionFromCtx(ctx context.Context) (*session, error) {
 	return s, nil
 }
 
+// MakeQuery create query for fetch entity with the same type as the repository.
 func (r *Repository) MakeQuery() *query.Query {
 	return query.NewQuery(&r.entityMeta)
 }
