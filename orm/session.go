@@ -27,7 +27,7 @@ func newSession(storage Driver, uow *UnitOfWork) *session {
 	return &session{storage: storage, uow: uow}
 }
 
-func (s *session) execute(q *query.Query) (*entity.Collection, error) {
+func (s *session) execute(q *query.Query, entityMeta *entity.MetaInfo) (*entity.Collection, error) {
 	fetchPlan := query.Preprocessor.MakeFetchPlan(q)
 
 	if s.uow.identityMap.canApply(fetchPlan) {
@@ -42,7 +42,7 @@ func (s *session) execute(q *query.Query) (*entity.Collection, error) {
 		return nil, err
 	}
 
-	hydrator := &Hydrator{session: s, meta: q.OwnerMeta(), scalarMapper: s.storage.MakeScalarDataMapper(),
+	hydrator := &Hydrator{session: s, meta: entityMeta, scalarMapper: s.storage.MakeScalarDataMapper(),
 		afterHydrateEntity: func(b *entity.Box) {
 			_ = s.uow.registerDirty(b)
 		}}
@@ -52,7 +52,7 @@ func (s *session) execute(q *query.Query) (*entity.Collection, error) {
 		return nil, err
 	}
 
-	s.uow.identityMap.putEntities(q.OwnerMeta(), result)
+	s.uow.identityMap.putEntities(entityMeta, result)
 
 	return result, nil
 }

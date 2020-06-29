@@ -11,7 +11,7 @@ type Extractor func() *d3entity.Collection
 func (s *session) makeOneToOneExtractor(id interface{}, relatedMeta *d3entity.MetaInfo) Extractor {
 	return func() *d3entity.Collection {
 		entities, err := s.execute(
-			query.NewQuery(relatedMeta).AndWhere(relatedMeta.Pk.FullDbAlias()+"=?", id),
+			query.NewQuery(relatedMeta).AndWhere(relatedMeta.Pk.FullDbAlias()+"=?", id), relatedMeta,
 		)
 		if err != nil {
 			return nil
@@ -24,7 +24,7 @@ func (s *session) makeOneToOneExtractor(id interface{}, relatedMeta *d3entity.Me
 func (s *session) makeOneToManyExtractor(joinId interface{}, relation *d3entity.OneToMany, relatedMeta *d3entity.MetaInfo) Extractor {
 	return func() *d3entity.Collection {
 		entities, err := s.execute(
-			query.NewQuery(relatedMeta).AndWhere(relatedMeta.FullColumnAlias(relation.JoinColumn)+"=?", joinId),
+			query.NewQuery(relatedMeta).AndWhere(relatedMeta.FullColumnAlias(relation.JoinColumn)+"=?", joinId), relatedMeta,
 		)
 		if err != nil {
 			return nil
@@ -41,6 +41,7 @@ func (s *session) makeManyToManyExtractor(id interface{}, rel *d3entity.ManyToMa
 				NewQuery(relatedMeta).
 				Join(query.JoinInner, rel.JoinTable, fmt.Sprintf("%s.%s=%s", rel.JoinTable, rel.ReferenceColumn, relatedMeta.Pk.FullDbAlias())).
 				AndWhere(fmt.Sprintf("%s.%s=?", rel.JoinTable, rel.JoinColumn), id),
+			relatedMeta,
 		)
 		if err != nil {
 			return nil

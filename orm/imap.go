@@ -31,7 +31,7 @@ func (im *identityMap) executePlan(plan *query.FetchPlan) (*entity.Collection, e
 
 	collection := entity.NewCollection()
 	for _, id := range plan.PKs() {
-		if e, exists := im.get(plan.Query().OwnerMeta().EntityName, id); exists {
+		if e, exists := im.get(plan.EntityName(), id); exists {
 			collection.Add(e)
 		} else {
 			return nil, ErrCantExecutePlan

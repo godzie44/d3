@@ -23,7 +23,7 @@ func (r *Repository) FindOne(ctx context.Context, q *query.Query) (interface{}, 
 		return nil, err
 	}
 
-	coll, err := session.execute(q)
+	coll, err := session.execute(q, &r.entityMeta)
 	if err != nil {
 		return nil, err
 	}
@@ -42,7 +42,7 @@ func (r *Repository) FindAll(ctx context.Context, q *query.Query) (*d3entity.Col
 		return nil, err
 	}
 
-	return session.execute(q)
+	return session.execute(q, &r.entityMeta)
 }
 
 // Persists - add entities to repository.

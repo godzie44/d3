@@ -93,7 +93,7 @@ func (q *Query) forEntity(meta *entity.MetaInfo) *Query {
 	return q
 }
 
-func (q *Query) OwnerMeta() *entity.MetaInfo {
+func (q *Query) ownerMeta() *entity.MetaInfo {
 	return q.mainMeta
 }
 

@@ -27,7 +27,7 @@ func extractIdsIfPossible(q *Query) []interface{} {
 		case *AndWhere:
 			fields := strings.Fields(where.Expr)
 			for i := range fields {
-				if fields[i] == q.OwnerMeta().Pk.FullDbAlias() {
+				if fields[i] == q.ownerMeta().Pk.FullDbAlias() {
 					idList = append(idList, where.Params...)
 					return
 				}
@@ -69,8 +69,11 @@ type FetchPlan struct {
 	fetchWithList []*executeWith
 }
 
-func (e *FetchPlan) Query() *Query {
-	return e.query
+func (e *FetchPlan) EntityName() entity.Name {
+	if e.query.ownerMeta() != nil {
+		return e.query.ownerMeta().EntityName
+	}
+	return ""
 }
 
 func (e *FetchPlan) PKs() []interface{} {

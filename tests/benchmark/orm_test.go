@@ -102,22 +102,29 @@ func (i *inMemoryStorage) MakePusher(_ orm.Transaction) persistence.Pusher {
 	return i.pusher
 }
 
-func (i *inMemoryStorage) ExecuteQuery(query *query.Query) ([]map[string]interface{}, error) {
-	eName := query.OwnerMeta().EntityName
-	switch eName {
-	case entity.NameFromEntity(&shop{}):
+func (i *inMemoryStorage) ExecuteQuery(q *query.Query) ([]map[string]interface{}, error) {
+	var tableName string
+	q.Visit(func(pred interface{}) {
+		switch p := pred.(type) {
+		case query.From:
+			tableName = string(p)
+		}
+	})
+
+	switch tableName {
+	case "shop":
 		return []map[string]interface{}{
 			{"shop.id": 1, "shop.name": "shop1", "shop.profile_id": 1},
 		}, nil
-	case entity.NameFromEntity(&profile{}):
+	case "prof":
 		return []map[string]interface{}{
 			{"prof.id": 1, "prof.description": "description1"},
 		}, nil
-	case entity.NameFromEntity(&book{}):
+	case "book":
 		return []map[string]interface{}{
 			{"book.id": 1, "book.name": "book1"},
 		}, nil
-	case entity.NameFromEntity(&author{}):
+	case "author":
 		return []map[string]interface{}{
 			{"author.id": 1, "author.name": "author 1"},
 		}, nil
