@@ -21,7 +21,7 @@ func extractIdsIfPossible(q *Query) []interface{} {
 	isIdQuery := true
 	var idList []interface{}
 
-	q.Visit(func(pred interface{}) {
+	Visit(q, func(pred interface{}) {
 		switch where := pred.(type) {
 		case *OrWhere:
 		case *AndWhere:

@@ -20,7 +20,7 @@ func toSquirrel(q *query.Query) (*squirrel.SelectBuilder, error) {
 
 	var whereExpr squirrel.Sqlizer
 
-	q.Visit(func(pred interface{}) {
+	query.Visit(q, func(pred interface{}) {
 		switch p := pred.(type) {
 		case query.From:
 			sb = sb.From(string(p))

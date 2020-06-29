@@ -104,7 +104,7 @@ func (i *inMemoryStorage) MakePusher(_ orm.Transaction) persistence.Pusher {
 
 func (i *inMemoryStorage) ExecuteQuery(q *query.Query) ([]map[string]interface{}, error) {
 	var tableName string
-	q.Visit(func(pred interface{}) {
+	query.Visit(q, func(pred interface{}) {
 		switch p := pred.(type) {
 		case query.From:
 			tableName = string(p)

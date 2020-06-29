@@ -214,37 +214,6 @@ func (q *Query) With(entityName entity.Name) error {
 	return fmt.Errorf("%w: %s", ErrRelatedEntityNotFound, entityName)
 }
 
-func (q *Query) Visit(visitor func(pred interface{})) {
-	visitor(q.from)
-	visitor(q.columns)
-	visitor(q.orderBy)
-
-	for _, andWhere := range q.andWhere {
-		visitor(andWhere)
-	}
-	for _, orWhere := range q.orWhere {
-		visitor(orWhere)
-	}
-	for _, having := range q.having {
-		visitor(having)
-	}
-	for _, join := range q.join {
-		visitor(join)
-	}
-	for _, union := range q.union {
-		visitor(union)
-	}
-	if string(q.group) != "" {
-		visitor(q.group)
-	}
-	if int(q.limit) != 0 {
-		visitor(q.limit)
-	}
-	if int(q.offset) != 0 {
-		visitor(q.offset)
-	}
-}
-
 func (q *Query) joinEntity(name entity.Name, ownerMeta *entity.MetaInfo) error {
 	relatedEntityMeta, exists := ownerMeta.RelatedMeta[name]
 	if !exists {
@@ -293,4 +262,35 @@ func (q *Query) joinEntity(name entity.Name, ownerMeta *entity.MetaInfo) error {
 	q.relationsMeta[name] = relatedEntityMeta
 
 	return nil
+}
+
+func Visit(q *Query, visitor func(pred interface{})) {
+	visitor(q.from)
+	visitor(q.columns)
+	visitor(q.orderBy)
+
+	for _, andWhere := range q.andWhere {
+		visitor(andWhere)
+	}
+	for _, orWhere := range q.orWhere {
+		visitor(orWhere)
+	}
+	for _, having := range q.having {
+		visitor(having)
+	}
+	for _, join := range q.join {
+		visitor(join)
+	}
+	for _, union := range q.union {
+		visitor(union)
+	}
+	if string(q.group) != "" {
+		visitor(q.group)
+	}
+	if int(q.limit) != 0 {
+		visitor(q.limit)
+	}
+	if int(q.offset) != 0 {
+		visitor(q.offset)
+	}
 }
