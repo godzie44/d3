@@ -87,7 +87,7 @@ func (q *QueryTS) TestQueryAndWhere() {
 	rep, err := q.orm.MakeRepository((*User)(nil))
 	q.Assert().NoError(err)
 
-	users, err := rep.FindAll(ctx, rep.Select().AndWhere("age", "=", 19))
+	users, err := rep.FindAll(ctx, rep.Select().Where("age", "=", 19).AndWhere("name", "=", "Sara"))
 	q.Assert().NoError(err)
 
 	q.Assert().Equal(1, users.Count())
@@ -98,7 +98,7 @@ func (q *QueryTS) TestQueryOrWhere() {
 	rep, err := q.orm.MakeRepository((*User)(nil))
 	q.Assert().NoError(err)
 
-	users, err := rep.FindAll(ctx, rep.Select().AndWhere("age", "=", 19).OrWhere("name", "=", "Sara"))
+	users, err := rep.FindAll(ctx, rep.Select().Where("age", "=", 19).OrWhere("name", "=", "Sara"))
 	q.Assert().NoError(err)
 
 	q.Assert().Equal(3, users.Count())
@@ -109,8 +109,8 @@ func (q *QueryTS) TestQueryNestedWhere() {
 	rep, err := q.orm.MakeRepository((*User)(nil))
 	q.Assert().NoError(err)
 
-	users, err := rep.FindAll(ctx, rep.Select().AndWhere("age", "=", 19).OrNestedWhere(func(q *query.Query) {
-		q.AndWhere("name", "=", "Sara").AndWhere("age", ">", 35)
+	users, err := rep.FindAll(ctx, rep.Select().Where("age", "=", 19).OrNestedWhere(func(q *query.Query) {
+		q.Where("name", "=", "Sara").AndWhere("age", ">", 35)
 	}))
 	q.Assert().NoError(err)
 
@@ -122,7 +122,7 @@ func (q *QueryTS) TestQueryUnion() {
 	rep, err := q.orm.MakeRepository((*User)(nil))
 	q.Assert().NoError(err)
 
-	users, err := rep.FindAll(ctx, rep.Select().AndWhere("age", "=", 19).Union(rep.Select().AndWhere("name", "=", "Sara")))
+	users, err := rep.FindAll(ctx, rep.Select().Where("age", "=", 19).Union(rep.Select().Where("name", "=", "Sara")))
 	q.Assert().NoError(err)
 
 	q.Assert().Equal(3, users.Count())
@@ -187,7 +187,7 @@ func (q *QueryTS) TestQueryWith() {
 	err = photoQuery.With("github.com/godzie44/d3/tests/integration/query/Photo")
 	q.Assert().NoError(err)
 
-	users, err := rep.FindAll(ctx, photoQuery.AndWhere("q_photo.user_id", "IS NOT NULL").OrderBy("age ASC"))
+	users, err := rep.FindAll(ctx, photoQuery.Where("q_photo.user_id", "IS NOT NULL").OrderBy("age ASC"))
 	q.Assert().NoError(err)
 
 	q.Assert().Equal(3, users.Count())

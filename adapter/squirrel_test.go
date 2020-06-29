@@ -25,41 +25,41 @@ var metaStub = &entity.MetaInfo{
 
 var testCases = []testCase{
 	{
-		query.NewQuery(metaStub).AndWhere("id", "=", 1).OrWhere("id", "=", 3).Limit(1),
+		query.NewQuery(metaStub).Where("id", "=", 1).OrWhere("id", "=", 3).Limit(1),
 		"SELECT test_table.id as \"test_table.id\" FROM test_table WHERE (id = $1 OR id = $2) LIMIT 1",
 		[]interface{}{1, 3},
 	},
 	{
-		query.NewQuery(metaStub).AndWhere("id", "=", 1).AndWhere("id", "=", 2),
+		query.NewQuery(metaStub).Where("id", "=", 1).AndWhere("id", "=", 2),
 		"SELECT test_table.id as \"test_table.id\" FROM test_table WHERE (id = $1 AND id = $2)",
 		[]interface{}{1, 2},
 	},
 	{
-		query.NewQuery(metaStub).AndWhere("id", "IN", 1, 2, 3, 4),
+		query.NewQuery(metaStub).Where("id", "IN", 1, 2, 3, 4),
 		"SELECT test_table.id as \"test_table.id\" FROM test_table WHERE id IN ($1,$2,$3,$4)",
 		[]interface{}{1, 2, 3, 4},
 	},
 	{
-		query.NewQuery(metaStub).AndWhere("id", "=", 1).OrWhere("id", "=", 3).Limit(1).
-			Union(query.NewQuery(metaStub).AndWhere("id", "=", 5)),
+		query.NewQuery(metaStub).Where("id", "=", 1).OrWhere("id", "=", 3).Limit(1).
+			Union(query.NewQuery(metaStub).Where("id", "=", 5)),
 		"SELECT test_table.id as \"test_table.id\" FROM test_table WHERE (id = $1 OR id = $2) LIMIT 1 UNION SELECT test_table.id as \"test_table.id\" FROM test_table WHERE id = $3",
 		[]interface{}{1, 3, 5},
 	},
 	{
-		query.NewQuery(metaStub).AndWhere("id", "=", 1).AndNestedWhere(func(q *query.Query) {
-			q.AndWhere("id", ">", 2).AndWhere("id", "<", 10)
+		query.NewQuery(metaStub).Where("id", "=", 1).AndNestedWhere(func(q *query.Query) {
+			q.Where("id", ">", 2).AndWhere("id", "<", 10)
 		}),
 		"SELECT test_table.id as \"test_table.id\" FROM test_table WHERE (id = $1 AND (id > $2 AND id < $3))",
 		[]interface{}{1, 2, 10},
 	},
 	{
-		query.NewQuery(metaStub).AndWhere("id", "=", 1).
+		query.NewQuery(metaStub).Where("id", "=", 1).
 			AndNestedWhere(func(q *query.Query) {
-				q.AndWhere("id", ">", 2).AndWhere("id", "<", 10)
+				q.Where("id", ">", 2).AndWhere("id", "<", 10)
 			}).
 			OrNestedWhere(func(q *query.Query) {
-				q.AndWhere("id", ">", 2).OrNestedWhere(func(q *query.Query) {
-					q.AndWhere("id", ">", 0).OrWhere("id", "<", 40)
+				q.Where("id", ">", 2).OrNestedWhere(func(q *query.Query) {
+					q.Where("id", ">", 0).OrWhere("id", "<", 40)
 				})
 			}),
 

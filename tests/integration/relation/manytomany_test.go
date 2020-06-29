@@ -97,7 +97,7 @@ func (o *ManyToManyRelationTS) TestLazyRelation() {
 	repository, err := o.orm.MakeRepository((*BookLL)(nil))
 	o.Assert().NoError(err)
 
-	entity, err := repository.FindOne(ctx, repository.Select().AndWhere("book.id", "=", 1))
+	entity, err := repository.FindOne(ctx, repository.Select().Where("book.id", "=", 1))
 	o.Assert().NoError(err)
 
 	o.Assert().IsType(&BookLL{}, entity)
@@ -117,7 +117,7 @@ func (o *ManyToManyRelationTS) TestEagerRelation() {
 	repository, err := o.orm.MakeRepository((*BookEL)(nil))
 	o.Assert().NoError(err)
 
-	entity, err := repository.FindOne(ctx, repository.Select().AndWhere("book.id", "=", 1))
+	entity, err := repository.FindOne(ctx, repository.Select().Where("book.id", "=", 1))
 	o.Assert().NoError(err)
 
 	o.Assert().IsType(&BookEL{}, entity)

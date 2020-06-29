@@ -79,7 +79,7 @@ func (o *OneToManyRelationTS) TestLazyRelation() {
 	repository, err := o.orm.MakeRepository((*ShopLR)(nil))
 	o.Assert().NoError(err)
 
-	entity, err := repository.FindOne(ctx, repository.Select().AndWhere("id", "=", 1))
+	entity, err := repository.FindOne(ctx, repository.Select().Where("id", "=", 1))
 	o.Assert().NoError(err)
 
 	o.Assert().IsType(&ShopLR{}, entity)
@@ -99,7 +99,7 @@ func (o *OneToManyRelationTS) TestEagerRelation() {
 	repository, err := o.orm.MakeRepository((*ShopER)(nil))
 	o.Assert().NoError(err)
 
-	entity, err := repository.FindOne(ctx, repository.Select().AndWhere("shop.id", "=", 1))
+	entity, err := repository.FindOne(ctx, repository.Select().Where("shop.id", "=", 1))
 	o.Assert().NoError(err)
 
 	o.Assert().IsType(&ShopER{}, entity)

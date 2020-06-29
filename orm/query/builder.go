@@ -130,6 +130,21 @@ func (q *Query) addEntityFieldsToSelect(meta *entity.MetaInfo) {
 	}
 }
 
+// AndWhere add WHERE expression in select query.
+// Example:
+// q.Where("a", "=", 1) - generate sql: WHERE a=?
+//
+// q.Where("a", "IS NOT NULL") - generate sql: WHERE a IS NOT NULL
+func (q *Query) Where(field, operator string, params ...interface{}) *Query {
+	q.andWhere = append(q.andWhere, &AndWhere{Where{
+		Field:  field,
+		Op:     operator,
+		Params: params,
+	}})
+
+	return q
+}
+
 // AndWhere join WHERE expression in select query with AND operator.
 // Example:
 // q.AndWhere("a", "=", 1).AndWhere("b", "=",2) - generate sql: WHERE a=? AND b=?
