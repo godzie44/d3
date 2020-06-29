@@ -79,7 +79,7 @@ INSERT INTO t3_t4(t3_id, t4_id) VALUES (2, 2);
 	o.Assert().NoError(err)
 
 	o.dbAdapter = helpers.NewDbAdapterWithQueryCounter(d3pgx.NewPgxDriver(o.pgDb))
-	o.orm = orm.NewOrm(o.dbAdapter)
+	o.orm = orm.New(o.dbAdapter)
 	o.Assert().NoError(o.orm.Register(
 		(*fwTestEntity1)(nil),
 		(*fwTestEntity2)(nil),

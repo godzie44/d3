@@ -15,10 +15,10 @@ type Orm struct {
 	metaRegistry *d3Entity.MetaRegistry
 }
 
-// NewOrm create an instance of d3 orm.
+// New - create an instance of d3 orm.
 //
 // driver - d3 wrapper on database driver. Find it in adapter package.
-func NewOrm(driver Driver) *Orm {
+func New(driver Driver) *Orm {
 	return &Orm{
 		storage:      driver,
 		metaRegistry: d3Entity.NewMetaRegistry(),

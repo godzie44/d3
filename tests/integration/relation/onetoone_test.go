@@ -50,7 +50,7 @@ INSERT INTO photo(id, data) VALUES (1, 'entity_3_data');
 `)
 	o.Assert().NoError(err)
 
-	o.orm = orm.NewOrm(d3pgx.NewPgxDriver(o.pgDb))
+	o.orm = orm.New(d3pgx.NewPgxDriver(o.pgDb))
 	o.NoError(o.orm.Register(
 		(*ShopLL)(nil),
 		(*ProfileLL)(nil),

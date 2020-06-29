@@ -51,7 +51,7 @@ INSERT INTO discount(id, value, t2_id) VALUES (1, 33, 1);
 `)
 	o.Assert().NoError(err)
 
-	o.orm = orm.NewOrm(d3pgx.NewPgxDriver(o.pgDb))
+	o.orm = orm.New(d3pgx.NewPgxDriver(o.pgDb))
 	o.NoError(o.orm.Register(
 		(*ShopLR)(nil),
 		(*BookLR)(nil),

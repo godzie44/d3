@@ -24,13 +24,13 @@ func (t *testEntity2) D3Token() entity.MetaToken {
 }
 
 func TestRegisterEntities(t *testing.T) {
-	orm1 := NewOrm(nil)
+	orm1 := New(nil)
 
 	assert.Error(t, orm1.Register(
 		&testEntity1{},
 	))
 
-	orm2 := NewOrm(nil)
+	orm2 := New(nil)
 
 	assert.NoError(t, orm2.Register((*testEntity1)(nil), &testEntity2{}))
 }

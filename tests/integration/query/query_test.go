@@ -24,7 +24,7 @@ func (q *QueryTS) SetupSuite() {
 	q.pgDb, _ = pgx.Connect(context.Background(), os.Getenv("D3_PG_TEST_DB"))
 
 	q.driver = helpers.NewDbAdapterWithQueryCounter(d3pgx.NewPgxDriver(q.pgDb))
-	q.orm = orm.NewOrm(q.driver)
+	q.orm = orm.New(q.driver)
 	q.Assert().NoError(q.orm.Register(
 		(*User)(nil),
 		(*Photo)(nil),

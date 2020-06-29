@@ -67,7 +67,7 @@ INSERT INTO author_redactor(author_id, redactor_id) VALUES (1, 1);
 `)
 	o.Assert().NoError(err)
 
-	o.orm = orm.NewOrm(d3pgx.NewPgxDriver(o.pgDb))
+	o.orm = orm.New(d3pgx.NewPgxDriver(o.pgDb))
 	o.Assert().NoError(o.orm.Register(
 		(*BookLL)(nil),
 		(*AuthorLL)(nil),

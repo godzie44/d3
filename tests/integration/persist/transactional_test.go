@@ -24,7 +24,7 @@ func (t *TransactionalTs) SetupSuite() {
 	err := createSchema(t.pgDb)
 
 	t.dbAdapter = helpers.NewDbAdapterWithQueryCounter(d3pgx.NewPgxDriver(t.pgDb))
-	t.d3Orm = orm.NewOrm(t.dbAdapter)
+	t.d3Orm = orm.New(t.dbAdapter)
 	t.NoError(t.d3Orm.Register(
 		(*Book)(nil),
 		(*Shop)(nil),

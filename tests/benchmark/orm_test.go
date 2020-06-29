@@ -12,7 +12,7 @@ import (
 )
 
 func createOrm() *orm.Orm {
-	d3orm := orm.NewOrm(newInMemoryStorage())
+	d3orm := orm.New(newInMemoryStorage())
 	_ = d3orm.Register(
 		&shop{},
 		&profile{},
