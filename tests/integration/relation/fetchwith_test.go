@@ -111,7 +111,7 @@ func (o *FetchWithRelationTS) TestFetchWithOneToOne() {
 	ctx := o.orm.CtxWithSession(context.Background())
 
 	repository, _ := o.orm.MakeRepository((*fwTestEntity1)(nil))
-	q := repository.MakeQuery()
+	q := repository.Select()
 	_ = q.AndWhere("test_entity_1.id = ?", 1).With(d3pkg + "/tests/integration/relation/fwTestEntity2")
 	entity, _ := repository.FindOne(ctx, q)
 
@@ -131,7 +131,7 @@ func (o *FetchWithRelationTS) TestFetchWithOneToOne() {
 func (o *FetchWithRelationTS) TestFetchWithOneToMany() {
 	ctx := o.orm.CtxWithSession(context.Background())
 	repository, _ := o.orm.MakeRepository((*fwTestEntity2)(nil))
-	q := repository.MakeQuery()
+	q := repository.Select()
 	_ = q.AndWhere("test_entity_2.id = ?", 1).With(d3pkg + "/tests/integration/relation/fwTestEntity3")
 	entity, _ := repository.FindOne(ctx, q)
 
@@ -153,7 +153,7 @@ func (o *FetchWithRelationTS) TestFetchWithManyToMany() {
 	ctx := o.orm.CtxWithSession(context.Background())
 	repository, _ := o.orm.MakeRepository((*fwTestEntity3)(nil))
 
-	q := repository.MakeQuery()
+	q := repository.Select()
 	_ = q.AndWhere("test_entity_3.id = ?", 1).With(d3pkg + "/tests/integration/relation/fwTestEntity4")
 	entity, _ := repository.FindOne(ctx, q)
 
@@ -175,7 +175,7 @@ func (o *FetchWithRelationTS) TestFetchFullGraph() {
 	ctx := o.orm.CtxWithSession(context.Background())
 	repository, _ := o.orm.MakeRepository((*fwTestEntity1)(nil))
 
-	q := repository.MakeQuery()
+	q := repository.Select()
 	_ = q.AndWhere("test_entity_1.id = ?", 1).With(d3pkg + "/tests/integration/relation/fwTestEntity2")
 	_ = q.With(d3pkg + "/tests/integration/relation/fwTestEntity3")
 	_ = q.With(d3pkg + "/tests/integration/relation/fwTestEntity4")

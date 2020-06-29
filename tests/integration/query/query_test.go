@@ -76,7 +76,7 @@ func (q *QueryTS) TestQueryAll() {
 	rep, err := q.orm.MakeRepository((*User)(nil))
 	q.Assert().NoError(err)
 
-	allUsers, err := rep.FindAll(ctx, rep.MakeQuery())
+	allUsers, err := rep.FindAll(ctx, rep.Select())
 	q.Assert().NoError(err)
 
 	q.Assert().Equal(9, allUsers.Count())
@@ -87,7 +87,7 @@ func (q *QueryTS) TestQueryAndWhere() {
 	rep, err := q.orm.MakeRepository((*User)(nil))
 	q.Assert().NoError(err)
 
-	users, err := rep.FindAll(ctx, rep.MakeQuery().AndWhere("age = ?", 19))
+	users, err := rep.FindAll(ctx, rep.Select().AndWhere("age = ?", 19))
 	q.Assert().NoError(err)
 
 	q.Assert().Equal(1, users.Count())
@@ -98,7 +98,7 @@ func (q *QueryTS) TestQueryOrWhere() {
 	rep, err := q.orm.MakeRepository((*User)(nil))
 	q.Assert().NoError(err)
 
-	users, err := rep.FindAll(ctx, rep.MakeQuery().AndWhere("age = ?", 19).OrWhere("name = ?", "Sara"))
+	users, err := rep.FindAll(ctx, rep.Select().AndWhere("age = ?", 19).OrWhere("name = ?", "Sara"))
 	q.Assert().NoError(err)
 
 	q.Assert().Equal(3, users.Count())
@@ -109,7 +109,7 @@ func (q *QueryTS) TestQueryUnion() {
 	rep, err := q.orm.MakeRepository((*User)(nil))
 	q.Assert().NoError(err)
 
-	users, err := rep.FindAll(ctx, rep.MakeQuery().AndWhere("age = ?", 19).Union(rep.MakeQuery().AndWhere("name = ?", "Sara")))
+	users, err := rep.FindAll(ctx, rep.Select().AndWhere("age = ?", 19).Union(rep.Select().AndWhere("name = ?", "Sara")))
 	q.Assert().NoError(err)
 
 	q.Assert().Equal(3, users.Count())
@@ -120,7 +120,7 @@ func (q *QueryTS) TestQueryLimit() {
 	rep, err := q.orm.MakeRepository((*User)(nil))
 	q.Assert().NoError(err)
 
-	allUsers, err := rep.FindAll(ctx, rep.MakeQuery().Limit(5))
+	allUsers, err := rep.FindAll(ctx, rep.Select().Limit(5))
 	q.Assert().NoError(err)
 
 	q.Assert().Equal(5, allUsers.Count())
@@ -131,7 +131,7 @@ func (q *QueryTS) TestQueryOffset() {
 	rep, err := q.orm.MakeRepository((*User)(nil))
 	q.Assert().NoError(err)
 
-	user, err := rep.FindOne(ctx, rep.MakeQuery().OrderBy("age ASC").Offset(1).Limit(1))
+	user, err := rep.FindOne(ctx, rep.Select().OrderBy("age ASC").Offset(1).Limit(1))
 	q.Assert().NoError(err)
 
 	q.Assert().Equal(21, user.(*User).age)
@@ -142,7 +142,7 @@ func (q *QueryTS) TestQueryOrderBy() {
 	rep, err := q.orm.MakeRepository((*User)(nil))
 	q.Assert().NoError(err)
 
-	allUsersASC, err := rep.FindAll(ctx, rep.MakeQuery().OrderBy("age ASC"))
+	allUsersASC, err := rep.FindAll(ctx, rep.Select().OrderBy("age ASC"))
 	q.Assert().NoError(err)
 
 	prevAge := 0
@@ -153,7 +153,7 @@ func (q *QueryTS) TestQueryOrderBy() {
 		prevAge = user.age
 	}
 
-	allUsersDESC, err := rep.FindAll(ctx, rep.MakeQuery().OrderBy("age DESC", "name ASC"))
+	allUsersDESC, err := rep.FindAll(ctx, rep.Select().OrderBy("age DESC", "name ASC"))
 	q.Assert().NoError(err)
 
 	prevAge = math.MaxInt64
@@ -170,7 +170,7 @@ func (q *QueryTS) TestQueryWith() {
 	rep, err := q.orm.MakeRepository((*User)(nil))
 	q.Assert().NoError(err)
 
-	query := rep.MakeQuery()
+	query := rep.Select()
 	err = query.With("github.com/godzie44/d3/tests/integration/query/Photo")
 	q.Assert().NoError(err)
 
@@ -189,7 +189,7 @@ func (q *QueryTS) TestQueryJoin() {
 	rep, err := q.orm.MakeRepository((*User)(nil))
 	q.Assert().NoError(err)
 
-	query := rep.MakeQuery().Join(query.JoinInner, "q_photo", "q_user.id=q_photo.user_id")
+	query := rep.Select().Join(query.JoinInner, "q_photo", "q_user.id=q_photo.user_id")
 
 	res, err := rep.FindAll(ctx, query)
 	q.Assert().NoError(err)

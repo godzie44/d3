@@ -40,7 +40,7 @@ func BenchmarkSelect(b *testing.B) {
 	ctx := d3orm.CtxWithSession(context.Background())
 	repo, _ := d3orm.MakeRepository(&shop{})
 	for i := 0; i < b.N; i++ {
-		res, _ := repo.FindOne(ctx, repo.MakeQuery().AndWhere("id = ?", i))
+		res, _ := repo.FindOne(ctx, repo.Select().AndWhere("id = ?", i))
 		runtime.KeepAlive(res)
 	}
 }
@@ -51,7 +51,7 @@ func BenchmarkUpdate(b *testing.B) {
 	ctx := d3orm.CtxWithSession(context.Background())
 	repo, _ := d3orm.MakeRepository(&shop{})
 	for i := 0; i < b.N; i++ {
-		res, _ := repo.FindOne(ctx, repo.MakeQuery().AndWhere("id = ?", i))
+		res, _ := repo.FindOne(ctx, repo.Select().AndWhere("id = ?", i))
 
 		shop := res.(*shop)
 		shop.name += " updated"

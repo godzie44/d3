@@ -76,7 +76,7 @@ type Query struct {
 	offset Offset
 }
 
-// NewQuery - create new query. For client code use repository.MakeQuery instead.
+// NewQuery - create new query. For client code use repository.Select instead.
 func NewQuery(targetEntityMeta *entity.MetaInfo) *Query {
 	q := &Query{
 		relationsMeta: make(map[entity.Name]*entity.MetaInfo),
