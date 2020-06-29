@@ -30,6 +30,11 @@ var testCases = []testCase{
 		[]interface{}{1, 3},
 	},
 	{
+		query.NewQuery(metaStub).AndWhere("id", "=", 1).AndWhere("id", "=", 2),
+		"SELECT test_table.id as \"test_table.id\" FROM test_table WHERE (id = $1 AND id = $2)",
+		[]interface{}{1, 2},
+	},
+	{
 		query.NewQuery(metaStub).AndWhere("id", "=", 1).OrWhere("id", "=", 3).Limit(1).
 			Union(query.NewQuery(metaStub).AndWhere("id", "=", 5)),
 		"SELECT test_table.id as \"test_table.id\" FROM test_table WHERE (id = $1 OR id = $2) LIMIT 1 UNION SELECT test_table.id as \"test_table.id\" FROM test_table WHERE id = $3",
