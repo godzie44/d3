@@ -77,7 +77,7 @@ func (o *OneToOneRelationTS) TestLazyRelation() {
 	repository, err := o.orm.MakeRepository((*ShopLL)(nil))
 	o.Assert().NoError(err)
 
-	shop, err := repository.FindOne(ctx, repository.Select().AndWhere("id = ?", 1))
+	shop, err := repository.FindOne(ctx, repository.Select().AndWhere("id", "=", 1))
 	o.Assert().NoError(err)
 
 	o.Assert().IsType(&ShopLL{}, shop)
@@ -93,7 +93,7 @@ func (o *OneToOneRelationTS) TestLazyRelation() {
 func (o *OneToOneRelationTS) TestEagerRelation() {
 	ctx := o.orm.CtxWithSession(context.Background())
 	repository, _ := o.orm.MakeRepository((*ShopEL)(nil))
-	e, err := repository.FindOne(ctx, repository.Select().AndWhere("shop.id = ?", 1))
+	e, err := repository.FindOne(ctx, repository.Select().AndWhere("shop.id", "=", 1))
 	o.Assert().NoError(err)
 
 	o.Assert().IsType(&ShopEL{}, e)
@@ -114,7 +114,7 @@ func (o *OneToOneRelationTS) TestEagerRelation() {
 func (o *OneToOneRelationTS) TestEagerRelationNoRelated() {
 	ctx := o.orm.CtxWithSession(context.Background())
 	repository, _ := o.orm.MakeRepository((*ShopEL)(nil))
-	e, _ := repository.FindOne(ctx, repository.Select().AndWhere("shop.id = ?", 2))
+	e, _ := repository.FindOne(ctx, repository.Select().AndWhere("shop.id", "=", 2))
 
 	o.Assert().IsType(&ShopEL{}, e)
 	o.Assert().Equal(int32(2), e.(*ShopEL).Id)

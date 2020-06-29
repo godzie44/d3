@@ -2,7 +2,6 @@ package query
 
 import (
 	"github.com/godzie44/d3/orm/entity"
-	"strings"
 )
 
 var Preprocessor preprocessor
@@ -25,12 +24,9 @@ func extractIdsIfPossible(q *Query) []interface{} {
 		switch where := pred.(type) {
 		case *OrWhere:
 		case *AndWhere:
-			fields := strings.Fields(where.Expr)
-			for i := range fields {
-				if fields[i] == q.ownerMeta().Pk.FullDbAlias() {
-					idList = append(idList, where.Params...)
-					return
-				}
+			if where.Field == q.ownerMeta().Pk.FullDbAlias() || where.Field == q.ownerMeta().Pk.Field.DbAlias {
+				idList = append(idList, where.Params[0])
+				return
 			}
 			isIdQuery = false
 		default:

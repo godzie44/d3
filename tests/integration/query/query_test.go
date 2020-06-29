@@ -87,7 +87,7 @@ func (q *QueryTS) TestQueryAndWhere() {
 	rep, err := q.orm.MakeRepository((*User)(nil))
 	q.Assert().NoError(err)
 
-	users, err := rep.FindAll(ctx, rep.Select().AndWhere("age = ?", 19))
+	users, err := rep.FindAll(ctx, rep.Select().AndWhere("age", "=", 19))
 	q.Assert().NoError(err)
 
 	q.Assert().Equal(1, users.Count())
@@ -98,7 +98,7 @@ func (q *QueryTS) TestQueryOrWhere() {
 	rep, err := q.orm.MakeRepository((*User)(nil))
 	q.Assert().NoError(err)
 
-	users, err := rep.FindAll(ctx, rep.Select().AndWhere("age = ?", 19).OrWhere("name = ?", "Sara"))
+	users, err := rep.FindAll(ctx, rep.Select().AndWhere("age", "=", 19).OrWhere("name", "=", "Sara"))
 	q.Assert().NoError(err)
 
 	q.Assert().Equal(3, users.Count())
@@ -109,7 +109,7 @@ func (q *QueryTS) TestQueryUnion() {
 	rep, err := q.orm.MakeRepository((*User)(nil))
 	q.Assert().NoError(err)
 
-	users, err := rep.FindAll(ctx, rep.Select().AndWhere("age = ?", 19).Union(rep.Select().AndWhere("name = ?", "Sara")))
+	users, err := rep.FindAll(ctx, rep.Select().AndWhere("age", "=", 19).Union(rep.Select().AndWhere("name", "=", "Sara")))
 	q.Assert().NoError(err)
 
 	q.Assert().Equal(3, users.Count())
@@ -170,11 +170,11 @@ func (q *QueryTS) TestQueryWith() {
 	rep, err := q.orm.MakeRepository((*User)(nil))
 	q.Assert().NoError(err)
 
-	query := rep.Select()
-	err = query.With("github.com/godzie44/d3/tests/integration/query/Photo")
+	photoQuery := rep.Select()
+	err = photoQuery.With("github.com/godzie44/d3/tests/integration/query/Photo")
 	q.Assert().NoError(err)
 
-	users, err := rep.FindAll(ctx, query.AndWhere("q_photo.user_id IS NOT NULL").OrderBy("age ASC"))
+	users, err := rep.FindAll(ctx, photoQuery.AndWhere("q_photo.user_id", "IS NOT NULL").OrderBy("age ASC"))
 	q.Assert().NoError(err)
 
 	q.Assert().Equal(3, users.Count())
@@ -189,9 +189,9 @@ func (q *QueryTS) TestQueryJoin() {
 	rep, err := q.orm.MakeRepository((*User)(nil))
 	q.Assert().NoError(err)
 
-	query := rep.Select().Join(query.JoinInner, "q_photo", "q_user.id=q_photo.user_id")
+	photoQuery := rep.Select().Join(query.JoinInner, "q_photo", "q_user.id=q_photo.user_id")
 
-	res, err := rep.FindAll(ctx, query)
+	res, err := rep.FindAll(ctx, photoQuery)
 	q.Assert().NoError(err)
 
 	q.Assert().Equal(3, res.Count())

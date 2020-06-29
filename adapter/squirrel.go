@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"github.com/Masterminds/squirrel"
 	"github.com/godzie44/d3/orm/query"
+	"strings"
 )
 
 func QueryToSql(q *query.Query) (string, []interface{}, error) {
@@ -31,16 +32,18 @@ func toSquirrel(q *query.Query) (*squirrel.SelectBuilder, error) {
 			sb = sb.Columns(p...)
 
 		case *query.AndWhere:
+			var expr = createWhereExpr(p.Where)
 			if whereExpr == nil {
-				whereExpr = squirrel.Expr(p.Where.Expr, p.Params...)
+				whereExpr = expr
 			} else {
-				whereExpr = squirrel.And{whereExpr, squirrel.Expr(p.Where.Expr, p.Params...)}
+				whereExpr = squirrel.And{whereExpr, expr}
 			}
 		case *query.OrWhere:
+			var expr = createWhereExpr(p.Where)
 			if whereExpr == nil {
-				whereExpr = squirrel.Expr(p.Where.Expr, p.Params...)
+				whereExpr = expr
 			} else {
-				whereExpr = squirrel.Or{whereExpr, squirrel.Expr(p.Where.Expr, p.Params...)}
+				whereExpr = squirrel.Or{whereExpr, expr}
 			}
 		case *query.Having:
 			sb = sb.Having(p.Expr, p.Params...)
@@ -77,4 +80,17 @@ func toSquirrel(q *query.Query) (*squirrel.SelectBuilder, error) {
 	sb = sb.Where(whereExpr)
 
 	return &sb, nil
+}
+
+func createWhereExpr(where query.Where) squirrel.Sqlizer {
+	switch len(where.Params) {
+	case 0:
+		return squirrel.Expr(strings.Join([]string{where.Field, where.Op}, " "))
+	case 1:
+		return squirrel.Expr(strings.Join([]string{where.Field, where.Op, "?"}, " "), where.Params[0])
+	case 2:
+		return squirrel.Expr(strings.Join([]string{where.Field, where.Op, "? AND ?"}, " "), where.Params...)
+	default:
+		return squirrel.Expr("")
+	}
 }

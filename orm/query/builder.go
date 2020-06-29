@@ -17,7 +17,8 @@ type Union struct {
 }
 
 type Where struct {
-	Expr   string
+	Field  string
+	Op     string
 	Params []interface{}
 }
 
@@ -117,11 +118,13 @@ func (q *Query) addEntityFieldsToSelect(meta *entity.MetaInfo) {
 
 // AndWhere add WHERE expression in select query. If WHERE expression exists - append new clause with AND operator.
 // Example:
-// q.AndWhere("a=?", 1).AndWhere("b=?",2)
-// will generate sql: WHERE a=? AND b=?
-func (q *Query) AndWhere(expr string, params ...interface{}) *Query {
+// q.AndWhere("a", "=", 1).AndWhere("b", "=",2) - generate sql: WHERE a=? AND b=?
+//
+// q.AndWhere("a", "IS NOT NULL") - generate sql: WHERE a IS NOT NULL
+func (q *Query) AndWhere(field, operator string, params ...interface{}) *Query {
 	q.andWhere = append(q.andWhere, &AndWhere{Where{
-		Expr:   expr,
+		Field:  field,
+		Op:     operator,
 		Params: params,
 	}})
 
@@ -130,11 +133,13 @@ func (q *Query) AndWhere(expr string, params ...interface{}) *Query {
 
 // OrWhere add WHERE expression in select query. If WHERE expression exists - append new clause with OR operator.
 // Example:
-// q.AndWhere("a=?", 1).OrWhere("b=?",2)
-// will generate sql: WHERE a=? OR b=?
-func (q *Query) OrWhere(expr string, params ...interface{}) *Query {
+// q.AndWhere("a", "=", 1).OrWhere("b", "=",2) - generate sql: WHERE a=? OR b=?
+//
+// q.OrWhere("a", "IS NOT NULL") - generate sql: WHERE a IS NOT NULL
+func (q *Query) OrWhere(field, operator string, params ...interface{}) *Query {
 	q.orWhere = append(q.orWhere, &OrWhere{Where{
-		Expr:   expr,
+		Field:  field,
+		Op:     operator,
 		Params: params,
 	}})
 	return q
