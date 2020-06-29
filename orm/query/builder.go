@@ -30,6 +30,18 @@ type OrWhere struct {
 	Where
 }
 
+type NestedWhere struct {
+	Supply func(query *Query)
+}
+
+type AndNestedWhere struct {
+	NestedWhere
+}
+
+type OrNestedWhere struct {
+	NestedWhere
+}
+
 type Having struct {
 	Expr   string
 	Params []interface{}
@@ -63,15 +75,17 @@ type Query struct {
 	relationsMeta map[entity.Name]*entity.MetaInfo
 	withList      map[entity.Name]struct{}
 
-	columns  Columns
-	from     From
-	andWhere []*AndWhere
-	orWhere  []*OrWhere
-	having   []*Having
-	join     []*Join
-	union    []*Union
-	group    GroupBy
-	orderBy  Order
+	columns        Columns
+	from           From
+	andWhere       []*AndWhere
+	andWhereNested []*AndNestedWhere
+	orWhere        []*OrWhere
+	orWhereNested  []*OrNestedWhere
+	having         []*Having
+	join           []*Join
+	union          []*Union
+	group          GroupBy
+	orderBy        Order
 
 	limit  Limit
 	offset Offset
@@ -116,7 +130,7 @@ func (q *Query) addEntityFieldsToSelect(meta *entity.MetaInfo) {
 	}
 }
 
-// AndWhere add WHERE expression in select query. If WHERE expression exists - append new clause with AND operator.
+// AndWhere join WHERE expression in select query with AND operator.
 // Example:
 // q.AndWhere("a", "=", 1).AndWhere("b", "=",2) - generate sql: WHERE a=? AND b=?
 //
@@ -131,7 +145,7 @@ func (q *Query) AndWhere(field, operator string, params ...interface{}) *Query {
 	return q
 }
 
-// OrWhere add WHERE expression in select query. If WHERE expression exists - append new clause with OR operator.
+// OrWhere join WHERE expression in select query with OR operator.
 // Example:
 // q.AndWhere("a", "=", 1).OrWhere("b", "=",2) - generate sql: WHERE a=? OR b=?
 //
@@ -142,6 +156,26 @@ func (q *Query) OrWhere(field, operator string, params ...interface{}) *Query {
 		Op:     operator,
 		Params: params,
 	}})
+	return q
+}
+
+// AndNestedWhere join nested WHERE expression in select query with AND operator.
+// Example:
+// q.AndWhere("a", "=", 1).AndNestedWhere(func(q *Query){
+//     q.OrWhere("b", "=", 2).OrWhere("c", "=", 3)
+// }) - generate sql: WHERE a=? AND (b=? OR c=?)
+func (q *Query) AndNestedWhere(f func(q *Query)) *Query {
+	q.andWhereNested = append(q.andWhereNested, &AndNestedWhere{NestedWhere{Supply: f}})
+	return q
+}
+
+// OrNestedWhere join nested WHERE expression in select query with OR operator.
+// Example:
+// q.OrWhere("a", "=", 1).OrNestedWhere(func(q *Query){
+//     q.AndWhere("b", "=", 2).AndWhere("c", "=", 3)
+// }) - generate sql: WHERE a=? OR (b=? AND c=?)
+func (q *Query) OrNestedWhere(f func(q *Query)) *Query {
+	q.orWhereNested = append(q.orWhereNested, &OrNestedWhere{NestedWhere{Supply: f}})
 	return q
 }
 
@@ -277,7 +311,13 @@ func Visit(q *Query, visitor func(pred interface{})) {
 	for _, andWhere := range q.andWhere {
 		visitor(andWhere)
 	}
+	for _, andWhere := range q.andWhereNested {
+		visitor(andWhere)
+	}
 	for _, orWhere := range q.orWhere {
+		visitor(orWhere)
+	}
+	for _, orWhere := range q.orWhereNested {
 		visitor(orWhere)
 	}
 	for _, having := range q.having {

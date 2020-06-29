@@ -19,8 +19,6 @@ func QueryToSql(q *query.Query) (string, []interface{}, error) {
 func toSquirrel(q *query.Query) (*squirrel.SelectBuilder, error) {
 	sb := squirrel.SelectBuilder{}
 
-	var whereExpr squirrel.Sqlizer
-
 	query.Visit(q, func(pred interface{}) {
 		switch p := pred.(type) {
 		case query.From:
@@ -31,20 +29,6 @@ func toSquirrel(q *query.Query) (*squirrel.SelectBuilder, error) {
 			}
 			sb = sb.Columns(p...)
 
-		case *query.AndWhere:
-			var expr = createWhereExpr(p.Where)
-			if whereExpr == nil {
-				whereExpr = expr
-			} else {
-				whereExpr = squirrel.And{whereExpr, expr}
-			}
-		case *query.OrWhere:
-			var expr = createWhereExpr(p.Where)
-			if whereExpr == nil {
-				whereExpr = expr
-			} else {
-				whereExpr = squirrel.Or{whereExpr, expr}
-			}
 		case *query.Having:
 			sb = sb.Having(p.Expr, p.Params...)
 		case *query.Join:
@@ -77,9 +61,61 @@ func toSquirrel(q *query.Query) (*squirrel.SelectBuilder, error) {
 			sb = sb.Offset(uint64(p))
 		}
 	})
-	sb = sb.Where(whereExpr)
+	sb = sb.Where(visitWherePart(q))
 
 	return &sb, nil
+}
+
+func visitWherePart(q *query.Query) squirrel.Sqlizer {
+	var whereExpr squirrel.Sqlizer
+
+	query.Visit(q, func(pred interface{}) {
+		switch p := pred.(type) {
+		case *query.AndWhere:
+			whereExpr = handleWhere(whereExpr, p.Where, "and")
+		case *query.OrWhere:
+			whereExpr = handleWhere(whereExpr, p.Where, "or")
+		case *query.AndNestedWhere:
+			whereExpr = handleNestedWhere(whereExpr, p.NestedWhere, "and")
+		case *query.OrNestedWhere:
+			whereExpr = handleNestedWhere(whereExpr, p.NestedWhere, "or")
+		}
+	})
+
+	return whereExpr
+}
+
+func handleWhere(parent squirrel.Sqlizer, w query.Where, wType string) squirrel.Sqlizer {
+	var expr = createWhereExpr(w)
+	if parent == nil {
+		return expr
+	} else {
+		switch wType {
+		case "and":
+			return squirrel.And{parent, expr}
+		case "or":
+			return squirrel.Or{parent, expr}
+		}
+		return squirrel.And{parent, expr}
+	}
+}
+
+func handleNestedWhere(parent squirrel.Sqlizer, w query.NestedWhere, wType string) squirrel.Sqlizer {
+	if parent == nil {
+		return parent
+	} else {
+		q := &query.Query{}
+		w.Supply(q)
+		nestedExpr := visitWherePart(q)
+
+		switch wType {
+		case "and":
+			return squirrel.And{parent, nestedExpr}
+		case "or":
+			return squirrel.Or{parent, nestedExpr}
+		}
+		return squirrel.And{parent, nestedExpr}
+	}
 }
 
 func createWhereExpr(where query.Where) squirrel.Sqlizer {
@@ -88,9 +124,9 @@ func createWhereExpr(where query.Where) squirrel.Sqlizer {
 		return squirrel.Expr(strings.Join([]string{where.Field, where.Op}, " "))
 	case 1:
 		return squirrel.Expr(strings.Join([]string{where.Field, where.Op, "?"}, " "), where.Params[0])
-	case 2:
-		return squirrel.Expr(strings.Join([]string{where.Field, where.Op, "? AND ?"}, " "), where.Params...)
 	default:
-		return squirrel.Expr("")
+		paramsPlaceholder := strings.Repeat("?,", len(where.Params))
+		paramsPlaceholder = paramsPlaceholder[:len(paramsPlaceholder)-1]
+		return squirrel.Expr(strings.Join([]string{where.Field, where.Op, "(" + paramsPlaceholder + ")"}, " "), where.Params...)
 	}
 }

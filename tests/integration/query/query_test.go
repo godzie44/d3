@@ -104,6 +104,19 @@ func (q *QueryTS) TestQueryOrWhere() {
 	q.Assert().Equal(3, users.Count())
 }
 
+func (q *QueryTS) TestQueryNestedWhere() {
+	ctx := q.orm.CtxWithSession(context.Background())
+	rep, err := q.orm.MakeRepository((*User)(nil))
+	q.Assert().NoError(err)
+
+	users, err := rep.FindAll(ctx, rep.Select().AndWhere("age", "=", 19).OrNestedWhere(func(q *query.Query) {
+		q.AndWhere("name", "=", "Sara").AndWhere("age", ">", 35)
+	}))
+	q.Assert().NoError(err)
+
+	q.Assert().Equal(2, users.Count())
+}
+
 func (q *QueryTS) TestQueryUnion() {
 	ctx := q.orm.CtxWithSession(context.Background())
 	rep, err := q.orm.MakeRepository((*User)(nil))
