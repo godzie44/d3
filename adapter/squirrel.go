@@ -25,12 +25,12 @@ func toSquirrel(q *query.Query) (*squirrel.SelectBuilder, error) {
 			sb = sb.From(string(p))
 		case query.Columns:
 			for i := range p {
+				if p[i] == "*" {
+					continue
+				}
 				p[i] = fmt.Sprintf("%s as \"%s\"", p[i], p[i])
 			}
 			sb = sb.Columns(p...)
-
-		case *query.Having:
-			sb = sb.Having(p.Expr, p.Params...)
 		case *query.Join:
 			switch p.Type {
 			case query.JoinLeft:
@@ -55,6 +55,8 @@ func toSquirrel(q *query.Query) (*squirrel.SelectBuilder, error) {
 			sb = sb.Suffix("UNION "+sql, args...)
 		case query.GroupBy:
 			sb = sb.GroupBy(string(p))
+		case *query.Having:
+			sb = sb.Having(strings.Join([]string{p.Field, p.Op, "?"}, " "), p.Params...)
 		case query.Limit:
 			sb = sb.Limit(uint64(p))
 		case query.Offset:

@@ -20,26 +20,26 @@ type QueryTS struct {
 	driver *helpers.DbAdapterWithQueryCounter
 }
 
-func (q *QueryTS) SetupSuite() {
-	q.pgDb, _ = pgx.Connect(context.Background(), os.Getenv("D3_PG_TEST_DB"))
+func (qts *QueryTS) SetupSuite() {
+	qts.pgDb, _ = pgx.Connect(context.Background(), os.Getenv("D3_PG_TEST_DB"))
 
-	q.driver = helpers.NewDbAdapterWithQueryCounter(d3pgx.NewPgxDriver(q.pgDb))
-	q.orm = orm.New(q.driver)
-	q.Assert().NoError(q.orm.Register(
+	qts.driver = helpers.NewDbAdapterWithQueryCounter(d3pgx.NewPgxDriver(qts.pgDb))
+	qts.orm = orm.New(qts.driver)
+	qts.Assert().NoError(qts.orm.Register(
 		(*User)(nil),
 		(*Photo)(nil),
 	))
 
-	sql, err := q.orm.GenerateSchema()
-	q.Assert().NoError(err)
+	sql, err := qts.orm.GenerateSchema()
+	qts.Assert().NoError(err)
 
-	_, err = q.pgDb.Exec(context.Background(), sql)
-	q.Assert().NoError(err)
+	_, err = qts.pgDb.Exec(context.Background(), sql)
+	qts.Assert().NoError(err)
 
-	_, err = q.pgDb.Exec(context.Background(), `
+	_, err = qts.pgDb.Exec(context.Background(), `
 INSERT INTO q_user(name, age) VALUES ('Joe', 21);
 INSERT INTO q_user(name, age) VALUES ('Sara', 19);
-INSERT INTO q_user(name, age) VALUES ('Piter', 31);
+INSERT INTO q_user(name, age) VALUES ('Piter', 33);
 INSERT INTO q_user(name, age) VALUES ('Victor', 41);
 INSERT INTO q_user(name, age) VALUES ('Emili', 41);
 INSERT INTO q_user(name, age) VALUES ('Sara', 42);
@@ -52,160 +52,184 @@ INSERT INTO q_photo(user_id, src) VALUES (4, 'http://victor_pic_url');
 INSERT INTO q_photo(user_id, src) VALUES (5, 'http://emili_pic_url');
 INSERT INTO q_photo(user_id, src) VALUES (5, 'http://emili_pic_url');
 `)
-	q.Assert().NoError(err)
+	qts.Assert().NoError(err)
 }
 
-func (q *QueryTS) TearDownSuite() {
-	_, err := q.pgDb.Exec(context.Background(), `
+func (qts *QueryTS) TearDownSuite() {
+	_, err := qts.pgDb.Exec(context.Background(), `
 DROP TABLE q_user;
 DROP TABLE q_photo;
 `)
-	q.Assert().NoError(err)
+	qts.Assert().NoError(err)
 }
 
-func (q *QueryTS) TearDownTest() {
-	q.driver.ResetCounters()
+func (qts *QueryTS) TearDownTest() {
+	qts.driver.ResetCounters()
 }
 
 func TestQueryTestSuite(t *testing.T) {
 	suite.Run(t, new(QueryTS))
 }
 
-func (q *QueryTS) TestQueryAll() {
-	ctx := q.orm.CtxWithSession(context.Background())
-	rep, err := q.orm.MakeRepository((*User)(nil))
-	q.Assert().NoError(err)
+func (qts *QueryTS) TestQueryAll() {
+	ctx := qts.orm.CtxWithSession(context.Background())
+	rep, err := qts.orm.MakeRepository((*User)(nil))
+	qts.Assert().NoError(err)
 
 	allUsers, err := rep.FindAll(ctx, rep.Select())
-	q.Assert().NoError(err)
+	qts.Assert().NoError(err)
 
-	q.Assert().Equal(9, allUsers.Count())
+	qts.Assert().Equal(9, allUsers.Count())
 }
 
-func (q *QueryTS) TestQueryAndWhere() {
-	ctx := q.orm.CtxWithSession(context.Background())
-	rep, err := q.orm.MakeRepository((*User)(nil))
-	q.Assert().NoError(err)
+func (qts *QueryTS) TestQueryAndWhere() {
+	ctx := qts.orm.CtxWithSession(context.Background())
+	rep, err := qts.orm.MakeRepository((*User)(nil))
+	qts.Assert().NoError(err)
 
 	users, err := rep.FindAll(ctx, rep.Select().Where("age", "=", 19).AndWhere("name", "=", "Sara"))
-	q.Assert().NoError(err)
+	qts.Assert().NoError(err)
 
-	q.Assert().Equal(1, users.Count())
+	qts.Assert().Equal(1, users.Count())
 }
 
-func (q *QueryTS) TestQueryOrWhere() {
-	ctx := q.orm.CtxWithSession(context.Background())
-	rep, err := q.orm.MakeRepository((*User)(nil))
-	q.Assert().NoError(err)
+func (qts *QueryTS) TestQueryOrWhere() {
+	ctx := qts.orm.CtxWithSession(context.Background())
+	rep, err := qts.orm.MakeRepository((*User)(nil))
+	qts.Assert().NoError(err)
 
 	users, err := rep.FindAll(ctx, rep.Select().Where("age", "=", 19).OrWhere("name", "=", "Sara"))
-	q.Assert().NoError(err)
+	qts.Assert().NoError(err)
 
-	q.Assert().Equal(3, users.Count())
+	qts.Assert().Equal(3, users.Count())
 }
 
-func (q *QueryTS) TestQueryNestedWhere() {
-	ctx := q.orm.CtxWithSession(context.Background())
-	rep, err := q.orm.MakeRepository((*User)(nil))
-	q.Assert().NoError(err)
+func (qts *QueryTS) TestQueryNestedWhere() {
+	ctx := qts.orm.CtxWithSession(context.Background())
+	rep, err := qts.orm.MakeRepository((*User)(nil))
+	qts.Assert().NoError(err)
 
 	users, err := rep.FindAll(ctx, rep.Select().Where("age", "=", 19).OrNestedWhere(func(q *query.Query) {
 		q.Where("name", "=", "Sara").AndWhere("age", ">", 35)
 	}))
-	q.Assert().NoError(err)
+	qts.Assert().NoError(err)
 
-	q.Assert().Equal(2, users.Count())
+	qts.Assert().Equal(2, users.Count())
 }
 
-func (q *QueryTS) TestQueryUnion() {
-	ctx := q.orm.CtxWithSession(context.Background())
-	rep, err := q.orm.MakeRepository((*User)(nil))
-	q.Assert().NoError(err)
+func (qts *QueryTS) TestQueryUnion() {
+	ctx := qts.orm.CtxWithSession(context.Background())
+	rep, err := qts.orm.MakeRepository((*User)(nil))
+	qts.Assert().NoError(err)
 
 	users, err := rep.FindAll(ctx, rep.Select().Where("age", "=", 19).Union(rep.Select().Where("name", "=", "Sara")))
-	q.Assert().NoError(err)
+	qts.Assert().NoError(err)
 
-	q.Assert().Equal(3, users.Count())
+	qts.Assert().Equal(3, users.Count())
 }
 
-func (q *QueryTS) TestQueryLimit() {
-	ctx := q.orm.CtxWithSession(context.Background())
-	rep, err := q.orm.MakeRepository((*User)(nil))
-	q.Assert().NoError(err)
+func (qts *QueryTS) TestQueryLimit() {
+	ctx := qts.orm.CtxWithSession(context.Background())
+	rep, err := qts.orm.MakeRepository((*User)(nil))
+	qts.Assert().NoError(err)
 
 	allUsers, err := rep.FindAll(ctx, rep.Select().Limit(5))
-	q.Assert().NoError(err)
+	qts.Assert().NoError(err)
 
-	q.Assert().Equal(5, allUsers.Count())
+	qts.Assert().Equal(5, allUsers.Count())
 }
 
-func (q *QueryTS) TestQueryOffset() {
-	ctx := q.orm.CtxWithSession(context.Background())
-	rep, err := q.orm.MakeRepository((*User)(nil))
-	q.Assert().NoError(err)
+func (qts *QueryTS) TestQueryOffset() {
+	ctx := qts.orm.CtxWithSession(context.Background())
+	rep, err := qts.orm.MakeRepository((*User)(nil))
+	qts.Assert().NoError(err)
 
 	user, err := rep.FindOne(ctx, rep.Select().OrderBy("age ASC").Offset(1).Limit(1))
-	q.Assert().NoError(err)
+	qts.Assert().NoError(err)
 
-	q.Assert().Equal(21, user.(*User).age)
+	qts.Assert().Equal(21, user.(*User).age)
 }
 
-func (q *QueryTS) TestQueryOrderBy() {
-	ctx := q.orm.CtxWithSession(context.Background())
-	rep, err := q.orm.MakeRepository((*User)(nil))
-	q.Assert().NoError(err)
+func (qts *QueryTS) TestQueryOrderBy() {
+	ctx := qts.orm.CtxWithSession(context.Background())
+	rep, err := qts.orm.MakeRepository((*User)(nil))
+	qts.Assert().NoError(err)
 
 	allUsersASC, err := rep.FindAll(ctx, rep.Select().OrderBy("age ASC"))
-	q.Assert().NoError(err)
+	qts.Assert().NoError(err)
 
 	prevAge := 0
 	iter := allUsersASC.MakeIter()
 	for iter.Next() {
 		user := iter.Value().(*User)
-		q.Assert().GreaterOrEqual(user.age, prevAge)
+		qts.Assert().GreaterOrEqual(user.age, prevAge)
 		prevAge = user.age
 	}
 
 	allUsersDESC, err := rep.FindAll(ctx, rep.Select().OrderBy("age DESC", "name ASC"))
-	q.Assert().NoError(err)
+	qts.Assert().NoError(err)
 
 	prevAge = math.MaxInt64
 	iter = allUsersDESC.MakeIter()
 	for iter.Next() {
 		user := iter.Value().(*User)
-		q.Assert().LessOrEqual(user.age, prevAge)
+		qts.Assert().LessOrEqual(user.age, prevAge)
 		prevAge = user.age
 	}
 }
 
-func (q *QueryTS) TestQueryWith() {
-	ctx := q.orm.CtxWithSession(context.Background())
-	rep, err := q.orm.MakeRepository((*User)(nil))
-	q.Assert().NoError(err)
+func (qts *QueryTS) TestQueryWith() {
+	ctx := qts.orm.CtxWithSession(context.Background())
+	rep, err := qts.orm.MakeRepository((*User)(nil))
+	qts.Assert().NoError(err)
 
-	photoQuery := rep.Select()
-	err = photoQuery.With("github.com/godzie44/d3/tests/integration/query/Photo")
-	q.Assert().NoError(err)
+	q := rep.Select()
+	err = q.With("github.com/godzie44/d3/tests/integration/query/Photo")
+	qts.Assert().NoError(err)
 
-	users, err := rep.FindAll(ctx, photoQuery.Where("q_photo.user_id", "IS NOT NULL").OrderBy("age ASC"))
-	q.Assert().NoError(err)
+	users, err := rep.FindAll(ctx, q.Where("q_photo.user_id", "IS NOT NULL").OrderBy("age ASC"))
+	qts.Assert().NoError(err)
 
-	q.Assert().Equal(3, users.Count())
-	q.Assert().Equal(2, users.Get(0).(*User).photos.Count())
+	qts.Assert().Equal(3, users.Count())
+	qts.Assert().Equal(2, users.Get(0).(*User).photos.Count())
 
-	q.Assert().Equal(1, q.driver.QueryCounter())
+	qts.Assert().Equal(1, qts.driver.QueryCounter())
 }
 
-func (q *QueryTS) TestQueryJoin() {
-	ctx := q.orm.CtxWithSession(context.Background())
+func (qts *QueryTS) TestQueryJoin() {
+	session := qts.orm.MakeSession()
 
-	rep, err := q.orm.MakeRepository((*User)(nil))
-	q.Assert().NoError(err)
+	q := query.New().Select("*").From("q_user").Join(query.JoinInner, "q_photo", "q_user.id=q_photo.user_id")
 
-	photoQuery := rep.Select().Join(query.JoinInner, "q_photo", "q_user.id=q_photo.user_id")
+	result, err := session.Execute(q)
+	qts.Assert().NoError(err)
 
-	res, err := rep.FindAll(ctx, photoQuery)
-	q.Assert().NoError(err)
+	qts.Assert().Len(result, 5)
+}
 
-	q.Assert().Equal(3, res.Count())
+func (qts *QueryTS) TestQueryGroupBy() {
+	session := qts.orm.MakeSession()
+
+	q := query.New().Select("age", "count(*)").From("q_user").GroupBy("age")
+
+	result, err := session.Execute(q)
+	qts.Assert().NoError(err)
+
+	qts.Assert().Len(result, 7)
+	for _, res := range result {
+		if res["age"] == 42 || res["age"] == 33 {
+			qts.Assert().Equal(2, res["count(*)"])
+		}
+	}
+}
+
+func (qts *QueryTS) TestQueryHaving() {
+	session := qts.orm.MakeSession()
+
+	q := query.New().Select("age").From("q_user").GroupBy("age").Having("count(*)", ">", 1)
+
+	result, err := session.Execute(q)
+	qts.Assert().NoError(err)
+
+	qts.Assert().Len(result, 2)
 }

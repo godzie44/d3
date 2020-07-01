@@ -86,5 +86,5 @@ func sessionFromCtx(ctx context.Context) (*session, error) {
 
 // Select - create query for fetch entity with the same type as the repository.
 func (r *Repository) Select() *query.Query {
-	return query.NewQuery(&r.entityMeta)
+	return query.New().ForEntity(&r.entityMeta)
 }

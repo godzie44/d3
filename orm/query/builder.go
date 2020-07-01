@@ -44,7 +44,8 @@ type OrNestedWhere struct {
 }
 
 type Having struct {
-	Expr   string
+	Field  string
+	Op     string
 	Params []interface{}
 }
 
@@ -92,20 +93,31 @@ type Query struct {
 	offset Offset
 }
 
-// NewQuery - create new query. For client code use repository.Select instead.
-func NewQuery(targetEntityMeta *entity.MetaInfo) *Query {
-	q := &Query{
+// ForEntity - create new query.
+func New() *Query {
+	return &Query{
 		relationsMeta: make(map[entity.Name]*entity.MetaInfo),
 		withList:      make(map[entity.Name]struct{}),
 	}
-
-	return q.forEntity(targetEntityMeta)
 }
 
-func (q *Query) forEntity(meta *entity.MetaInfo) *Query {
-	q.mainMeta = meta
-	q.from = From(q.mainMeta.TableName)
-	q.addEntityFieldsToSelect(meta)
+// ForEntity - bind entity to query.
+func (q *Query) ForEntity(targetEntityMeta *entity.MetaInfo) *Query {
+	q.mainMeta = targetEntityMeta
+	q.From(targetEntityMeta.TableName).
+		addEntityFieldsToSelect(targetEntityMeta)
+	return q
+}
+
+// From - set table name in FROM query section.
+func (q *Query) From(tableName string) *Query {
+	q.from = From(tableName)
+	return q
+}
+
+// Select - add columns to SELECT query section.
+func (q *Query) Select(columns ...string) *Query {
+	q.columns = append(q.columns, columns...)
 	return q
 }
 
@@ -124,10 +136,10 @@ func (q *Query) addEntityFieldsToSelect(meta *entity.MetaInfo) {
 	})
 
 	for _, f := range fields {
-		q.columns = append(q.columns, f.FullDbAlias)
+		q.Select(f.FullDbAlias)
 	}
 	for _, rel := range meta.OneToOneRelations() {
-		q.columns = append(q.columns, meta.FullColumnAlias(rel.JoinColumn))
+		q.Select(meta.FullColumnAlias(rel.JoinColumn))
 	}
 }
 
@@ -195,14 +207,17 @@ func (q *Query) OrNestedWhere(f func(q *Query)) *Query {
 	return q
 }
 
+// GroupBy - add GROUP BY clause to query.
 func (q *Query) GroupBy(expr string) *Query {
 	q.group = GroupBy(expr)
 	return q
 }
 
-func (q *Query) Having(expr string, params ...interface{}) *Query {
+// Having - add HAVING clause to query.
+func (q *Query) Having(field, operator string, params ...interface{}) *Query {
 	q.having = append(q.having, &Having{
-		Expr:   expr,
+		Field:  field,
+		Op:     operator,
 		Params: params,
 	})
 	return q
@@ -248,7 +263,7 @@ func (q *Query) OrderBy(stmts ...string) *Query {
 	return q
 }
 
-// With - d3 will load with main entity related entity in same query.
+// With - d3 will load with main entity related entities in same query.
 // Example:
 // q.With("myPkg/Entity2")
 func (q *Query) With(entityName entity.Name) error {
