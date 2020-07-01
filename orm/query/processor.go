@@ -67,11 +67,18 @@ type FetchPlan struct {
 }
 
 func (e *FetchPlan) NoNestedWhere() bool {
-	return len(e.query.andNestedWhere) == 0 && len(e.query.orNestedWhere) == 0
+	for _, w := range e.query.where {
+		switch w.(type) {
+		case *AndNestedWhere, *OrNestedWhere:
+			return false
+		}
+	}
+
+	return true
 }
 
 func (e *FetchPlan) WhereExprCount() int {
-	return len(e.query.andWhere) + len(e.query.orWhere)
+	return len(e.query.where)
 }
 
 func (e *FetchPlan) EntityName() entity.Name {
