@@ -17,28 +17,29 @@ func (preprocessor) MakeFetchPlan(q *Query) *FetchPlan {
 }
 
 func extractIdsIfPossible(q *Query) []interface{} {
-	isIdQuery := true
 	var idList []interface{}
 
 	Visit(q, func(pred interface{}) {
 		switch where := pred.(type) {
 		case *OrWhere:
-		case *AndWhere:
-			if where.Field == q.ownerMeta().Pk.FullDbAlias() || where.Field == q.ownerMeta().Pk.Field.DbAlias {
-				idList = append(idList, where.Params[0])
-				return
+			if canExtractIdsFromWhere(where.Where, q.ownerMeta()) {
+				idList = append(idList, where.Params...)
 			}
-			isIdQuery = false
+		case *AndWhere:
+			if canExtractIdsFromWhere(where.Where, q.ownerMeta()) {
+				idList = append(idList, where.Params...)
+			}
 		default:
 			return
 		}
 	})
 
-	if !isIdQuery {
-		idList = []interface{}{}
-	}
-
 	return idList
+}
+
+func canExtractIdsFromWhere(w Where, meta *entity.MetaInfo) bool {
+	return (w.Field == meta.Pk.FullDbAlias() || w.Field == meta.Pk.Field.DbAlias) &&
+		(w.Op == "=" || w.Op == "IN")
 }
 
 func getFetchList(meta *entity.MetaInfo, q *Query) []*executeWith {
@@ -63,6 +64,14 @@ type FetchPlan struct {
 	query         *Query
 	pks           []interface{}
 	fetchWithList []*executeWith
+}
+
+func (e *FetchPlan) NoNestedWhere() bool {
+	return len(e.query.andNestedWhere) == 0 && len(e.query.orNestedWhere) == 0
+}
+
+func (e *FetchPlan) WhereExprCount() int {
+	return len(e.query.andWhere) + len(e.query.orWhere)
 }
 
 func (e *FetchPlan) EntityName() entity.Name {

@@ -13,7 +13,9 @@ import (
 
 type IMCacheTS struct {
 	suite.Suite
-	pgDb *pgx.Conn
+	pgDb    *pgx.Conn
+	adapter *helpers.DbAdapterWithQueryCounter
+	orm     *orm.Orm
 }
 
 func (o *IMCacheTS) SetupSuite() {
@@ -36,12 +38,21 @@ func (o *IMCacheTS) SetupSuite() {
 
 	_, err = o.pgDb.Exec(context.Background(), `
 INSERT INTO im_test_entity_1(id, data) VALUES (1, 'entity_1_data');
+INSERT INTO im_test_entity_1(id, data) VALUES (2, 'entity_1_data');
 INSERT INTO im_test_entity_2(id, data, t1_id) VALUES (1, 'entity_2_data_1', 1);
 INSERT INTO im_test_entity_2(id, data, t1_id) VALUES (2, 'entity_2_data_2', 1);
 INSERT INTO im_test_entity_2(id, data, t1_id) VALUES (3, 'entity_2_data_3', 1);
+INSERT INTO im_test_entity_2(id, data, t1_id) VALUES (4, 'entity_2_data_4', 1);
 `)
 	o.Assert().NoError(err)
 
+	o.adapter = helpers.NewDbAdapterWithQueryCounter(d3pgx.NewPgxDriver(o.pgDb))
+	o.orm = orm.New(o.adapter)
+	err = o.orm.Register(
+		(*entity1)(nil),
+		(*entity2)(nil),
+	)
+	o.NoError(err)
 }
 
 func (o *IMCacheTS) TearDownSuite() {
@@ -52,34 +63,72 @@ DROP TABLE im_test_entity_2;
 	o.Assert().NoError(err)
 }
 
+func (o *IMCacheTS) TearDownTest() {
+	o.adapter.ResetCounters()
+}
+
 func TestIdentityMapCacheSuite(t *testing.T) {
 	suite.Run(t, new(IMCacheTS))
 }
 
-func (o *IMCacheTS) TestNoQueryCreateForCachedEntities() {
-	wrappedDbAdapter := helpers.NewDbAdapterWithQueryCounter(d3pgx.NewPgxDriver(o.pgDb))
-	d3Orm := orm.New(wrappedDbAdapter)
-	err := d3Orm.Register(
-		(*entity1)(nil),
-		(*entity2)(nil),
-	)
-	o.NoError(err)
-
-	ctx := d3Orm.CtxWithSession(context.Background())
-	repository, _ := d3Orm.MakeRepository((*entity1)(nil))
-	_, err = repository.FindOne(ctx, repository.Select().Where("im_test_entity_1.id", "=", 1))
+func (o *IMCacheTS) TestNoDBCallForEqualQuery() {
+	ctx := o.orm.CtxWithSession(context.Background())
+	repository, _ := o.orm.MakeRepository((*entity1)(nil))
+	_, err := repository.FindOne(ctx, repository.Select().Where("im_test_entity_1.id", "=", 1))
 	o.Assert().NoError(err)
 
-	o.Assert().Equal(2, wrappedDbAdapter.QueryCounter())
+	o.Assert().Equal(2, o.adapter.QueryCounter())
 
 	_, err = repository.FindOne(ctx, repository.Select().Where("im_test_entity_1.id", "=", 1))
 	o.Assert().NoError(err)
 
-	o.Assert().Equal(2, wrappedDbAdapter.QueryCounter())
+	o.Assert().Equal(2, o.adapter.QueryCounter())
 
-	repository2, _ := d3Orm.MakeRepository((*entity2)(nil))
+	repository2, _ := o.orm.MakeRepository((*entity2)(nil))
 	_, err = repository2.FindOne(ctx, repository2.Select().Where("im_test_entity_2.id", "=", 1))
 	o.Assert().NoError(err)
 
-	o.Assert().Equal(2, wrappedDbAdapter.QueryCounter())
+	o.Assert().Equal(2, o.adapter.QueryCounter())
+}
+
+func (o *IMCacheTS) TestDBCallForEqualQueryIfKeyNotFoundInCache() {
+	ctx := o.orm.CtxWithSession(context.Background())
+	repository, _ := o.orm.MakeRepository((*entity1)(nil))
+	_, err := repository.FindOne(ctx, repository.Select().Where("im_test_entity_1.id", "=", 1))
+	o.Assert().NoError(err)
+
+	o.Assert().Equal(2, o.adapter.QueryCounter())
+
+	_, err = repository.FindOne(ctx, repository.Select().Where("im_test_entity_1.id", "=", 2))
+	o.Assert().NoError(err)
+
+	o.Assert().Equal(4, o.adapter.QueryCounter())
+}
+
+func (o *IMCacheTS) TestNoDBCallForInQuery() {
+	ctx := o.orm.CtxWithSession(context.Background())
+	repository, _ := o.orm.MakeRepository((*entity2)(nil))
+	_, err := repository.FindOne(ctx, repository.Select().Where("id", "IN", 1, 2, 3))
+	o.Assert().NoError(err)
+
+	o.Assert().Equal(1, o.adapter.QueryCounter())
+
+	_, err = repository.FindOne(ctx, repository.Select().Where("id", "IN", 2, 3))
+	o.Assert().NoError(err)
+
+	o.Assert().Equal(1, o.adapter.QueryCounter())
+}
+
+func (o *IMCacheTS) TestDBCallForInQueryIfKeyNotFoundInCache() {
+	ctx := o.orm.CtxWithSession(context.Background())
+	repository, _ := o.orm.MakeRepository((*entity2)(nil))
+	_, err := repository.FindOne(ctx, repository.Select().Where("id", "IN", 1, 2, 3))
+	o.Assert().NoError(err)
+
+	o.Assert().Equal(1, o.adapter.QueryCounter())
+
+	_, err = repository.FindOne(ctx, repository.Select().Where("id", "IN", 3, 4))
+	o.Assert().NoError(err)
+
+	o.Assert().Equal(2, o.adapter.QueryCounter())
 }

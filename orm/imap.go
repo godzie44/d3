@@ -19,10 +19,10 @@ func newIdentityMap() *identityMap {
 	return &identityMap{data: make(map[entity.Name]map[interface{}]interface{})}
 }
 
-//canApply check that only id in where clause.
+// canApply check that only id in where clause.
 // query with joins not allowed, cause we don't know does entities in identityMap has related entities in memory.
 func (im *identityMap) canApply(plan *query.FetchPlan) bool {
-	return !plan.HasJoins() && len(plan.PKs()) != 0
+	return !plan.HasJoins() && len(plan.PKs()) != 0 && plan.NoNestedWhere() && plan.WhereExprCount() == 1
 }
 
 func (im *identityMap) executePlan(plan *query.FetchPlan) (*entity.Collection, error) {

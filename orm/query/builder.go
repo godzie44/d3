@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"github.com/godzie44/d3/orm/entity"
 	"sort"
+	"strings"
 )
 
 var (
@@ -78,9 +79,9 @@ type Query struct {
 	columns        Columns
 	from           From
 	andWhere       []*AndWhere
-	andWhereNested []*AndNestedWhere
+	andNestedWhere []*AndNestedWhere
 	orWhere        []*OrWhere
-	orWhereNested  []*OrNestedWhere
+	orNestedWhere  []*OrNestedWhere
 	having         []*Having
 	join           []*Join
 	union          []*Union
@@ -138,7 +139,7 @@ func (q *Query) addEntityFieldsToSelect(meta *entity.MetaInfo) {
 func (q *Query) Where(field, operator string, params ...interface{}) *Query {
 	q.andWhere = append(q.andWhere, &AndWhere{Where{
 		Field:  field,
-		Op:     operator,
+		Op:     strings.TrimSpace(strings.ToUpper(operator)),
 		Params: params,
 	}})
 
@@ -153,7 +154,7 @@ func (q *Query) Where(field, operator string, params ...interface{}) *Query {
 func (q *Query) AndWhere(field, operator string, params ...interface{}) *Query {
 	q.andWhere = append(q.andWhere, &AndWhere{Where{
 		Field:  field,
-		Op:     operator,
+		Op:     strings.TrimSpace(strings.ToUpper(operator)),
 		Params: params,
 	}})
 
@@ -168,7 +169,7 @@ func (q *Query) AndWhere(field, operator string, params ...interface{}) *Query {
 func (q *Query) OrWhere(field, operator string, params ...interface{}) *Query {
 	q.orWhere = append(q.orWhere, &OrWhere{Where{
 		Field:  field,
-		Op:     operator,
+		Op:     strings.TrimSpace(strings.ToUpper(operator)),
 		Params: params,
 	}})
 	return q
@@ -180,7 +181,7 @@ func (q *Query) OrWhere(field, operator string, params ...interface{}) *Query {
 //     q.OrWhere("b", "=", 2).OrWhere("c", "=", 3)
 // }) - generate sql: WHERE a=? AND (b=? OR c=?)
 func (q *Query) AndNestedWhere(f func(q *Query)) *Query {
-	q.andWhereNested = append(q.andWhereNested, &AndNestedWhere{NestedWhere{Supply: f}})
+	q.andNestedWhere = append(q.andNestedWhere, &AndNestedWhere{NestedWhere{Supply: f}})
 	return q
 }
 
@@ -190,7 +191,7 @@ func (q *Query) AndNestedWhere(f func(q *Query)) *Query {
 //     q.AndWhere("b", "=", 2).AndWhere("c", "=", 3)
 // }) - generate sql: WHERE a=? OR (b=? AND c=?)
 func (q *Query) OrNestedWhere(f func(q *Query)) *Query {
-	q.orWhereNested = append(q.orWhereNested, &OrNestedWhere{NestedWhere{Supply: f}})
+	q.orNestedWhere = append(q.orNestedWhere, &OrNestedWhere{NestedWhere{Supply: f}})
 	return q
 }
 
@@ -326,13 +327,13 @@ func Visit(q *Query, visitor func(pred interface{})) {
 	for _, andWhere := range q.andWhere {
 		visitor(andWhere)
 	}
-	for _, andWhere := range q.andWhereNested {
+	for _, andWhere := range q.andNestedWhere {
 		visitor(andWhere)
 	}
 	for _, orWhere := range q.orWhere {
 		visitor(orWhere)
 	}
-	for _, orWhere := range q.orWhereNested {
+	for _, orWhere := range q.orNestedWhere {
 		visitor(orWhere)
 	}
 	for _, having := range q.having {
