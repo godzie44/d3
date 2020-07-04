@@ -19,7 +19,7 @@ func TestLazyEntityGet(t *testing.T) {
 	entity := NewLazyWrappedEntity(func() *Collection {
 		return NewCollection(1)
 	}, func(_ *Cell) {})
-	assert.Equal(t, 1, entity.Unwrap())
+	assert.Equal(t, 1, entity.unwrap())
 }
 
 func TestLazyEntitySet(t *testing.T) {
@@ -34,5 +34,5 @@ func TestLazyEntityIsNil(t *testing.T) {
 	entity := NewLazyWrappedEntity(func() *Collection {
 		return NewCollection()
 	}, func(_ *Cell) {})
-	assert.True(t, entity.IsNil())
+	assert.True(t, entity.isNil())
 }

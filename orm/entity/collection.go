@@ -1,13 +1,15 @@
 package entity
 
-type Copiable interface {
-	DeepCopy() interface{}
-}
-
 type (
+	Copiable interface {
+		DeepCopy() interface{}
+	}
+
+	// Collection - d3 container for multiple entities of same type.
 	Collection struct {
 		base collectionner
 	}
+
 	collectionner interface {
 		Copiable
 		ToSlice() []interface{}
@@ -19,6 +21,7 @@ type (
 	}
 )
 
+// NewCollection - create new collection of entities.
 func NewCollection(entities ...interface{}) *Collection {
 	return &Collection{base: &eagerCollection{holder: &dataHolder{data: entities}}}
 }
@@ -31,26 +34,32 @@ func (c *Collection) DeepCopy() interface{} {
 	return &Collection{base: c.base.DeepCopy().(collectionner)}
 }
 
+// toSlice - return slice of entities.
 func (c *Collection) ToSlice() []interface{} {
 	return c.base.ToSlice()
 }
 
+// add - add element to collection.
 func (c *Collection) Add(el interface{}) {
 	c.base.Add(el)
 }
 
+// get - get element from collection by index.
 func (c *Collection) Get(index int) interface{} {
 	return c.base.Get(index)
 }
 
+// count - return count of elements in collection.
 func (c *Collection) Count() int {
 	return c.base.Count()
 }
 
+// empty - return true if collection has 0 entities, false otherwise.
 func (c *Collection) Empty() bool {
 	return c.base.Empty()
 }
 
+// remove - delete element from collection by index.
 func (c *Collection) Remove(index int) {
 	c.base.Remove(index)
 }
@@ -59,27 +68,27 @@ type dataHolder struct {
 	data []interface{}
 }
 
-func (e *dataHolder) ToSlice() []interface{} {
+func (e *dataHolder) toSlice() []interface{} {
 	return e.data
 }
 
-func (e *dataHolder) Add(el interface{}) {
+func (e *dataHolder) add(el interface{}) {
 	e.data = append(e.data, el)
 }
 
-func (e *dataHolder) Get(index int) interface{} {
+func (e *dataHolder) get(index int) interface{} {
 	return e.data[index]
 }
 
-func (e *dataHolder) Count() int {
+func (e *dataHolder) count() int {
 	return len(e.data)
 }
 
-func (e *dataHolder) Empty() bool {
+func (e *dataHolder) empty() bool {
 	return len(e.data) == 0
 }
 
-func (e *dataHolder) Remove(index int) {
+func (e *dataHolder) remove(index int) {
 	copy(e.data[index:], e.data[index+1:])
 	e.data[len(e.data)-1] = nil
 	e.data = e.data[:len(e.data)-1]
@@ -96,27 +105,27 @@ func (e *eagerCollection) DeepCopy() interface{} {
 }
 
 func (e *eagerCollection) ToSlice() []interface{} {
-	return e.holder.ToSlice()
+	return e.holder.toSlice()
 }
 
 func (e *eagerCollection) Add(el interface{}) {
-	e.holder.Add(el)
+	e.holder.add(el)
 }
 
 func (e *eagerCollection) Get(index int) interface{} {
-	return e.holder.Get(index)
+	return e.holder.get(index)
 }
 
 func (e *eagerCollection) Count() int {
-	return e.holder.Count()
+	return e.holder.count()
 }
 
 func (e *eagerCollection) Empty() bool {
-	return e.holder.Empty()
+	return e.holder.empty()
 }
 
 func (e *eagerCollection) Remove(index int) {
-	e.holder.Remove(index)
+	e.holder.remove(index)
 }
 
 type lazyCollection struct {
@@ -141,32 +150,32 @@ func (l *lazyCollection) DeepCopy() interface{} {
 
 func (l *lazyCollection) ToSlice() []interface{} {
 	l.initIfNeeded()
-	return l.holder.ToSlice()
+	return l.holder.toSlice()
 }
 
 func (l *lazyCollection) Add(el interface{}) {
 	l.initIfNeeded()
-	l.holder.Add(el)
+	l.holder.add(el)
 }
 
 func (l *lazyCollection) Get(index int) interface{} {
 	l.initIfNeeded()
-	return l.holder.Get(index)
+	return l.holder.get(index)
 }
 
 func (l *lazyCollection) Count() int {
 	l.initIfNeeded()
-	return l.holder.Count()
+	return l.holder.count()
 }
 
 func (l *lazyCollection) Empty() bool {
 	l.initIfNeeded()
-	return l.holder.Empty()
+	return l.holder.empty()
 }
 
 func (l *lazyCollection) Remove(index int) {
 	l.initIfNeeded()
-	l.holder.Remove(index)
+	l.holder.remove(index)
 }
 
 func (l *lazyCollection) initIfNeeded() {
@@ -185,10 +194,13 @@ type iterator struct {
 	c       *Collection
 }
 
+// Rewind - set iterator to start of collection
+// Note that after rewind an iterator is in invalid state, use Next() for move on first collection element.
 func (i *iterator) Rewind() {
 	i.currPos = -1
 }
 
+// Next - move iterator to next collection element.
 func (i *iterator) Next() bool {
 	if i.currPos+1 >= i.c.base.Count() {
 		return false
@@ -198,10 +210,12 @@ func (i *iterator) Next() bool {
 	return true
 }
 
+// Value - get entity under iterator.
 func (i *iterator) Value() interface{} {
 	return i.c.base.Get(i.currPos)
 }
 
+// MakeIter - creates structure for iterate over collection.
 func (c *Collection) MakeIter() *iterator {
 	return &iterator{c: c, currPos: -1}
 }

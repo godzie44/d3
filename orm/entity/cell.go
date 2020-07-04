@@ -1,15 +1,17 @@
 package entity
 
+// Cell - d3 container for single entity.
 type Cell struct {
 	w wrapper
 }
 
 type wrapper interface {
 	Copiable
-	IsNil() bool
-	Unwrap() interface{}
+	isNil() bool
+	unwrap() interface{}
 }
 
+// NewCell - create new Cell.
 func NewCell(entity interface{}) *Cell {
 	return &Cell{w: &eagerEntity{base: &baseEntity{inner: entity}}}
 }
@@ -22,12 +24,14 @@ func (c *Cell) DeepCopy() interface{} {
 	return &Cell{w: c.w.DeepCopy().(wrapper)}
 }
 
+// isNil - return true if nil in Cell.
 func (c *Cell) IsNil() bool {
-	return c.w.IsNil()
+	return c.w.isNil()
 }
 
+// unwrap - return entity under Cell.
 func (c *Cell) Unwrap() interface{} {
-	return c.w.Unwrap()
+	return c.w.unwrap()
 }
 
 type LazyContainer interface {
@@ -38,11 +42,11 @@ type baseEntity struct {
 	inner interface{}
 }
 
-func (b *baseEntity) IsNil() bool {
+func (b *baseEntity) isNil() bool {
 	return b.inner == nil
 }
 
-func (b *baseEntity) Unwrap() interface{} {
+func (b *baseEntity) unwrap() interface{} {
 	return b.inner
 }
 
@@ -54,12 +58,12 @@ type eagerEntity struct {
 	base *baseEntity
 }
 
-func (e *eagerEntity) IsNil() bool {
-	return e.base.IsNil()
+func (e *eagerEntity) isNil() bool {
+	return e.base.isNil()
 }
 
-func (e *eagerEntity) Unwrap() interface{} {
-	return e.base.Unwrap()
+func (e *eagerEntity) unwrap() interface{} {
+	return e.base.unwrap()
 }
 
 func (e *eagerEntity) DeepCopy() interface{} {
@@ -96,15 +100,15 @@ func (l *lazyEntity) initIfNeeded() {
 	}
 }
 
-func (l *lazyEntity) IsNil() bool {
+func (l *lazyEntity) isNil() bool {
 	l.initIfNeeded()
 
-	return l.entity.IsNil()
+	return l.entity.isNil()
 }
 
-func (l *lazyEntity) Unwrap() interface{} {
+func (l *lazyEntity) unwrap() interface{} {
 	l.initIfNeeded()
-	return l.entity.Unwrap()
+	return l.entity.unwrap()
 }
 
 func (l *lazyEntity) wrap(entity interface{}) {
