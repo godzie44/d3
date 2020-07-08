@@ -7,7 +7,7 @@ import (
 	"sync"
 )
 
-var ErrCantExecutePlan = errors.New("cant execute plan")
+var errCantExecutePlan = errors.New("cant execute plan")
 
 type identityMap struct {
 	data map[entity.Name]map[interface{}]interface{}
@@ -34,7 +34,7 @@ func (im *identityMap) executePlan(plan *query.FetchPlan) (*entity.Collection, e
 		if e, exists := im.get(plan.EntityName(), id); exists {
 			collection.Add(e)
 		} else {
-			return nil, ErrCantExecutePlan
+			return nil, errCantExecutePlan
 		}
 	}
 
