@@ -47,7 +47,7 @@ func Session(ctx context.Context) *session {
 
 // MakeSession - create new instance of session.
 func (o *Orm) MakeSession() *session {
-	return newSession(o.storage, NewUOW(o.storage))
+	return newSession(o.storage, newUOW(o.storage))
 }
 
 // MakeRepository - create new repository for entity.

@@ -59,7 +59,7 @@ func (u *uowTestEntity) D3Token() entity.MetaToken {
 var testEntityMeta, _ = entity.NewMeta((*uowTestEntity)(nil))
 
 func TestRegisterNewEntity(t *testing.T) {
-	uow := NewUOW(nil)
+	uow := newUOW(nil)
 
 	te1 := &uowTestEntity{ID: 1}
 	te2 := &uowTestEntity{ID: 2}
@@ -77,7 +77,7 @@ func TestRegisterNewEntity(t *testing.T) {
 }
 
 func TestRegisterNewEntityIfEntityInDirty(t *testing.T) {
-	uow := NewUOW(nil)
+	uow := newUOW(nil)
 
 	te1 := &uowTestEntity{ID: 1}
 
@@ -99,10 +99,10 @@ func TestTransactionRollbackIfError(t *testing.T) {
 
 	storageMock.On("BeginTx").Return(txMock)
 
-	uow := NewUOW(storageMock)
+	uow := newUOW(storageMock)
 
 	assert.NoError(t, uow.registerNew(entity.NewBox(&uowTestEntity{}, testEntityMeta)))
-	_ = uow.Commit()
+	_ = uow.commit()
 
 	txMock.AssertNumberOfCalls(t, "Rollback", 1)
 	txMock.AssertNumberOfCalls(t, "Commit", 0)
@@ -116,10 +116,10 @@ func TestTransactionCommitIfNoError(t *testing.T) {
 
 	storageMock.On("BeginTx").Return(txMock)
 
-	uow := NewUOW(storageMock)
+	uow := newUOW(storageMock)
 
 	assert.NoError(t, uow.registerNew(entity.NewBox(&uowTestEntity{}, testEntityMeta)))
-	_ = uow.Commit()
+	_ = uow.commit()
 
 	txMock.AssertNumberOfCalls(t, "Rollback", 0)
 	txMock.AssertNumberOfCalls(t, "Commit", 1)

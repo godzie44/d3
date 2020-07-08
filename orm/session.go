@@ -20,10 +20,10 @@ type Driver interface {
 
 type session struct {
 	storage Driver
-	uow     *UnitOfWork
+	uow     *unitOfWork
 }
 
-func newSession(storage Driver, uow *UnitOfWork) *session {
+func newSession(storage Driver, uow *unitOfWork) *session {
 	return &session{storage: storage, uow: uow}
 }
 
@@ -64,7 +64,7 @@ func (s *session) Execute(q *query.Query) ([]map[string]interface{}, error) {
 
 // Flush save all created, update changed and delete deleted entities within the session.
 func (s *session) Flush() error {
-	return s.uow.Commit()
+	return s.uow.commit()
 }
 
 // Transaction for control transaction driver must provide instance of this interface.

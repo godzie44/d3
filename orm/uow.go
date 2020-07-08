@@ -11,7 +11,7 @@ type dirtyEl struct {
 	original interface{}
 }
 
-type UnitOfWork struct {
+type unitOfWork struct {
 	newEntities     map[entity.Name][]*entity.Box
 	dirtyEntities   map[entity.Name]map[interface{}]*dirtyEl
 	deletedEntities map[entity.Name]map[interface{}]*entity.Box
@@ -22,8 +22,8 @@ type UnitOfWork struct {
 	currentTx Transaction
 }
 
-func NewUOW(storage Driver) *UnitOfWork {
-	return &UnitOfWork{
+func newUOW(storage Driver) *unitOfWork {
+	return &unitOfWork{
 		newEntities:     make(map[entity.Name][]*entity.Box),
 		dirtyEntities:   make(map[entity.Name]map[interface{}]*dirtyEl),
 		deletedEntities: make(map[entity.Name]map[interface{}]*entity.Box),
@@ -32,7 +32,7 @@ func NewUOW(storage Driver) *UnitOfWork {
 	}
 }
 
-func (uow *UnitOfWork) registerNew(box *entity.Box) error {
+func (uow *unitOfWork) registerNew(box *entity.Box) error {
 	pkVal, err := box.ExtractPk()
 	if err != nil {
 		return fmt.Errorf("while adding Entity to new: %w", err)
@@ -51,7 +51,7 @@ func (uow *UnitOfWork) registerNew(box *entity.Box) error {
 	return nil
 }
 
-func (uow *UnitOfWork) registerDirty(box *entity.Box) error {
+func (uow *unitOfWork) registerDirty(box *entity.Box) error {
 	pkVal, err := box.ExtractPk()
 	if err != nil {
 		return fmt.Errorf("while adding Entity to dirty: %w", err)
@@ -69,7 +69,7 @@ func (uow *UnitOfWork) registerDirty(box *entity.Box) error {
 	return nil
 }
 
-func (uow *UnitOfWork) updateFieldOfOriginal(box *entity.Box, fieldName string, newVal entity.Copiable) {
+func (uow *unitOfWork) updateFieldOfOriginal(box *entity.Box, fieldName string, newVal entity.Copiable) {
 	pkVal, err := box.ExtractPk()
 	if err != nil {
 		return
@@ -86,7 +86,7 @@ func (uow *UnitOfWork) updateFieldOfOriginal(box *entity.Box, fieldName string, 
 	_ = box.Meta.Tools.SetFieldVal(uow.dirtyEntities[box.GetEName()][pkVal].original, fieldName, newVal.DeepCopy())
 }
 
-func (uow *UnitOfWork) registerRemove(box *entity.Box) error {
+func (uow *unitOfWork) registerRemove(box *entity.Box) error {
 	pkVal, err := box.ExtractPk()
 	if err != nil {
 		return err
@@ -102,7 +102,7 @@ func (uow *UnitOfWork) registerRemove(box *entity.Box) error {
 	return nil
 }
 
-func (uow *UnitOfWork) clean(box *entity.Box, pk interface{}) {
+func (uow *unitOfWork) clean(box *entity.Box, pk interface{}) {
 	var i int
 	for _, b := range uow.newEntities[box.GetEName()] {
 		if b != box {
@@ -119,7 +119,7 @@ func (uow *UnitOfWork) clean(box *entity.Box, pk interface{}) {
 	delete(uow.dirtyEntities[box.GetEName()], pk)
 }
 
-func (uow *UnitOfWork) Commit() error {
+func (uow *unitOfWork) commit() error {
 	graph := persistence.NewPersistGraph(uow.checkInDirty, uow.getOriginal)
 
 	err := uow.processNew(graph)
@@ -160,7 +160,7 @@ func (uow *UnitOfWork) Commit() error {
 	return persistence.NewExecutor(uow.storage.MakePusher(uow.currentTx), uow.moveInsertedBoxToDirty).Exec(graph)
 }
 
-func (uow *UnitOfWork) moveInsertedBoxToDirty(act persistence.CompositeAction) {
+func (uow *unitOfWork) moveInsertedBoxToDirty(act persistence.CompositeAction) {
 	if ia, ok := act.(*persistence.InsertAction); ok {
 		if box := ia.Box(); box != nil {
 			_ = uow.registerDirty(box)
@@ -168,7 +168,7 @@ func (uow *UnitOfWork) moveInsertedBoxToDirty(act persistence.CompositeAction) {
 	}
 }
 
-func (uow *UnitOfWork) processNew(graph *persistence.PersistGraph) error {
+func (uow *unitOfWork) processNew(graph *persistence.PersistGraph) error {
 	for _, newEntities := range uow.newEntities {
 		for _, b := range newEntities {
 			if err := graph.ProcessEntity(b); err != nil {
@@ -180,7 +180,7 @@ func (uow *UnitOfWork) processNew(graph *persistence.PersistGraph) error {
 	return nil
 }
 
-func (uow *UnitOfWork) processDirty(graph *persistence.PersistGraph) error {
+func (uow *unitOfWork) processDirty(graph *persistence.PersistGraph) error {
 	for _, dirtyEntities := range uow.dirtyEntities {
 		for _, dirtyEntity := range dirtyEntities {
 			err := graph.ProcessEntity(dirtyEntity.box)
@@ -193,7 +193,7 @@ func (uow *UnitOfWork) processDirty(graph *persistence.PersistGraph) error {
 	return nil
 }
 
-func (uow *UnitOfWork) processDelete(graph *persistence.PersistGraph) error {
+func (uow *unitOfWork) processDelete(graph *persistence.PersistGraph) error {
 	for _, deletedEntities := range uow.deletedEntities {
 		for _, b := range deletedEntities {
 			if err := graph.ProcessDeletedEntity(b); err != nil {
@@ -205,7 +205,7 @@ func (uow *UnitOfWork) processDelete(graph *persistence.PersistGraph) error {
 	return nil
 }
 
-func (uow *UnitOfWork) getOriginal(box *entity.Box) interface{} {
+func (uow *unitOfWork) getOriginal(box *entity.Box) interface{} {
 	if pk, err := box.ExtractPk(); err == nil {
 		el, exists := uow.dirtyEntities[box.GetEName()][pk]
 		if exists {
@@ -216,7 +216,7 @@ func (uow *UnitOfWork) getOriginal(box *entity.Box) interface{} {
 	return nil
 }
 
-func (uow *UnitOfWork) checkInDirty(box *entity.Box) (bool, error) {
+func (uow *unitOfWork) checkInDirty(box *entity.Box) (bool, error) {
 	if pk, err := box.ExtractPk(); err == nil {
 		_, exists := uow.dirtyEntities[box.GetEName()][pk]
 		return exists, nil
@@ -225,7 +225,7 @@ func (uow *UnitOfWork) checkInDirty(box *entity.Box) (bool, error) {
 	}
 }
 
-func (uow *UnitOfWork) beginTx() error {
+func (uow *unitOfWork) beginTx() error {
 	tx, err := uow.storage.BeginTx()
 	if err != nil {
 		return err
@@ -235,7 +235,7 @@ func (uow *UnitOfWork) beginTx() error {
 	return nil
 }
 
-func (uow *UnitOfWork) commitTx() error {
+func (uow *unitOfWork) commitTx() error {
 	if uow.currentTx == nil {
 		return fmt.Errorf("begin transaction before commit")
 	}
@@ -245,7 +245,7 @@ func (uow *UnitOfWork) commitTx() error {
 	return uow.currentTx.Commit()
 }
 
-func (uow *UnitOfWork) rollbackTx() error {
+func (uow *unitOfWork) rollbackTx() error {
 	if uow.currentTx == nil {
 		return fmt.Errorf("begin transaction before rollback")
 	}
