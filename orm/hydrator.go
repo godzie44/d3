@@ -9,14 +9,14 @@ import (
 
 type ScalarDataMapper func(data interface{}, into reflect.Kind) interface{}
 
-type Hydrator struct {
+type hydrator struct {
 	session            *session
 	meta               *d3entity.MetaInfo
 	afterHydrateEntity func(b *d3entity.Box)
 	scalarMapper       ScalarDataMapper
 }
 
-func (h *Hydrator) Hydrate(fetchedData []map[string]interface{}, plan *query.FetchPlan) (*d3entity.Collection, error) {
+func (h *hydrator) hydrate(fetchedData []map[string]interface{}, plan *query.FetchPlan) (*d3entity.Collection, error) {
 	groupByEntityData := make([][]map[string]interface{}, 0)
 	entityKeyIndexMap := make(map[interface{}]int)
 
@@ -49,7 +49,7 @@ func (h *Hydrator) Hydrate(fetchedData []map[string]interface{}, plan *query.Fet
 	return collection, nil
 }
 
-func (h *Hydrator) hydrateOne(entity interface{}, entityData []map[string]interface{}, plan *query.FetchPlan) error {
+func (h *hydrator) hydrateOne(entity interface{}, entityData []map[string]interface{}, plan *query.FetchPlan) error {
 	for _, field := range h.meta.Fields {
 		fieldValue, exists := entityData[0][field.FullDbAlias]
 		if !exists {
@@ -85,10 +85,10 @@ func (h *Hydrator) hydrateOne(entity interface{}, entityData []map[string]interf
 	return nil
 }
 
-func (h *Hydrator) fetchRelation(relation d3entity.Relation, entityData []map[string]interface{}, plan *query.FetchPlan) (interface{}, error) {
+func (h *hydrator) fetchRelation(relation d3entity.Relation, entityData []map[string]interface{}, plan *query.FetchPlan) (interface{}, error) {
 	relationMeta := h.meta.RelatedMeta[relation.RelatedWith()]
 
-	relationHydrator := &Hydrator{
+	relationHydrator := &hydrator{
 		session:            h.session,
 		meta:               relationMeta,
 		afterHydrateEntity: h.afterHydrateEntity,
@@ -144,7 +144,7 @@ func (h *Hydrator) fetchRelation(relation d3entity.Relation, entityData []map[st
 	return nil, nil
 }
 
-func (h *Hydrator) createRelation(entity interface{}, relation d3entity.Relation, entityData map[string]interface{}) (interface{}, error) {
+func (h *hydrator) createRelation(entity interface{}, relation d3entity.Relation, entityData map[string]interface{}) (interface{}, error) {
 	switch rel := relation.(type) {
 	case *d3entity.OneToOne:
 		relatedId, exists := entityData[h.meta.FullColumnAlias(rel.JoinColumn)]
@@ -178,7 +178,7 @@ func (h *Hydrator) createRelation(entity interface{}, relation d3entity.Relation
 			return nil, fmt.Errorf("hydration: owner pk not exists")
 		}
 
-		var extractor Extractor
+		var extractor extractor
 		switch rel := rel.(type) {
 		case *d3entity.OneToMany:
 			extractor = h.session.makeOneToManyExtractor(relatedId, rel, h.meta.RelatedMeta[rel.RelatedWith()])

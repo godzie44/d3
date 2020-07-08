@@ -42,12 +42,12 @@ func (s *session) execute(q *query.Query, entityMeta *entity.MetaInfo) (*entity.
 		return nil, err
 	}
 
-	hydrator := &Hydrator{session: s, meta: entityMeta, scalarMapper: s.storage.MakeScalarDataMapper(),
+	hydrator := &hydrator{session: s, meta: entityMeta, scalarMapper: s.storage.MakeScalarDataMapper(),
 		afterHydrateEntity: func(b *entity.Box) {
 			_ = s.uow.registerDirty(b)
 		}}
 
-	result, err := hydrator.Hydrate(data, fetchPlan)
+	result, err := hydrator.hydrate(data, fetchPlan)
 	if err != nil {
 		return nil, err
 	}

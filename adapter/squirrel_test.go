@@ -1,6 +1,7 @@
 package adapter
 
 import (
+	"fmt"
 	"github.com/godzie44/d3/orm/entity"
 	"github.com/godzie44/d3/orm/query"
 	"github.com/stretchr/testify/assert"
@@ -74,4 +75,9 @@ func TestQueryToSquirrelSql(t *testing.T) {
 		assert.Equal(t, tCase.sql, sql)
 		assert.Equal(t, tCase.args, args)
 	}
+}
+func TestQueryToSquirrelSql2(t *testing.T) {
+	qe := query.New().ForEntity(metaStub).OrderBy("age DESC", "name ASC")
+	sql, _, _ := QueryToSql(qe)
+	fmt.Println(sql)
 }
