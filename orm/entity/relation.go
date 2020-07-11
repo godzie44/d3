@@ -52,7 +52,7 @@ type Relation interface {
 	Field() *FieldInfo
 
 	setField(f *FieldInfo)
-	fillFromTag(tag *parsedTag)
+	fillFromTag(tag *parsedTag, parent *MetaInfo)
 }
 
 type baseRelation struct {
@@ -99,13 +99,13 @@ type OneToMany struct {
 	ReferenceColumn string
 }
 
-func (o *OneToMany) fillFromTag(tag *parsedTag) {
+func (o *OneToMany) fillFromTag(tag *parsedTag, parent *MetaInfo) {
 	prop, _ := tag.getProperty("one_to_many")
 
 	relType, _ := tag.getProperty("type")
 	o.baseRelation = baseRelation{
 		relType:        relationTypeFromAlias(relType.val),
-		targetEntity:   Name(prop.getSubPropVal("target_entity")),
+		targetEntity:   nameFromTag(prop.getSubPropVal("target_entity"), parent.EntityName),
 		deleteStrategy: deleteStrategyFromAlias(prop.getSubPropVal("delete")),
 	}
 	o.JoinColumn = prop.getSubPropVal("join_on")
@@ -140,13 +140,13 @@ type OneToOne struct {
 	ReferenceColumn string
 }
 
-func (o *OneToOne) fillFromTag(tag *parsedTag) {
+func (o *OneToOne) fillFromTag(tag *parsedTag, parent *MetaInfo) {
 	prop, _ := tag.getProperty("one_to_one")
 	relType, _ := tag.getProperty("type")
 
 	o.baseRelation = baseRelation{
 		relType:        relationTypeFromAlias(relType.val),
-		targetEntity:   Name(prop.getSubPropVal("target_entity")),
+		targetEntity:   nameFromTag(prop.getSubPropVal("target_entity"), parent.EntityName),
 		deleteStrategy: deleteStrategyFromAlias(prop.getSubPropVal("delete")),
 	}
 	o.JoinColumn = prop.getSubPropVal("join_on")
@@ -185,13 +185,13 @@ type ManyToMany struct {
 	JoinTable       string
 }
 
-func (m *ManyToMany) fillFromTag(tag *parsedTag) {
+func (m *ManyToMany) fillFromTag(tag *parsedTag, parent *MetaInfo) {
 	prop, _ := tag.getProperty("many_to_many")
 	relType, _ := tag.getProperty("type")
 
 	m.baseRelation = baseRelation{
 		relType:        relationTypeFromAlias(relType.val),
-		targetEntity:   Name(prop.getSubPropVal("target_entity")),
+		targetEntity:   nameFromTag(prop.getSubPropVal("target_entity"), parent.EntityName),
 		deleteStrategy: deleteStrategyFromAlias(prop.getSubPropVal("delete")),
 	}
 	m.JoinColumn = prop.getSubPropVal("join_on")

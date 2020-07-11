@@ -17,13 +17,31 @@ func NameFromEntity(e interface{}) Name {
 	}
 }
 
+func nameFromTag(tag string, parentName Name) Name {
+	defined := Name(tag)
+	if defined.IsShort() {
+		return parentName.combine(defined)
+	}
+
+	return defined
+}
+
 func (n Name) Short() string {
 	path := strings.Split(string(n), "/")
 
 	return path[len(path)-1]
 }
 
+func (n Name) IsShort() bool {
+	return !strings.Contains(string(n), "/")
+}
+
 func (n Name) Equal(name Name) bool {
-	//return n == name || n.Short() == name.Short()
 	return n == name
+}
+
+func (n Name) combine(entity Name) Name {
+	path := strings.Split(string(n), "/")
+
+	return Name(strings.Join(append(path[:len(path)-1], entity.Short()), "/"))
 }

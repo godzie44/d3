@@ -9,7 +9,7 @@ import (
 //d3_table:q_user
 type User struct {
 	id     sql.NullInt64      `d3:"pk:auto"`
-	photos *entity.Collection `d3:"one_to_many:<target_entity:github.com/godzie44/d3/tests/integration/query/Photo,join_on:user_id>,type:lazy"`
+	photos *entity.Collection `d3:"one_to_many:<target_entity:Photo,join_on:user_id>,type:lazy"`
 	name   string
 	age    int
 }

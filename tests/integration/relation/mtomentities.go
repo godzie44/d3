@@ -21,7 +21,7 @@ type AuthorLL struct {
 //d3_table:book
 type BookEL struct {
 	Id   int32              `d3:"pk:auto"`
-	Rel  *entity.Collection `d3:"many_to_many:<target_entity:github.com/godzie44/d3/tests/integration/relation/AuthorEL,join_on:book_id,reference_on:author_id,join_table:book_author>,type:eager"`
+	Rel  *entity.Collection `d3:"many_to_many:<target_entity:AuthorEL,join_on:book_id,reference_on:author_id,join_table:book_author>,type:eager"`
 	Name string
 }
 
@@ -29,7 +29,7 @@ type BookEL struct {
 //d3_table:author
 type AuthorEL struct {
 	Id   int32              `d3:"pk:auto"`
-	Rel  *entity.Collection `d3:"many_to_many:<target_entity:github.com/godzie44/d3/tests/integration/relation/Redactor,join_on:author_id,reference_on:redactor_id,join_table:author_redactor>,type:eager"`
+	Rel  *entity.Collection `d3:"many_to_many:<target_entity:Redactor,join_on:author_id,reference_on:redactor_id,join_table:author_redactor>,type:eager"`
 	Name string
 }
 

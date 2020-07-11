@@ -6,7 +6,7 @@ import "github.com/godzie44/d3/orm/entity"
 //d3_table:shop
 type ShopLR struct {
 	Id    int32              `d3:"pk:auto"`
-	Books *entity.Collection `d3:"one_to_many:<target_entity:github.com/godzie44/d3/tests/integration/relation/BookLR,join_on:t1_id>,type:lazy"`
+	Books *entity.Collection `d3:"one_to_many:<target_entity:BookLR,join_on:t1_id>,type:lazy"`
 	Name  string
 }
 

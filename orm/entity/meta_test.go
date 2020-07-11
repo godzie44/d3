@@ -51,7 +51,7 @@ func TestNewMetaWithRelations(t *testing.T) {
 		baseRelation: baseRelation{
 			relType:        Lazy,
 			deleteStrategy: Cascade,
-			targetEntity:   "shopProfile",
+			targetEntity:   "github.com/godzie44/d3/orm/entity/shopProfile",
 			field:          meta.Relations["Profile"].(*OneToOne).field,
 		},
 		JoinColumn:      "profile_id",
@@ -61,7 +61,7 @@ func TestNewMetaWithRelations(t *testing.T) {
 		baseRelation: baseRelation{
 			relType:        Lazy,
 			deleteStrategy: None,
-			targetEntity:   "book",
+			targetEntity:   "github.com/godzie44/d3/orm/entity/book",
 			field:          meta.Relations["Books"].(*OneToMany).field,
 		},
 		JoinColumn:      "shop_id",
@@ -94,4 +94,22 @@ func TestNewMetaWithFieldAlias(t *testing.T) {
 		DbAlias:        "author_name",
 		FullDbAlias:    "author.author_name",
 	}, *meta.Fields["Name"])
+}
+
+type shop2 struct {
+	ID      sql.NullInt32 `d3:"pk:auto"`
+	Books   *Collection   `d3:"one_to_many:<target_entity:book,join_on:shop_id>,type:lazy"`
+	Profile *Cell         `d3:"one_to_one:<target_entity:github.com/godzie44/d3/orm/entity/shopProfile,join_on:profile_id,delete:cascade>"`
+}
+
+func (s *shop2) D3Token() MetaToken {
+	return MetaToken{}
+}
+
+func TestShortNamesInRelationSwitchTooFullNames(t *testing.T) {
+	meta, err := NewMeta((*shop2)(nil))
+	assert.NoError(t, err)
+
+	assert.Equal(t, "github.com/godzie44/d3/orm/entity/book", string(meta.Relations["Books"].RelatedWith()))
+	assert.Equal(t, "github.com/godzie44/d3/orm/entity/shopProfile", string(meta.Relations["Profile"].RelatedWith()))
 }

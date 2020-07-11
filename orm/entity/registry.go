@@ -41,7 +41,7 @@ func (r *MetaRegistry) Add(entities ...interface{}) error {
 		}
 		r.metaMap[meta.EntityName] = meta
 
-		for entityName := range meta.DependencyEntities() {
+		for _, entityName := range meta.Deps() {
 			dependencyInstallers = append(dependencyInstallers, r.makeDepInstaller(meta, entityName))
 		}
 	}

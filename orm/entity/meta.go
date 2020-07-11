@@ -122,7 +122,7 @@ func NewMeta(e interface{}) (*MetaInfo, error) {
 		}
 
 		if relation != nil {
-			relation.fillFromTag(tag)
+			relation.fillFromTag(tag, meta)
 			relation.setField(field)
 			meta.Relations[fieldReflection.Name] = relation
 		} else {
@@ -165,11 +165,11 @@ func extractDbFieldAlias(tag *parsedTag, fieldName string) string {
 	return prop.val
 }
 
-func (m *MetaInfo) DependencyEntities() map[Name]struct{} {
-	dependencies := make(map[Name]struct{})
+func (m *MetaInfo) Deps() []Name {
+	dependencies := make([]Name, 0, len(m.Relations))
 
 	for _, relation := range m.Relations {
-		dependencies[relation.RelatedWith()] = struct{}{}
+		dependencies = append(dependencies, relation.RelatedWith())
 	}
 
 	return dependencies
