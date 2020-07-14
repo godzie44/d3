@@ -13,18 +13,23 @@ import (
 
 type DeleteTS struct {
 	suite.Suite
-	pgDb      *pgx.Conn
+	pgConn    *pgx.Conn
 	dbAdapter *helpers.DbAdapterWithQueryCounter
 	d3Orm     *orm.Orm
 	ctx       context.Context
 }
 
 func (d *DeleteTS) SetupSuite() {
-	d.pgDb, _ = pgx.Connect(context.Background(), os.Getenv("D3_PG_TEST_DB"))
+	cfg, _ := pgx.ParseConfig(os.Getenv("D3_PG_TEST_DB"))
+	driver, err := d3pgx.NewPgxDriver(cfg)
+	d.NoError(err)
 
-	err := createSchema(d.pgDb)
+	d.pgConn = driver.UnwrapConn().(*pgx.Conn)
 
-	d.dbAdapter = helpers.NewDbAdapterWithQueryCounter(d3pgx.NewPgxDriver(d.pgDb))
+	err = createSchema(d.pgConn)
+	d.NoError(err)
+
+	d.dbAdapter = helpers.NewDbAdapterWithQueryCounter(driver)
 	d.d3Orm = orm.New(d.dbAdapter)
 	d.NoError(d.d3Orm.Register(
 		(*Book)(nil),
@@ -41,12 +46,12 @@ func (d *DeleteTS) SetupTest() {
 }
 
 func (d *DeleteTS) TearDownSuite() {
-	d.NoError(deleteSchema(d.pgDb))
+	d.NoError(deleteSchema(d.pgConn))
 }
 
 func (d *DeleteTS) TearDownTest() {
 	d.dbAdapter.ResetCounters()
-	d.NoError(clearSchema(d.pgDb))
+	d.NoError(clearSchema(d.pgConn))
 }
 
 func (d *DeleteTS) TestDeleteEntity() {

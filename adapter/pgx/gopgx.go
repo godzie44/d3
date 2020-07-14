@@ -18,22 +18,36 @@ import (
 	"strings"
 )
 
+type xConn interface {
+	Query(ctx context.Context, sql string, args ...interface{}) (pgx.Rows, error)
+	Begin(ctx context.Context) (pgx.Tx, error)
+}
+
 type pgxDriver struct {
-	pgDb *pgx.Conn
+	pgDb xConn
 
 	beforeQCallback, afterQCallback []func(query string, args ...interface{})
 }
 
-func NewPgxDriver(pgDb *pgx.Conn) *pgxDriver {
-	pgDb.ConnInfo().RegisterDataType(pgtype.DataType{
+func NewPgxDriver(cfg *pgx.ConnConfig) (*pgxDriver, error) {
+	conn, err := pgx.ConnectConfig(context.Background(), cfg)
+	if err != nil {
+		return nil, err
+	}
+
+	conn.ConnInfo().RegisterDataType(pgtype.DataType{
 		Value: &pgtypeuuid.UUID{},
 		Name:  "uuid",
 		OID:   pgtype.UUIDOID,
 	})
 
 	return &pgxDriver{
-		pgDb: pgDb,
-	}
+		pgDb: conn,
+	}, nil
+}
+
+func (g *pgxDriver) UnwrapConn() interface{} {
+	return g.pgDb
 }
 
 func (g *pgxDriver) MakeScalarDataMapper() orm.ScalarDataMapper {

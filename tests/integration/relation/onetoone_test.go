@@ -12,14 +12,17 @@ import (
 
 type OneToOneRelationTS struct {
 	suite.Suite
-	pgDb *pgx.Conn
-	orm  *orm.Orm
+	pgConn *pgx.Conn
+	orm    *orm.Orm
 }
 
 func (o *OneToOneRelationTS) SetupSuite() {
-	o.pgDb, _ = pgx.Connect(context.Background(), os.Getenv("D3_PG_TEST_DB"))
+	cfg, _ := pgx.ParseConfig(os.Getenv("D3_PG_TEST_DB"))
+	driver, err := d3pgx.NewPgxDriver(cfg)
+	o.NoError(err)
+	o.pgConn = driver.UnwrapConn().(*pgx.Conn)
 
-	_, err := o.pgDb.Exec(context.Background(), `CREATE TABLE IF NOT EXISTS shop(
+	_, err = o.pgConn.Exec(context.Background(), `CREATE TABLE IF NOT EXISTS shop(
 		id integer NOT NULL,
 		data text NOT NULL,
 		t2_id integer,
@@ -27,7 +30,7 @@ func (o *OneToOneRelationTS) SetupSuite() {
 	)`)
 	o.Assert().NoError(err)
 
-	_, err = o.pgDb.Exec(context.Background(), `CREATE TABLE IF NOT EXISTS profile(
+	_, err = o.pgConn.Exec(context.Background(), `CREATE TABLE IF NOT EXISTS profile(
 		id integer NOT NULL,
 		data character varying(200) NOT NULL,
 		t3_id integer,
@@ -35,14 +38,14 @@ func (o *OneToOneRelationTS) SetupSuite() {
 	)`)
 	o.Assert().NoError(err)
 
-	_, err = o.pgDb.Exec(context.Background(), `CREATE TABLE IF NOT EXISTS photo(
+	_, err = o.pgConn.Exec(context.Background(), `CREATE TABLE IF NOT EXISTS photo(
 		id integer NOT NULL,
 		data character varying(200) NOT NULL,
 		CONSTRAINT photo_pkey PRIMARY KEY (id)
 	)`)
 	o.Assert().NoError(err)
 
-	_, err = o.pgDb.Exec(context.Background(), `
+	_, err = o.pgConn.Exec(context.Background(), `
 INSERT INTO shop(id, data, t2_id) VALUES (1, 'entity_1_data', 1);
 INSERT INTO shop(id, data) VALUES (2, 'entity_1_data_2');
 INSERT INTO profile(id, data, t3_id) VALUES (1, 'entity_2_data', 1);
@@ -50,7 +53,7 @@ INSERT INTO photo(id, data) VALUES (1, 'entity_3_data');
 `)
 	o.Assert().NoError(err)
 
-	o.orm = orm.New(d3pgx.NewPgxDriver(o.pgDb))
+	o.orm = orm.New(driver)
 	o.NoError(o.orm.Register(
 		(*ShopLL)(nil),
 		(*ProfileLL)(nil),
@@ -60,7 +63,7 @@ INSERT INTO photo(id, data) VALUES (1, 'entity_3_data');
 }
 
 func (o *OneToOneRelationTS) TearDownSuite() {
-	_, err := o.pgDb.Exec(context.Background(), `
+	_, err := o.pgConn.Exec(context.Background(), `
 DROP TABLE shop;
 DROP TABLE profile;
 DROP TABLE photo;

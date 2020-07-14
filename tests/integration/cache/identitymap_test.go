@@ -13,22 +13,26 @@ import (
 
 type IMCacheTS struct {
 	suite.Suite
-	pgDb    *pgx.Conn
+	pgConn  *pgx.Conn
 	adapter *helpers.DbAdapterWithQueryCounter
 	orm     *orm.Orm
 }
 
 func (o *IMCacheTS) SetupSuite() {
-	o.pgDb, _ = pgx.Connect(context.Background(), os.Getenv("D3_PG_TEST_DB"))
+	cfg, _ := pgx.ParseConfig(os.Getenv("D3_PG_TEST_DB"))
+	driver, err := d3pgx.NewPgxDriver(cfg)
+	o.NoError(err)
 
-	_, err := o.pgDb.Exec(context.Background(), `CREATE TABLE IF NOT EXISTS im_test_entity_1(
+	o.pgConn = driver.UnwrapConn().(*pgx.Conn)
+
+	_, err = o.pgConn.Exec(context.Background(), `CREATE TABLE IF NOT EXISTS im_test_entity_1(
 		id integer NOT NULL,
 		data text NOT NULL,
 		CONSTRAINT im_test_entity_t1_pkey PRIMARY KEY (id)
 	)`)
 	o.Assert().NoError(err)
 
-	_, err = o.pgDb.Exec(context.Background(), `CREATE TABLE IF NOT EXISTS im_test_entity_2(
+	_, err = o.pgConn.Exec(context.Background(), `CREATE TABLE IF NOT EXISTS im_test_entity_2(
 		id integer NOT NULL,
 		data character varying(200) NOT NULL,
 		t1_id integer,
@@ -36,7 +40,7 @@ func (o *IMCacheTS) SetupSuite() {
 	)`)
 	o.Assert().NoError(err)
 
-	_, err = o.pgDb.Exec(context.Background(), `
+	_, err = o.pgConn.Exec(context.Background(), `
 INSERT INTO im_test_entity_1(id, data) VALUES (1, 'entity_1_data');
 INSERT INTO im_test_entity_1(id, data) VALUES (2, 'entity_1_data');
 INSERT INTO im_test_entity_2(id, data, t1_id) VALUES (1, 'entity_2_data_1', 1);
@@ -46,7 +50,7 @@ INSERT INTO im_test_entity_2(id, data, t1_id) VALUES (4, 'entity_2_data_4', 1);
 `)
 	o.Assert().NoError(err)
 
-	o.adapter = helpers.NewDbAdapterWithQueryCounter(d3pgx.NewPgxDriver(o.pgDb))
+	o.adapter = helpers.NewDbAdapterWithQueryCounter(driver)
 	o.orm = orm.New(o.adapter)
 	err = o.orm.Register(
 		(*entity1)(nil),
@@ -56,7 +60,7 @@ INSERT INTO im_test_entity_2(id, data, t1_id) VALUES (4, 'entity_2_data_4', 1);
 }
 
 func (o *IMCacheTS) TearDownSuite() {
-	_, err := o.pgDb.Exec(context.Background(), `
+	_, err := o.pgConn.Exec(context.Background(), `
 DROP TABLE im_test_entity_1;
 DROP TABLE im_test_entity_2;
 `)

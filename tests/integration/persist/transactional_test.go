@@ -13,17 +13,22 @@ import (
 
 type TransactionalTs struct {
 	suite.Suite
-	pgDb      *pgx.Conn
+	pgConn    *pgx.Conn
 	dbAdapter *helpers.DbAdapterWithQueryCounter
 	d3Orm     *orm.Orm
 }
 
 func (t *TransactionalTs) SetupSuite() {
-	t.pgDb, _ = pgx.Connect(context.Background(), os.Getenv("D3_PG_TEST_DB"))
+	cfg, _ := pgx.ParseConfig(os.Getenv("D3_PG_TEST_DB"))
+	driver, err := d3pgx.NewPgxDriver(cfg)
+	t.NoError(err)
 
-	err := createSchema(t.pgDb)
+	t.pgConn = driver.UnwrapConn().(*pgx.Conn)
 
-	t.dbAdapter = helpers.NewDbAdapterWithQueryCounter(d3pgx.NewPgxDriver(t.pgDb))
+	err = createSchema(t.pgConn)
+	t.NoError(err)
+
+	t.dbAdapter = helpers.NewDbAdapterWithQueryCounter(driver)
 	t.d3Orm = orm.New(t.dbAdapter)
 	t.NoError(t.d3Orm.Register(
 		(*Book)(nil),
@@ -36,12 +41,12 @@ func (t *TransactionalTs) SetupSuite() {
 }
 
 func (t *TransactionalTs) TearDownSuite() {
-	t.NoError(deleteSchema(t.pgDb))
+	t.NoError(deleteSchema(t.pgConn))
 }
 
 func (t *TransactionalTs) TearDownTest() {
 	t.dbAdapter.ResetCounters()
-	t.NoError(clearSchema(t.pgDb))
+	t.NoError(clearSchema(t.pgConn))
 }
 
 func (t *TransactionalTs) TestAutoCommit() {
@@ -59,7 +64,7 @@ func (t *TransactionalTs) TestAutoCommit() {
 	t.NoError(repository.Persists(ctx, shop1, shop2))
 	t.NoError(session.Flush())
 
-	helpers.NewPgTester(t.T(), t.pgDb).
+	helpers.NewPgTester(t.T(), t.pgConn).
 		SeeTwo("SELECT * FROM shop_p WHERE name = $1 or name = $2", "shop1", "shop2")
 }
 

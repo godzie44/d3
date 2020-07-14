@@ -21,11 +21,15 @@ type UpdateTs struct {
 }
 
 func (u *UpdateTs) SetupSuite() {
-	u.pgDb, _ = pgx.Connect(context.Background(), os.Getenv("D3_PG_TEST_DB"))
+	cfg, _ := pgx.ParseConfig(os.Getenv("D3_PG_TEST_DB"))
+	driver, err := d3pgx.NewPgxDriver(cfg)
+	u.NoError(err)
+	u.pgDb, _ = driver.UnwrapConn().(*pgx.Conn)
 
-	err := createSchema(u.pgDb)
+	err = createSchema(u.pgDb)
+	u.NoError(err)
 
-	u.dbAdapter = helpers.NewDbAdapterWithQueryCounter(d3pgx.NewPgxDriver(u.pgDb))
+	u.dbAdapter = helpers.NewDbAdapterWithQueryCounter(driver)
 	u.d3Orm = orm.New(u.dbAdapter)
 	u.NoError(u.d3Orm.Register(
 		(*Book)(nil),

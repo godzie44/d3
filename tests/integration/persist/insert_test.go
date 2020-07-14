@@ -21,11 +21,16 @@ type PersistsTS struct {
 }
 
 func (o *PersistsTS) SetupSuite() {
-	o.pgDb, _ = pgx.Connect(context.Background(), os.Getenv("D3_PG_TEST_DB"))
+	cfg, _ := pgx.ParseConfig(os.Getenv("D3_PG_TEST_DB"))
+	driver, err := d3pgx.NewPgxDriver(cfg)
+	o.NoError(err)
 
-	err := createSchema(o.pgDb)
+	o.pgDb = driver.UnwrapConn().(*pgx.Conn)
 
-	o.dbAdapter = helpers.NewDbAdapterWithQueryCounter(d3pgx.NewPgxDriver(o.pgDb))
+	err = createSchema(o.pgDb)
+	o.NoError(err)
+
+	o.dbAdapter = helpers.NewDbAdapterWithQueryCounter(driver)
 	o.d3Orm = orm.New(o.dbAdapter)
 	o.NoError(o.d3Orm.Register(
 		(*Book)(nil),

@@ -56,18 +56,20 @@ func TestTypeConversion(t *testing.T) {
 }
 
 func initDb(t *testing.T) (*pgx.Conn, *orm.Orm) {
-	pgDb, _ := pgx.Connect(context.Background(), os.Getenv("D3_PG_TEST_DB"))
+	cfg, _ := pgx.ParseConfig(os.Getenv("D3_PG_TEST_DB"))
+	driver, err := d3pgx.NewPgxDriver(cfg)
+	assert.NoError(t, err)
 
-	d3orm := orm.New(d3pgx.NewPgxDriver(pgDb))
+	d3orm := orm.New(driver)
 	assert.NoError(t, d3orm.Register((*allTypeStruct)(nil), (*entityWithAliases)(nil)))
 
 	sqlSchema, err := d3orm.GenerateSchema()
 	assert.NoError(t, err)
 
-	_, err = pgDb.Exec(context.Background(), sqlSchema)
+	_, err = driver.UnwrapConn().(*pgx.Conn).Exec(context.Background(), sqlSchema)
 	assert.NoError(t, err)
 
-	return pgDb, d3orm
+	return driver.UnwrapConn().(*pgx.Conn), d3orm
 }
 
 func dropDb(t *testing.T, db *pgx.Conn) {

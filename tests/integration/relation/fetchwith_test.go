@@ -13,7 +13,7 @@ import (
 
 type FetchWithRelationTS struct {
 	suite.Suite
-	pgDb      *pgx.Conn
+	pgConn    *pgx.Conn
 	dbAdapter *helpers.DbAdapterWithQueryCounter
 	orm       *orm.Orm
 }
@@ -21,9 +21,13 @@ type FetchWithRelationTS struct {
 const d3pkg = "github.com/godzie44/d3"
 
 func (o *FetchWithRelationTS) SetupSuite() {
-	o.pgDb, _ = pgx.Connect(context.Background(), os.Getenv("D3_PG_TEST_DB"))
+	cfg, _ := pgx.ParseConfig(os.Getenv("D3_PG_TEST_DB"))
+	driver, err := d3pgx.NewPgxDriver(cfg)
+	o.NoError(err)
 
-	_, err := o.pgDb.Exec(context.Background(), `CREATE TABLE IF NOT EXISTS test_entity_1(
+	o.pgConn = driver.UnwrapConn().(*pgx.Conn)
+
+	_, err = o.pgConn.Exec(context.Background(), `CREATE TABLE IF NOT EXISTS test_entity_1(
 		id integer NOT NULL,
 		data text NOT NULL,
 		e2_id integer,
@@ -31,14 +35,14 @@ func (o *FetchWithRelationTS) SetupSuite() {
 	)`)
 	o.Assert().NoError(err)
 
-	_, err = o.pgDb.Exec(context.Background(), `CREATE TABLE IF NOT EXISTS test_entity_2(
+	_, err = o.pgConn.Exec(context.Background(), `CREATE TABLE IF NOT EXISTS test_entity_2(
 		id integer NOT NULL,
 		data character varying(200) NOT NULL,
 		CONSTRAINT test_entity_t2_pkey PRIMARY KEY (id)
 	)`)
 	o.Assert().NoError(err)
 
-	_, err = o.pgDb.Exec(context.Background(), `CREATE TABLE IF NOT EXISTS test_entity_3(
+	_, err = o.pgConn.Exec(context.Background(), `CREATE TABLE IF NOT EXISTS test_entity_3(
 		id integer NOT NULL,
 		data character varying(200) NOT NULL,
 		e2_id integer,
@@ -47,20 +51,20 @@ func (o *FetchWithRelationTS) SetupSuite() {
 	)`)
 	o.Assert().NoError(err)
 
-	_, err = o.pgDb.Exec(context.Background(), `CREATE TABLE IF NOT EXISTS test_entity_4(
+	_, err = o.pgConn.Exec(context.Background(), `CREATE TABLE IF NOT EXISTS test_entity_4(
 		id integer NOT NULL,
 		data character varying(200) NOT NULL,
 		CONSTRAINT test_entity_t4_pkey PRIMARY KEY (id)
 	)`)
 	o.Assert().NoError(err)
 
-	_, err = o.pgDb.Exec(context.Background(), `CREATE TABLE IF NOT EXISTS t3_t4(
+	_, err = o.pgConn.Exec(context.Background(), `CREATE TABLE IF NOT EXISTS t3_t4(
 		t3_id integer NOT NULL,
 		t4_id integer NOT NULL
 	)`)
 	o.Assert().NoError(err)
 
-	_, err = o.pgDb.Exec(context.Background(), `
+	_, err = o.pgConn.Exec(context.Background(), `
 INSERT INTO test_entity_1(id, data, e2_id) VALUES (1, 'entity_1_data_1', 1);
 INSERT INTO test_entity_1(id, data, e2_id) VALUES (2, 'entity_1_data_2', 2);
 INSERT INTO test_entity_1(id, data, e2_id) VALUES (3, 'entity_1_data_3', null);
@@ -78,7 +82,7 @@ INSERT INTO t3_t4(t3_id, t4_id) VALUES (2, 2);
 `)
 	o.Assert().NoError(err)
 
-	o.dbAdapter = helpers.NewDbAdapterWithQueryCounter(d3pgx.NewPgxDriver(o.pgDb))
+	o.dbAdapter = helpers.NewDbAdapterWithQueryCounter(driver)
 	o.orm = orm.New(o.dbAdapter)
 	o.Assert().NoError(o.orm.Register(
 		(*fwTestEntity1)(nil),
@@ -89,7 +93,7 @@ INSERT INTO t3_t4(t3_id, t4_id) VALUES (2, 2);
 }
 
 func (o *FetchWithRelationTS) TearDownSuite() {
-	_, err := o.pgDb.Exec(context.Background(), `
+	_, err := o.pgConn.Exec(context.Background(), `
 DROP TABLE test_entity_1;
 DROP TABLE test_entity_2;
 DROP TABLE test_entity_3;

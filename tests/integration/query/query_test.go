@@ -15,15 +15,19 @@ import (
 
 type QueryTS struct {
 	suite.Suite
-	pgDb   *pgx.Conn
+	pgConn *pgx.Conn
 	orm    *orm.Orm
 	driver *helpers.DbAdapterWithQueryCounter
 }
 
 func (qts *QueryTS) SetupSuite() {
-	qts.pgDb, _ = pgx.Connect(context.Background(), os.Getenv("D3_PG_TEST_DB"))
+	cfg, _ := pgx.ParseConfig(os.Getenv("D3_PG_TEST_DB"))
+	driver, err := d3pgx.NewPgxDriver(cfg)
+	qts.NoError(err)
 
-	qts.driver = helpers.NewDbAdapterWithQueryCounter(d3pgx.NewPgxDriver(qts.pgDb))
+	qts.pgConn = driver.UnwrapConn().(*pgx.Conn)
+
+	qts.driver = helpers.NewDbAdapterWithQueryCounter(driver)
 	qts.orm = orm.New(qts.driver)
 	qts.Assert().NoError(qts.orm.Register(
 		(*User)(nil),
@@ -33,10 +37,10 @@ func (qts *QueryTS) SetupSuite() {
 	sql, err := qts.orm.GenerateSchema()
 	qts.Assert().NoError(err)
 
-	_, err = qts.pgDb.Exec(context.Background(), sql)
+	_, err = qts.pgConn.Exec(context.Background(), sql)
 	qts.Assert().NoError(err)
 
-	_, err = qts.pgDb.Exec(context.Background(), `
+	_, err = qts.pgConn.Exec(context.Background(), `
 INSERT INTO q_user(name, age) VALUES ('Joe', 21);
 INSERT INTO q_user(name, age) VALUES ('Sara', 19);
 INSERT INTO q_user(name, age) VALUES ('Piter', 33);
@@ -56,7 +60,7 @@ INSERT INTO q_photo(user_id, src) VALUES (5, 'http://emili_pic_url');
 }
 
 func (qts *QueryTS) TearDownSuite() {
-	_, err := qts.pgDb.Exec(context.Background(), `
+	_, err := qts.pgConn.Exec(context.Background(), `
 DROP TABLE q_user;
 DROP TABLE q_photo;
 `)

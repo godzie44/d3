@@ -12,47 +12,50 @@ import (
 
 type ManyToManyRelationTS struct {
 	suite.Suite
-	pgDb *pgx.Conn
-	orm  *orm.Orm
+	pgConn *pgx.Conn
+	orm    *orm.Orm
 }
 
 func (o *ManyToManyRelationTS) SetupSuite() {
-	o.pgDb, _ = pgx.Connect(context.Background(), os.Getenv("D3_PG_TEST_DB"))
+	cfg, _ := pgx.ParseConfig(os.Getenv("D3_PG_TEST_DB"))
+	driver, err := d3pgx.NewPgxDriver(cfg)
+	o.NoError(err)
+	o.pgConn = driver.UnwrapConn().(*pgx.Conn)
 
-	_, err := o.pgDb.Exec(context.Background(), `CREATE TABLE IF NOT EXISTS book(
+	_, err = o.pgConn.Exec(context.Background(), `CREATE TABLE IF NOT EXISTS book(
 		id integer NOT NULL,
 		name text NOT NULL,
 		CONSTRAINT book_pkey PRIMARY KEY (id)
 	)`)
 	o.Assert().NoError(err)
 
-	_, err = o.pgDb.Exec(context.Background(), `CREATE TABLE IF NOT EXISTS author(
+	_, err = o.pgConn.Exec(context.Background(), `CREATE TABLE IF NOT EXISTS author(
 		id integer NOT NULL,
 		name character varying(200) NOT NULL,
 		CONSTRAINT author_pkey PRIMARY KEY (id)
 	)`)
 	o.Assert().NoError(err)
 
-	_, err = o.pgDb.Exec(context.Background(), `CREATE TABLE IF NOT EXISTS book_author(
+	_, err = o.pgConn.Exec(context.Background(), `CREATE TABLE IF NOT EXISTS book_author(
 		book_id integer NOT NULL,
 		author_id integer NOT NULL
 	)`)
 	o.Assert().NoError(err)
 
-	_, err = o.pgDb.Exec(context.Background(), `CREATE TABLE IF NOT EXISTS redactor(
+	_, err = o.pgConn.Exec(context.Background(), `CREATE TABLE IF NOT EXISTS redactor(
 		id integer NOT NULL,
 		name character varying(200) NOT NULL,
 		CONSTRAINT redactor_pkey PRIMARY KEY (id)
 	)`)
 	o.Assert().NoError(err)
 
-	_, err = o.pgDb.Exec(context.Background(), `CREATE TABLE IF NOT EXISTS author_redactor(
+	_, err = o.pgConn.Exec(context.Background(), `CREATE TABLE IF NOT EXISTS author_redactor(
 		author_id integer NOT NULL,
 		redactor_id integer NOT NULL
 	)`)
 	o.Assert().NoError(err)
 
-	_, err = o.pgDb.Exec(context.Background(), `
+	_, err = o.pgConn.Exec(context.Background(), `
 INSERT INTO book(id, name) VALUES (1, 'Antic Hay');
 INSERT INTO book(id, name) VALUES (2, 'An Evil Cradling');
 INSERT INTO book(id, name) VALUES (3, 'Arms and the Man');
@@ -67,7 +70,7 @@ INSERT INTO author_redactor(author_id, redactor_id) VALUES (1, 1);
 `)
 	o.Assert().NoError(err)
 
-	o.orm = orm.New(d3pgx.NewPgxDriver(o.pgDb))
+	o.orm = orm.New(driver)
 	o.Assert().NoError(o.orm.Register(
 		(*BookLL)(nil),
 		(*AuthorLL)(nil),
@@ -78,7 +81,7 @@ INSERT INTO author_redactor(author_id, redactor_id) VALUES (1, 1);
 }
 
 func (o *ManyToManyRelationTS) TearDownSuite() {
-	_, err := o.pgDb.Exec(context.Background(), `
+	_, err := o.pgConn.Exec(context.Background(), `
 DROP TABLE book;
 DROP TABLE author;
 DROP TABLE redactor;
