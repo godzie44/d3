@@ -13,6 +13,7 @@ import (
 	"github.com/jackc/pgtype"
 	pgtypeuuid "github.com/jackc/pgtype/ext/gofrs-uuid"
 	"github.com/jackc/pgx/v4"
+	"github.com/jackc/pgx/v4/pgxpool"
 	"reflect"
 	"strconv"
 	"strings"
@@ -40,6 +41,26 @@ func NewPgxDriver(cfg *pgx.ConnConfig) (*pgxDriver, error) {
 		Name:  "uuid",
 		OID:   pgtype.UUIDOID,
 	})
+
+	return &pgxDriver{
+		pgDb: conn,
+	}, nil
+}
+
+func NewPgxPoolDriver(cfg *pgxpool.Config) (*pgxDriver, error) {
+	cfg.AfterConnect = func(ctx context.Context, conn *pgx.Conn) error {
+		conn.ConnInfo().RegisterDataType(pgtype.DataType{
+			Value: &pgtypeuuid.UUID{},
+			Name:  "uuid",
+			OID:   pgtype.UUIDOID,
+		})
+		return nil
+	}
+
+	conn, err := pgxpool.ConnectConfig(context.Background(), cfg)
+	if err != nil {
+		return nil, err
+	}
 
 	return &pgxDriver{
 		pgDb: conn,
