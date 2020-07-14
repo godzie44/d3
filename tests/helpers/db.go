@@ -125,32 +125,32 @@ func (p *persistStoreWithCounters) Remove(table string, identityCond map[string]
 	return p.ps.Remove(table, identityCond)
 }
 
-type pgTester struct {
+type PgTester struct {
 	t    *testing.T
 	conn *pgx.Conn
 }
 
-func NewPgTester(t *testing.T, conn *pgx.Conn) *pgTester {
-	return &pgTester{t, conn}
+func NewPgTester(t *testing.T, conn *pgx.Conn) *PgTester {
+	return &PgTester{t, conn}
 }
 
-func (p *pgTester) SeeOne(sql string, args ...interface{}) *pgTester {
+func (p *PgTester) SeeOne(sql string, args ...interface{}) *PgTester {
 	return p.See(1, sql, args...)
 }
 
-func (p *pgTester) SeeTwo(sql string, args ...interface{}) *pgTester {
+func (p *PgTester) SeeTwo(sql string, args ...interface{}) *PgTester {
 	return p.See(2, sql, args...)
 }
 
-func (p *pgTester) SeeThree(sql string, args ...interface{}) *pgTester {
+func (p *PgTester) SeeThree(sql string, args ...interface{}) *PgTester {
 	return p.See(3, sql, args...)
 }
 
-func (p *pgTester) SeeFour(sql string, args ...interface{}) *pgTester {
+func (p *PgTester) SeeFour(sql string, args ...interface{}) *PgTester {
 	return p.See(4, sql, args...)
 }
 
-func (p *pgTester) See(count int, sql string, args ...interface{}) *pgTester {
+func (p *PgTester) See(count int, sql string, args ...interface{}) *PgTester {
 	var cnt int
 	err := p.conn.QueryRow(context.Background(), fmt.Sprintf("SELECT count(*) cnt FROM (%s) t", sql), args...).Scan(&cnt)
 	assert.NoError(p.t, err)
@@ -159,7 +159,7 @@ func (p *pgTester) See(count int, sql string, args ...interface{}) *pgTester {
 	return p
 }
 
-func (p *pgTester) SeeTable(tableName string) *pgTester {
+func (p *PgTester) SeeTable(tableName string) *PgTester {
 	var tableSql = "SELECT * FROM pg_tables where schemaname = 'public' and tablename=$1"
 
 	var cnt int
