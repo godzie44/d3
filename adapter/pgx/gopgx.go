@@ -71,6 +71,16 @@ func (g *pgxDriver) UnwrapConn() interface{} {
 	return g.pgDb
 }
 
+func (g *pgxDriver) Close() error {
+	switch c := g.UnwrapConn().(type) {
+	case *pgx.Conn:
+		return c.Close(context.Background())
+	case *pgxpool.Pool:
+		c.Close()
+	}
+	return nil
+}
+
 func (g *pgxDriver) MakeScalarDataMapper() orm.ScalarDataMapper {
 	return func(data interface{}, into reflect.Kind) interface{} {
 		switch into {

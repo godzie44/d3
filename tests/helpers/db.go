@@ -127,7 +127,7 @@ func (p *persistStoreWithCounters) Remove(table string, identityCond map[string]
 
 type PgTester struct {
 	t    *testing.T
-	conn *pgx.Conn
+	Conn *pgx.Conn
 }
 
 func NewPgTester(t *testing.T, conn *pgx.Conn) *PgTester {
@@ -152,7 +152,7 @@ func (p *PgTester) SeeFour(sql string, args ...interface{}) *PgTester {
 
 func (p *PgTester) See(count int, sql string, args ...interface{}) *PgTester {
 	var cnt int
-	err := p.conn.QueryRow(context.Background(), fmt.Sprintf("SELECT count(*) cnt FROM (%s) t", sql), args...).Scan(&cnt)
+	err := p.Conn.QueryRow(context.Background(), fmt.Sprintf("SELECT count(*) cnt FROM (%s) t", sql), args...).Scan(&cnt)
 	assert.NoError(p.t, err)
 
 	assert.Equal(p.t, count, cnt)
@@ -163,7 +163,7 @@ func (p *PgTester) SeeTable(tableName string) *PgTester {
 	var tableSql = "SELECT * FROM pg_tables where schemaname = 'public' and tablename=$1"
 
 	var cnt int
-	err := p.conn.QueryRow(context.Background(), fmt.Sprintf("SELECT count(*) cnt FROM (%s) t", tableSql), tableName).Scan(&cnt)
+	err := p.Conn.QueryRow(context.Background(), fmt.Sprintf("SELECT count(*) cnt FROM (%s) t", tableSql), tableName).Scan(&cnt)
 	assert.NoError(p.t, err)
 
 	assert.GreaterOrEqual(p.t, cnt, 1)

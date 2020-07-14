@@ -45,6 +45,11 @@ func (p *PgxDriverTS) TearDownTest() {
 	p.NoError(err)
 }
 
+func (p *PgxDriverTS) TearDownSuite() {
+	p.NoError(p.tester.Conn.Close(context.Background()))
+	p.NoError(p.driver.Close())
+}
+
 func TestPgxConnDriverTestSuite(t *testing.T) {
 	cfg, _ := pgx.ParseConfig(os.Getenv("D3_PG_TEST_DB"))
 	driver, err := NewPgxDriver(cfg)
@@ -61,12 +66,12 @@ func TestPgxPoolDriverTestSuite(t *testing.T) {
 	driver, err := NewPgxPoolDriver(cfg)
 	assert.NoError(t, err)
 
-	testerConn, err := driver.UnwrapConn().(*pgxpool.Pool).Acquire(context.Background())
+	testerConn, err := pgx.Connect(context.Background(), os.Getenv("D3_PG_TEST_DB"))
 	assert.NoError(t, err)
 
 	suite.Run(t, &PgxDriverTS{
 		driver: driver,
-		tester: helpers.NewPgTester(t, testerConn.Conn()),
+		tester: helpers.NewPgTester(t, testerConn),
 	})
 }
 
