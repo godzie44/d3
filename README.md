@@ -31,7 +31,7 @@ In other words, we need to keep business logic free of data access code. That's 
 
 ## Documentation
 
-All documentation is on the project [wiki](https://github.com/godzie44/d3/wiki/Table-of-contents).
+All documentation is on the project [wiki](https://github.com/godzie44/d3/wiki).
 
 ## Example of usage
 
