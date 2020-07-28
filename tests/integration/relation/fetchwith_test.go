@@ -116,7 +116,7 @@ func (o *FetchWithRelationTS) TestFetchWithOneToOne() {
 
 	repository, _ := o.orm.MakeRepository((*fwTestEntity1)(nil))
 	q := repository.Select()
-	_ = q.Where("test_entity_1.id", "=", 1).With(d3pkg + "/tests/integration/relation/fwTestEntity2")
+	_ = q.Where("test_entity_1.id", "=", 1).With("fwTestEntity2")
 	entity, _ := repository.FindOne(ctx, q)
 
 	o.Assert().IsType(&fwTestEntity1{}, entity)

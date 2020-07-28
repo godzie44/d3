@@ -264,6 +264,10 @@ func (q *Query) OrderBy(stmts ...string) *Query {
 // Example:
 // q.With("myPkg/Entity2")
 func (q *Query) With(entityName entity.Name) error {
+	if entityName.IsShort() {
+		entityName = q.mainMeta.EntityName.Combine(entityName)
+	}
+
 	defer func() {
 		q.withList[entityName] = struct{}{}
 	}()

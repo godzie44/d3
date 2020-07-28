@@ -20,7 +20,7 @@ func NameFromEntity(e interface{}) Name {
 func nameFromTag(tag string, parentName Name) Name {
 	defined := Name(tag)
 	if defined.IsShort() {
-		return parentName.combine(defined)
+		return parentName.Combine(defined)
 	}
 
 	return defined
@@ -40,7 +40,7 @@ func (n Name) Equal(name Name) bool {
 	return n == name
 }
 
-func (n Name) combine(entity Name) Name {
+func (n Name) Combine(entity Name) Name {
 	path := strings.Split(string(n), "/")
 
 	return Name(strings.Join(append(path[:len(path)-1], entity.Short()), "/"))
