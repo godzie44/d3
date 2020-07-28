@@ -3,7 +3,7 @@ package main
 import (
 	"flag"
 	"fmt"
-	d3parser "github.com/godzie44/d3/cmd/d3/parser"
+	d3parser "github.com/godzie44/d3/d3/parser"
 	"github.com/godzie44/d3/orm/gen/bootstrap"
 	"golang.org/x/sync/errgroup"
 	"os"

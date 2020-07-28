@@ -2,7 +2,7 @@ package bootstrap
 
 import (
 	"bytes"
-	"github.com/godzie44/d3/cmd/d3/parser"
+	"github.com/godzie44/d3/d3/parser"
 	"github.com/stretchr/testify/assert"
 	"strings"
 	"testing"
