@@ -76,13 +76,17 @@ func TestPgxPoolDriverTestSuite(t *testing.T) {
 }
 
 func (p *PgxDriverTS) TestPgxDriverQuery() {
-	data, err := p.driver.ExecuteQuery(query.New().Select("*").From("pgx_test_table").Where("id", "=", "1"), nil)
+	tx, err := p.driver.BeginTx()
+	p.NoError(err)
+	defer tx.Commit()
+
+	data, err := p.driver.ExecuteQuery(query.New().Select("*").From("pgx_test_table").Where("id", "=", "1"), tx)
 	p.NoError(err)
 
 	p.Len(data, 1)
 	p.Equal(data[0], map[string]interface{}{"id": int32(1), "data": "test 1"})
 
-	data, err = p.driver.ExecuteQuery(query.New().Select("*").From("pgx_test_table"), nil)
+	data, err = p.driver.ExecuteQuery(query.New().Select("*").From("pgx_test_table"), tx)
 	p.NoError(err)
 
 	p.Len(data, 3)

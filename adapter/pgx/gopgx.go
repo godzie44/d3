@@ -19,12 +19,8 @@ import (
 	"strings"
 )
 
-type pgxQueryer interface {
-	Query(ctx context.Context, sql string, args ...interface{}) (pgx.Rows, error)
-}
-
 type xConn interface {
-	pgxQueryer
+	Query(ctx context.Context, sql string, args ...interface{}) (pgx.Rows, error)
 	Begin(ctx context.Context) (pgx.Tx, error)
 }
 
@@ -210,18 +206,12 @@ func (g *pgxDriver) ExecuteQuery(query *query.Query, tx orm.Transaction) ([]map[
 		g.beforeQCallback[i](q, args...)
 	}
 
-	var queryer pgxQueryer
-	if tx == nil {
-		queryer = g.pgDb
-	} else {
-		pgxTx, ok := tx.(*pgxTransaction)
-		if !ok {
-			panic(errors.New("transaction type must be pgxTransaction"))
-		}
-		queryer = pgxTx.tx
+	pgxTx, ok := tx.(*pgxTransaction)
+	if !ok {
+		panic(errors.New("transaction type must be pgxTransaction"))
 	}
 
-	rows, err := queryer.Query(context.Background(), q, args...)
+	rows, err := pgxTx.tx.Query(context.Background(), q, args...)
 	if err != nil {
 		return nil, err
 	}

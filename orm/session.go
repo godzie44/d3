@@ -59,7 +59,17 @@ func (s *session) execute(q *query.Query, entityMeta *entity.MetaInfo) (*entity.
 
 // Execute - execute query and return slice of result rows.
 func (s *session) Execute(q *query.Query) ([]map[string]interface{}, error) {
-	return s.storage.ExecuteQuery(q, s.uow.currentTx)
+	var err error
+	tx := s.uow.currentTx
+	if tx == nil {
+		tx, err = s.storage.BeginTx()
+		if err != nil {
+			return nil, err
+		}
+		defer tx.Commit()
+	}
+
+	return s.storage.ExecuteQuery(q, tx)
 }
 
 // Flush save all created, update changed and delete deleted entities within the session.
