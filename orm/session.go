@@ -9,7 +9,7 @@ import (
 type Driver interface {
 	MakePusher(tx Transaction) persistence.Pusher
 
-	ExecuteQuery(query *query.Query) ([]map[string]interface{}, error)
+	ExecuteQuery(query *query.Query, tx Transaction) ([]map[string]interface{}, error)
 	BeforeQuery(fn func(query string, args ...interface{}))
 	AfterQuery(fn func(query string, args ...interface{}))
 
@@ -59,7 +59,7 @@ func (s *session) execute(q *query.Query, entityMeta *entity.MetaInfo) (*entity.
 
 // Execute - execute query and return slice of result rows.
 func (s *session) Execute(q *query.Query) ([]map[string]interface{}, error) {
-	return s.storage.ExecuteQuery(q)
+	return s.storage.ExecuteQuery(q, s.uow.currentTx)
 }
 
 // Flush save all created, update changed and delete deleted entities within the session.

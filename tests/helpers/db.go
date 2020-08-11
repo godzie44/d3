@@ -66,8 +66,8 @@ func NewDbAdapterWithQueryCounter(dbAdapter orm.Driver) *DbAdapterWithQueryCount
 	return wrappedAdapter
 }
 
-func (d *DbAdapterWithQueryCounter) ExecuteQuery(query *query.Query) ([]map[string]interface{}, error) {
-	return d.dbAdapter.ExecuteQuery(query)
+func (d *DbAdapterWithQueryCounter) ExecuteQuery(query *query.Query, tx orm.Transaction) ([]map[string]interface{}, error) {
+	return d.dbAdapter.ExecuteQuery(query, tx)
 }
 
 func (d *DbAdapterWithQueryCounter) BeforeQuery(fn func(query string, args ...interface{})) {

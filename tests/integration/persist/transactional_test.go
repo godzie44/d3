@@ -6,8 +6,10 @@ import (
 	"github.com/godzie44/d3/orm"
 	"github.com/godzie44/d3/tests/helpers"
 	"github.com/jackc/pgx/v4"
+	"github.com/jackc/pgx/v4/pgxpool"
 	"github.com/stretchr/testify/suite"
 	"os"
+	"sync"
 	"testing"
 )
 
@@ -133,4 +135,90 @@ func (t *TransactionalTs) TestManualRollback() {
 
 func TestTransactionalTs(t *testing.T) {
 	suite.Run(t, new(TransactionalTs))
+}
+
+type MultipleTransactionTs struct {
+	suite.Suite
+	pgConn    *pgxpool.Pool
+	dbAdapter *helpers.DbAdapterWithQueryCounter
+	d3Orm     *orm.Orm
+}
+
+func (t *MultipleTransactionTs) SetupSuite() {
+	cfg, _ := pgxpool.ParseConfig(os.Getenv("D3_PG_TEST_DB"))
+	driver, err := d3pgx.NewPgxPoolDriver(cfg)
+	t.NoError(err)
+
+	t.d3Orm = orm.New(driver)
+	t.NoError(t.d3Orm.Register(
+		(*Book)(nil),
+		(*Shop)(nil),
+		(*ShopProfile)(nil),
+		(*Author)(nil),
+	))
+
+	t.pgConn = driver.UnwrapConn().(*pgxpool.Pool)
+
+	_, err = t.pgConn.Exec(context.Background(), `CREATE TABLE IF NOT EXISTS shop_p(
+		id SERIAL PRIMARY KEY,
+		profile_id integer,
+		name character varying(200) NOT NULL
+	)`)
+	t.NoError(err)
+	_, err = t.pgConn.Exec(context.Background(), `INSERT INTO shop_p(id, name) VALUES (1, 'shop')`)
+	t.NoError(err)
+}
+
+func (t *MultipleTransactionTs) TearDownSuite() {
+	_, err := t.pgConn.Exec(context.Background(), `DROP TABLE shop_p`)
+	t.NoError(err)
+}
+
+func (t *MultipleTransactionTs) TestConcurrentTransactionQuerying() {
+	repository, _ := t.d3Orm.MakeRepository((*Shop)(nil))
+
+	syncChan := make(chan struct{})
+
+	wg := &sync.WaitGroup{}
+	wg.Add(2)
+	go func() {
+		defer wg.Done()
+
+		ctx := t.d3Orm.CtxWithSession(context.Background())
+		session := orm.Session(ctx)
+		t.NoError(session.BeginTx())
+
+		shop, _ := repository.FindOne(ctx, repository.Select().Where("id", "=", 1))
+		shop.(*Shop).Name = "changed name"
+		t.NoError(session.Flush())
+
+		syncChan <- struct{}{}
+		<-syncChan
+
+		sameShop, _ := repository.FindOne(ctx, repository.Select().Where("name", "=", "changed name"))
+		t.NotNil(sameShop)
+
+		t.NoError(session.CommitTx())
+	}()
+
+	go func() {
+		defer wg.Done()
+		ctx := t.d3Orm.CtxWithSession(context.Background())
+		session := orm.Session(ctx)
+		t.NoError(session.BeginTx())
+
+		<-syncChan
+
+		shop, _ := repository.FindOne(ctx, repository.Select().Where("id", "=", 1))
+
+		t.Equal("shop", shop.(*Shop).Name)
+		syncChan <- struct{}{}
+		t.NoError(session.CommitTx())
+	}()
+
+	wg.Wait()
+}
+
+func TestMultipleTransactionalTs(t *testing.T) {
+	suite.Run(t, new(MultipleTransactionTs))
 }

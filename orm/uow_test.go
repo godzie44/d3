@@ -140,7 +140,7 @@ func (s *storageMock) MakePusher(_ Transaction) persistence.Pusher {
 	return args.Get(0).(persistence.Pusher)
 }
 
-func (s *storageMock) ExecuteQuery(_ *query.Query) ([]map[string]interface{}, error) {
+func (s *storageMock) ExecuteQuery(_ *query.Query, _ Transaction) ([]map[string]interface{}, error) {
 	return nil, nil
 }
 
