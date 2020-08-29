@@ -2,11 +2,14 @@ package persist
 
 import (
 	"context"
+	"database/sql"
 	d3pgx "github.com/godzie44/d3/adapter/pgx"
 	"github.com/godzie44/d3/orm"
 	"github.com/godzie44/d3/tests/helpers"
+	"github.com/godzie44/d3/tests/helpers/db"
 	"github.com/jackc/pgx/v4"
 	"github.com/jackc/pgx/v4/pgxpool"
+	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/suite"
 	"os"
 	"sync"
@@ -15,23 +18,13 @@ import (
 
 type TransactionalTs struct {
 	suite.Suite
-	pgConn    *pgx.Conn
-	dbAdapter *helpers.DbAdapterWithQueryCounter
-	d3Orm     *orm.Orm
+	tester, independentTester helpers.DBTester
+	execSqlFn                 func(sql string) error
+	dbAdapter                 *helpers.DbAdapterWithQueryCounter
+	d3Orm                     *orm.Orm
 }
 
 func (t *TransactionalTs) SetupSuite() {
-	cfg, _ := pgx.ParseConfig(os.Getenv("D3_PG_TEST_DB"))
-	driver, err := d3pgx.NewPgxDriver(cfg)
-	t.NoError(err)
-
-	t.pgConn = driver.UnwrapConn().(*pgx.Conn)
-
-	err = createSchema(t.pgConn)
-	t.NoError(err)
-
-	t.dbAdapter = helpers.NewDbAdapterWithQueryCounter(driver)
-	t.d3Orm = orm.New(t.dbAdapter)
 	t.NoError(t.d3Orm.Register(
 		(*Book)(nil),
 		(*Shop)(nil),
@@ -39,16 +32,63 @@ func (t *TransactionalTs) SetupSuite() {
 		(*Author)(nil),
 	))
 
+	schemaSql, err := t.d3Orm.GenerateSchema()
 	t.NoError(err)
+
+	t.NoError(t.execSqlFn(schemaSql))
 }
 
 func (t *TransactionalTs) TearDownSuite() {
-	t.NoError(deleteSchema(t.pgConn))
+	t.NoError(t.execSqlFn(`
+DROP TABLE book_p;
+DROP TABLE author_p;
+DROP TABLE book_author_p;
+DROP TABLE shop_p;
+DROP TABLE profile_p;
+`))
 }
 
 func (t *TransactionalTs) TearDownTest() {
 	t.dbAdapter.ResetCounters()
-	t.NoError(clearSchema(t.pgConn))
+	t.NoError(t.execSqlFn(`
+delete from book_p;
+delete from author_p;
+delete from book_author_p;
+delete from shop_p;
+delete from profile_p;
+`))
+}
+
+func TestPGTransactionalTs(t *testing.T) {
+	adapter, d3orm, execSqlFn, tester := db.CreatePGTestComponents(t)
+
+	indConn, _ := pgx.Connect(context.Background(), os.Getenv("D3_PG_TEST_DB"))
+
+	ts := &TransactionalTs{
+		dbAdapter:         adapter,
+		d3Orm:             d3orm,
+		execSqlFn:         execSqlFn,
+		tester:            tester,
+		independentTester: helpers.NewPgTester(t, indConn),
+	}
+
+	suite.Run(t, ts)
+}
+
+func TestSQLiteTransactionalTs(t *testing.T) {
+	adapter, d3orm, execSqlFn, tester := db.CreateSQLiteTestComponents(t)
+
+	indConn, _ := sql.Open("sqlite3", "./../../data/sqlite/test.db")
+
+	ts := &TransactionalTs{
+		d3Orm:             d3orm,
+		dbAdapter:         adapter,
+		execSqlFn:         execSqlFn,
+		tester:            tester,
+		independentTester: helpers.NewSQLiteTester(t, indConn),
+	}
+
+	suite.Run(t, ts)
 }
 
 func (t *TransactionalTs) TestAutoCommit() {
@@ -66,14 +106,8 @@ func (t *TransactionalTs) TestAutoCommit() {
 	t.NoError(repository.Persists(ctx, shop1, shop2))
 	t.NoError(session.Flush())
 
-	helpers.NewPgTester(t.T(), t.pgConn).
+	t.tester.
 		SeeTwo("SELECT * FROM shop_p WHERE name = $1 or name = $2", "shop1", "shop2")
-}
-
-func newConn() *pgx.Conn {
-	newConn, _ := pgx.Connect(context.Background(), os.Getenv("D3_PG_TEST_DB"))
-
-	return newConn
 }
 
 func (t *TransactionalTs) TestManualCommit() {
@@ -94,13 +128,11 @@ func (t *TransactionalTs) TestManualCommit() {
 	t.NoError(repository.Persists(ctx, shop1, shop2))
 	t.NoError(session.Flush())
 
-	pgTester := helpers.NewPgTester(t.T(), newConn())
-
-	pgTester.See(0, "SELECT * FROM shop_p WHERE name = $1 or name = $2", "shop1", "shop2")
+	t.independentTester.See(0, "SELECT * FROM shop_p WHERE name = $1 or name = $2", "shop1", "shop2")
 
 	t.NoError(session.CommitTx())
 
-	pgTester.SeeTwo("SELECT * FROM shop_p WHERE name = $1 or name = $2", "shop1", "shop2")
+	t.independentTester.SeeTwo("SELECT * FROM shop_p WHERE name = $1 or name = $2", "shop1", "shop2")
 }
 
 func (t *TransactionalTs) TestManualRollback() {
@@ -124,58 +156,48 @@ func (t *TransactionalTs) TestManualRollback() {
 	t.NoError(repository.Persists(ctx, shop2))
 	t.NoError(session.Flush())
 
-	pgTester := helpers.NewPgTester(t.T(), newConn())
-
-	pgTester.See(0, "SELECT * FROM shop_p WHERE name = $1 or name = $2", "shop1", "shop2")
+	t.independentTester.See(0, "SELECT * FROM shop_p WHERE name = $1 or name = $2", "shop1", "shop2")
 
 	t.NoError(session.RollbackTx())
 
-	pgTester.See(0, "SELECT * FROM shop_p WHERE name = $1 or name = $2", "shop1", "shop2")
-}
-
-func TestTransactionalTs(t *testing.T) {
-	suite.Run(t, new(TransactionalTs))
+	t.independentTester.See(0, "SELECT * FROM shop_p WHERE name = $1 or name = $2", "shop1", "shop2")
 }
 
 type MultipleTransactionTs struct {
 	suite.Suite
-	pgConn    *pgxpool.Pool
 	dbAdapter *helpers.DbAdapterWithQueryCounter
 	d3Orm     *orm.Orm
+	execSqlFn func(sql string) error
 }
 
-func (t *MultipleTransactionTs) SetupSuite() {
-	cfg, _ := pgxpool.ParseConfig(os.Getenv("D3_PG_TEST_DB"))
-	driver, err := d3pgx.NewPgxPoolDriver(cfg)
-	t.NoError(err)
-
-	t.d3Orm = orm.New(driver)
-	t.NoError(t.d3Orm.Register(
+func (m *MultipleTransactionTs) SetupSuite() {
+	m.NoError(m.d3Orm.Register(
 		(*Book)(nil),
 		(*Shop)(nil),
 		(*ShopProfile)(nil),
 		(*Author)(nil),
 	))
 
-	t.pgConn = driver.UnwrapConn().(*pgxpool.Pool)
+	schemaSql, err := m.d3Orm.GenerateSchema()
+	m.NoError(err)
 
-	_, err = t.pgConn.Exec(context.Background(), `CREATE TABLE IF NOT EXISTS shop_p(
-		id SERIAL PRIMARY KEY,
-		profile_id integer,
-		name character varying(200) NOT NULL
-	)`)
-	t.NoError(err)
-	_, err = t.pgConn.Exec(context.Background(), `INSERT INTO shop_p(id, name) VALUES (1, 'shop')`)
-	t.NoError(err)
+	m.NoError(m.execSqlFn(schemaSql))
+
+	m.NoError(m.execSqlFn(`INSERT INTO shop_p(id, name) VALUES (1, 'shop')`))
 }
 
-func (t *MultipleTransactionTs) TearDownSuite() {
-	_, err := t.pgConn.Exec(context.Background(), `DROP TABLE shop_p`)
-	t.NoError(err)
+func (m *MultipleTransactionTs) TearDownSuite() {
+	m.NoError(m.execSqlFn(`
+DROP TABLE book_p;
+DROP TABLE author_p;
+DROP TABLE book_author_p;
+DROP TABLE shop_p;
+DROP TABLE profile_p;
+`))
 }
 
-func (t *MultipleTransactionTs) TestConcurrentTransactionQuerying() {
-	repository, _ := t.d3Orm.MakeRepository((*Shop)(nil))
+func (m *MultipleTransactionTs) TestConcurrentTransactionQuerying() {
+	repository, _ := m.d3Orm.MakeRepository((*Shop)(nil))
 
 	syncChan := make(chan struct{})
 
@@ -184,41 +206,67 @@ func (t *MultipleTransactionTs) TestConcurrentTransactionQuerying() {
 	go func() {
 		defer wg.Done()
 
-		ctx := t.d3Orm.CtxWithSession(context.Background())
+		ctx := m.d3Orm.CtxWithSession(context.Background())
 		session := orm.Session(ctx)
-		t.NoError(session.BeginTx())
+		m.NoError(session.BeginTx())
 
 		shop, _ := repository.FindOne(ctx, repository.Select().Where("id", "=", 1))
 		shop.(*Shop).Name = "changed name"
-		t.NoError(session.Flush())
+		m.NoError(session.Flush())
 
 		syncChan <- struct{}{}
 		<-syncChan
 
 		sameShop, _ := repository.FindOne(ctx, repository.Select().Where("name", "=", "changed name"))
-		t.NotNil(sameShop)
+		m.NotNil(sameShop)
 
-		t.NoError(session.CommitTx())
+		m.NoError(session.CommitTx())
 	}()
 
 	go func() {
 		defer wg.Done()
-		ctx := t.d3Orm.CtxWithSession(context.Background())
+		ctx := m.d3Orm.CtxWithSession(context.Background())
 		session := orm.Session(ctx)
-		t.NoError(session.BeginTx())
+		m.NoError(session.BeginTx())
 
 		<-syncChan
 
 		shop, _ := repository.FindOne(ctx, repository.Select().Where("id", "=", 1))
 
-		t.Equal("shop", shop.(*Shop).Name)
+		m.Equal("shop", shop.(*Shop).Name)
 		syncChan <- struct{}{}
-		t.NoError(session.CommitTx())
+		m.NoError(session.CommitTx())
 	}()
 
 	wg.Wait()
 }
 
-func TestMultipleTransactionalTs(t *testing.T) {
-	suite.Run(t, new(MultipleTransactionTs))
+func TestPGMultipleTransactionalTs(t *testing.T) {
+	cfg, _ := pgxpool.ParseConfig(os.Getenv("D3_PG_TEST_DB"))
+	driver, err := d3pgx.NewPgxPoolDriver(cfg)
+	assert.NoError(t, err)
+
+	conn := driver.UnwrapConn().(*pgxpool.Pool)
+	dbAdapter := helpers.NewDbAdapterWithQueryCounter(driver)
+
+	ts := &MultipleTransactionTs{
+		dbAdapter: dbAdapter,
+		d3Orm:     orm.New(dbAdapter),
+		execSqlFn: func(sql string) error {
+			_, err := conn.Exec(context.Background(), sql)
+			return err
+		},
+	}
+	suite.Run(t, ts)
+}
+
+func TestSQLiteMultipleTransactionalTs(t *testing.T) {
+	adapter, d3orm, execSqlFn, _ := db.CreateSQLiteTestComponents(t)
+
+	ts := &MultipleTransactionTs{
+		d3Orm:     d3orm,
+		dbAdapter: adapter,
+		execSqlFn: execSqlFn,
+	}
+	suite.Run(t, ts)
 }

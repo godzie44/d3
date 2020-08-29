@@ -2,35 +2,22 @@ package persist
 
 import (
 	"context"
-	d3pgx "github.com/godzie44/d3/adapter/pgx"
 	"github.com/godzie44/d3/orm"
 	"github.com/godzie44/d3/tests/helpers"
-	"github.com/jackc/pgx/v4"
+	"github.com/godzie44/d3/tests/helpers/db"
 	"github.com/stretchr/testify/suite"
-	"os"
 	"testing"
 )
 
 type DeleteTS struct {
 	suite.Suite
-	pgConn    *pgx.Conn
 	dbAdapter *helpers.DbAdapterWithQueryCounter
 	d3Orm     *orm.Orm
 	ctx       context.Context
+	execSqlFn func(sql string) error
 }
 
 func (d *DeleteTS) SetupSuite() {
-	cfg, _ := pgx.ParseConfig(os.Getenv("D3_PG_TEST_DB"))
-	driver, err := d3pgx.NewPgxDriver(cfg)
-	d.NoError(err)
-
-	d.pgConn = driver.UnwrapConn().(*pgx.Conn)
-
-	err = createSchema(d.pgConn)
-	d.NoError(err)
-
-	d.dbAdapter = helpers.NewDbAdapterWithQueryCounter(driver)
-	d.d3Orm = orm.New(d.dbAdapter)
 	d.NoError(d.d3Orm.Register(
 		(*Book)(nil),
 		(*Shop)(nil),
@@ -38,25 +25,62 @@ func (d *DeleteTS) SetupSuite() {
 		(*Author)(nil),
 	))
 
+	schemaSql, err := d.d3Orm.GenerateSchema()
 	d.NoError(err)
+
+	d.NoError(d.execSqlFn(schemaSql))
 }
 
 func (d *DeleteTS) SetupTest() {
 	d.ctx = d.d3Orm.CtxWithSession(context.Background())
+	fillDb(d.Assert(), d.dbAdapter)
 }
 
 func (d *DeleteTS) TearDownSuite() {
-	d.NoError(deleteSchema(d.pgConn))
+	d.NoError(d.execSqlFn(`
+DROP TABLE book_p;
+DROP TABLE author_p;
+DROP TABLE book_author_p;
+DROP TABLE shop_p;
+DROP TABLE profile_p;
+`))
 }
 
 func (d *DeleteTS) TearDownTest() {
 	d.dbAdapter.ResetCounters()
-	d.NoError(clearSchema(d.pgConn))
+	d.NoError(d.execSqlFn(`
+delete from book_p;
+delete from author_p;
+delete from book_author_p;
+delete from shop_p;
+delete from profile_p;
+`))
+}
+
+func TestPGDeleteTestSuite(t *testing.T) {
+	adapter, d3orm, execSqlFn, _ := db.CreatePGTestComponents(t)
+
+	ts := &DeleteTS{
+		dbAdapter: adapter,
+		d3Orm:     d3orm,
+		execSqlFn: execSqlFn,
+	}
+	suite.Run(t, ts)
+}
+
+func TestSQLiteDeleteTestSuite(t *testing.T) {
+	adapter, d3orm, execSqlFn, _ := db.CreateSQLiteTestComponents(t)
+
+	ts := &DeleteTS{
+		d3Orm:     d3orm,
+		dbAdapter: adapter,
+		execSqlFn: execSqlFn,
+	}
+
+	suite.Run(t, ts)
 }
 
 func (d *DeleteTS) TestDeleteEntity() {
-	fillDb(d.Assert(), d.dbAdapter)
-
 	rep, err := d.d3Orm.MakeRepository((*ShopProfile)(nil))
 	d.NoError(err)
 
@@ -71,8 +95,6 @@ func (d *DeleteTS) TestDeleteEntity() {
 }
 
 func (d *DeleteTS) TestDeleteWithRelations() {
-	fillDb(d.Assert(), d.dbAdapter)
-
 	rep, err := d.d3Orm.MakeRepository((*Shop)(nil))
 	d.NoError(err)
 
@@ -92,8 +114,6 @@ func (d *DeleteTS) TestDeleteWithRelations() {
 }
 
 func (d *DeleteTS) TestDeleteWithManyToMany() {
-	fillDb(d.Assert(), d.dbAdapter)
-
 	rep, err := d.d3Orm.MakeRepository((*Book)(nil))
 	d.NoError(err)
 
@@ -107,8 +127,4 @@ func (d *DeleteTS) TestDeleteWithManyToMany() {
 
 	// delete from book_p table and book_author_p table
 	d.Equal(2, d.dbAdapter.DeleteCounter())
-}
-
-func TestDeleteTestSuite(t *testing.T) {
-	suite.Run(t, new(DeleteTS))
 }

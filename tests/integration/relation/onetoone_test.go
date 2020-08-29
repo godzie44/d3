@@ -2,58 +2,50 @@ package relation
 
 import (
 	"context"
-	d3pgx "github.com/godzie44/d3/adapter/pgx"
 	"github.com/godzie44/d3/orm"
-	"github.com/jackc/pgx/v4"
+	"github.com/godzie44/d3/tests/helpers/db"
 	"github.com/stretchr/testify/suite"
-	"os"
 	"testing"
 )
 
 type OneToOneRelationTS struct {
 	suite.Suite
-	pgConn *pgx.Conn
-	orm    *orm.Orm
+	execSqlFn func(sql string) error
+	orm       *orm.Orm
 }
 
 func (o *OneToOneRelationTS) SetupSuite() {
-	cfg, _ := pgx.ParseConfig(os.Getenv("D3_PG_TEST_DB"))
-	driver, err := d3pgx.NewPgxDriver(cfg)
-	o.NoError(err)
-	o.pgConn = driver.UnwrapConn().(*pgx.Conn)
-
-	_, err = o.pgConn.Exec(context.Background(), `CREATE TABLE IF NOT EXISTS shop(
+	err := o.execSqlFn(`CREATE TABLE IF NOT EXISTS shop(
 		id integer NOT NULL,
 		data text NOT NULL,
 		t2_id integer,
 		CONSTRAINT shop_pkey PRIMARY KEY (id)
 	)`)
-	o.Assert().NoError(err)
+	o.NoError(err)
 
-	_, err = o.pgConn.Exec(context.Background(), `CREATE TABLE IF NOT EXISTS profile(
+	err = o.execSqlFn(`CREATE TABLE IF NOT EXISTS profile(
 		id integer NOT NULL,
 		data character varying(200) NOT NULL,
 		t3_id integer,
 		CONSTRAINT profile_pkey PRIMARY KEY (id)
 	)`)
-	o.Assert().NoError(err)
+	o.NoError(err)
 
-	_, err = o.pgConn.Exec(context.Background(), `CREATE TABLE IF NOT EXISTS photo(
+	err = o.execSqlFn(`CREATE TABLE IF NOT EXISTS photo(
 		id integer NOT NULL,
 		data character varying(200) NOT NULL,
 		CONSTRAINT photo_pkey PRIMARY KEY (id)
 	)`)
-	o.Assert().NoError(err)
+	o.NoError(err)
 
-	_, err = o.pgConn.Exec(context.Background(), `
+	err = o.execSqlFn(`
 INSERT INTO shop(id, data, t2_id) VALUES (1, 'entity_1_data', 1);
 INSERT INTO shop(id, data) VALUES (2, 'entity_1_data_2');
 INSERT INTO profile(id, data, t3_id) VALUES (1, 'entity_2_data', 1);
 INSERT INTO photo(id, data) VALUES (1, 'entity_3_data');
 `)
-	o.Assert().NoError(err)
+	o.NoError(err)
 
-	o.orm = orm.New(driver)
 	o.NoError(o.orm.Register(
 		(*ShopLL)(nil),
 		(*ProfileLL)(nil),
@@ -63,16 +55,32 @@ INSERT INTO photo(id, data) VALUES (1, 'entity_3_data');
 }
 
 func (o *OneToOneRelationTS) TearDownSuite() {
-	_, err := o.pgConn.Exec(context.Background(), `
+	o.Assert().NoError(o.execSqlFn(`
 DROP TABLE shop;
 DROP TABLE profile;
 DROP TABLE photo;
-`)
-	o.Assert().NoError(err)
+`))
 }
 
-func TestOneToOneRunTestSuite(t *testing.T) {
-	suite.Run(t, new(OneToOneRelationTS))
+func TestPGOneToOneTestSuite(t *testing.T) {
+	_, d3orm, execSqlFn, _ := db.CreatePGTestComponents(t)
+
+	mtmTS := &OneToOneRelationTS{
+		orm:       d3orm,
+		execSqlFn: execSqlFn,
+	}
+	suite.Run(t, mtmTS)
+}
+
+func TestSQLiteOneToOneTestSuite(t *testing.T) {
+	_, d3orm, execSqlFn, _ := db.CreateSQLiteTestComponents(t)
+
+	mtmTS := &OneToOneRelationTS{
+		orm:       d3orm,
+		execSqlFn: execSqlFn,
+	}
+
+	suite.Run(t, mtmTS)
 }
 
 func (o *OneToOneRelationTS) TestLazyRelation() {

@@ -2,33 +2,23 @@ package query
 
 import (
 	"context"
-	d3pgx "github.com/godzie44/d3/adapter/pgx"
 	"github.com/godzie44/d3/orm"
 	"github.com/godzie44/d3/orm/query"
 	"github.com/godzie44/d3/tests/helpers"
-	"github.com/jackc/pgx/v4"
+	"github.com/godzie44/d3/tests/helpers/db"
 	"github.com/stretchr/testify/suite"
 	"math"
-	"os"
 	"testing"
 )
 
 type QueryTS struct {
 	suite.Suite
-	pgConn *pgx.Conn
-	orm    *orm.Orm
-	driver *helpers.DbAdapterWithQueryCounter
+	execSqlFn func(sql string) error
+	orm       *orm.Orm
+	driver    *helpers.DbAdapterWithQueryCounter
 }
 
 func (qts *QueryTS) SetupSuite() {
-	cfg, _ := pgx.ParseConfig(os.Getenv("D3_PG_TEST_DB"))
-	driver, err := d3pgx.NewPgxDriver(cfg)
-	qts.NoError(err)
-
-	qts.pgConn = driver.UnwrapConn().(*pgx.Conn)
-
-	qts.driver = helpers.NewDbAdapterWithQueryCounter(driver)
-	qts.orm = orm.New(qts.driver)
 	qts.Assert().NoError(qts.orm.Register(
 		(*User)(nil),
 		(*Photo)(nil),
@@ -37,10 +27,9 @@ func (qts *QueryTS) SetupSuite() {
 	sql, err := qts.orm.GenerateSchema()
 	qts.Assert().NoError(err)
 
-	_, err = qts.pgConn.Exec(context.Background(), sql)
-	qts.Assert().NoError(err)
+	qts.Assert().NoError(qts.execSqlFn(sql))
 
-	_, err = qts.pgConn.Exec(context.Background(), `
+	err = qts.execSqlFn(`
 INSERT INTO q_user(name, age) VALUES ('Joe', 21);
 INSERT INTO q_user(name, age) VALUES ('Sara', 19);
 INSERT INTO q_user(name, age) VALUES ('Piter', 33);
@@ -56,23 +45,41 @@ INSERT INTO q_photo(user_id, src) VALUES (4, 'http://victor_pic_url');
 INSERT INTO q_photo(user_id, src) VALUES (5, 'http://emili_pic_url');
 INSERT INTO q_photo(user_id, src) VALUES (5, 'http://emili_pic_url');
 `)
-	qts.Assert().NoError(err)
+	qts.NoError(err)
 }
 
 func (qts *QueryTS) TearDownSuite() {
-	_, err := qts.pgConn.Exec(context.Background(), `
+	qts.Assert().NoError(qts.execSqlFn(`
 DROP TABLE q_user;
 DROP TABLE q_photo;
-`)
-	qts.Assert().NoError(err)
+`))
 }
 
 func (qts *QueryTS) TearDownTest() {
 	qts.driver.ResetCounters()
 }
 
-func TestQueryTestSuite(t *testing.T) {
-	suite.Run(t, new(QueryTS))
+func TestPGQueryTestSuite(t *testing.T) {
+	adapter, d3orm, execSqlFn, _ := db.CreatePGTestComponents(t)
+
+	qts := &QueryTS{
+		orm:       d3orm,
+		driver:    adapter,
+		execSqlFn: execSqlFn,
+	}
+	suite.Run(t, qts)
+}
+
+func TestSQLiteQueryTestSuite(t *testing.T) {
+	adapter, d3orm, execSqlFn, _ := db.CreateSQLiteTestComponents(t)
+
+	qts := &QueryTS{
+		orm:       d3orm,
+		driver:    adapter,
+		execSqlFn: execSqlFn,
+	}
+
+	suite.Run(t, qts)
 }
 
 func (qts *QueryTS) TestQueryAll() {

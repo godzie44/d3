@@ -2,35 +2,24 @@ package persist
 
 import (
 	"context"
-	d3pgx "github.com/godzie44/d3/adapter/pgx"
 	"github.com/godzie44/d3/orm"
 	"github.com/godzie44/d3/orm/entity"
 	"github.com/godzie44/d3/tests/helpers"
-	"github.com/jackc/pgx/v4"
+	"github.com/godzie44/d3/tests/helpers/db"
 	"github.com/stretchr/testify/suite"
-	"os"
 	"testing"
 )
 
 type UpdateTs struct {
 	suite.Suite
-	pgDb      *pgx.Conn
+	tester    helpers.DBTester
 	dbAdapter *helpers.DbAdapterWithQueryCounter
 	d3Orm     *orm.Orm
 	ctx       context.Context
+	execSqlFn func(sql string) error
 }
 
 func (u *UpdateTs) SetupSuite() {
-	cfg, _ := pgx.ParseConfig(os.Getenv("D3_PG_TEST_DB"))
-	driver, err := d3pgx.NewPgxDriver(cfg)
-	u.NoError(err)
-	u.pgDb, _ = driver.UnwrapConn().(*pgx.Conn)
-
-	err = createSchema(u.pgDb)
-	u.NoError(err)
-
-	u.dbAdapter = helpers.NewDbAdapterWithQueryCounter(driver)
-	u.d3Orm = orm.New(u.dbAdapter)
 	u.NoError(u.d3Orm.Register(
 		(*Book)(nil),
 		(*Shop)(nil),
@@ -38,7 +27,10 @@ func (u *UpdateTs) SetupSuite() {
 		(*Author)(nil),
 	))
 
+	schemaSql, err := u.d3Orm.GenerateSchema()
 	u.NoError(err)
+
+	u.NoError(u.execSqlFn(schemaSql))
 }
 
 func (u *UpdateTs) SetupTest() {
@@ -46,16 +38,49 @@ func (u *UpdateTs) SetupTest() {
 }
 
 func (u *UpdateTs) TearDownSuite() {
-	u.NoError(deleteSchema(u.pgDb))
+	u.NoError(u.execSqlFn(`
+DROP TABLE book_p;
+DROP TABLE author_p;
+DROP TABLE book_author_p;
+DROP TABLE shop_p;
+DROP TABLE profile_p;
+`))
 }
 
 func (u *UpdateTs) TearDownTest() {
-	u.NoError(clearSchema(u.pgDb))
 	u.dbAdapter.ResetCounters()
+	u.NoError(u.execSqlFn(`
+delete from book_p;
+delete from author_p;
+delete from book_author_p;
+delete from shop_p;
+delete from profile_p;
+`))
 }
 
-func TestUpdateSuite(t *testing.T) {
-	suite.Run(t, new(UpdateTs))
+func TestPGUpdateSuite(t *testing.T) {
+	adapter, d3orm, execSqlFn, tester := db.CreatePGTestComponents(t)
+
+	ts := &UpdateTs{
+		dbAdapter: adapter,
+		d3Orm:     d3orm,
+		execSqlFn: execSqlFn,
+		tester:    tester,
+	}
+	suite.Run(t, ts)
+}
+
+func TestSQLiteUpdateSuite(t *testing.T) {
+	adapter, d3orm, execSqlFn, tester := db.CreateSQLiteTestComponents(t)
+
+	ts := &UpdateTs{
+		d3Orm:     d3orm,
+		dbAdapter: adapter,
+		execSqlFn: execSqlFn,
+		tester:    tester,
+	}
+
+	suite.Run(t, ts)
 }
 
 func (u *UpdateTs) TestInsertThenUpdate() {
@@ -69,7 +94,7 @@ func (u *UpdateTs) TestInsertThenUpdate() {
 	u.NoError(orm.Session(u.ctx).Flush())
 
 	u.Equal(1, u.dbAdapter.UpdateCounter())
-	helpers.NewPgTester(u.T(), u.pgDb).
+	u.tester.
 		SeeOne("SELECT * FROM shop_p WHERE name='new shop'").
 		See(0, "SELECT * FROM shop_p WHERE name='shop'")
 }
@@ -85,7 +110,7 @@ func (u *UpdateTs) TestInsertThenUpdateOToMRelation() {
 	u.NoError(orm.Session(u.ctx).Flush())
 
 	u.Equal(1, u.dbAdapter.UpdateCounter())
-	helpers.NewPgTester(u.T(), u.pgDb).
+	u.tester.
 		SeeOne("SELECT * FROM book_p WHERE shop_id IS NOT NULL").
 		SeeOne("SELECT * FROM book_p WHERE shop_id IS NULL")
 }
@@ -104,7 +129,7 @@ func (u *UpdateTs) TestInsertThenUpdateMToMRelations() {
 	u.NoError(orm.Session(u.ctx).Flush())
 
 	u.Equal(1, u.dbAdapter.DeleteCounter())
-	helpers.NewPgTester(u.T(), u.pgDb).
+	u.tester.
 		See(0, "SELECT * FROM book_author_p WHERE book_id = $1 and author_id = $2", book.Id, author.Id)
 }
 
@@ -134,7 +159,7 @@ func (u *UpdateTs) TestInsertThenFullUpdate() {
 	u.Equal(2, u.dbAdapter.UpdateCounter())
 	u.Equal(4, u.dbAdapter.InsertCounter())
 
-	helpers.NewPgTester(u.T(), u.pgDb).
+	u.tester.
 		SeeOne("SELECT * FROM shop_p WHERE name = $1 and profile_id = $2", "new shop", newProfile.Id).
 		SeeOne("SELECT * FROM book_p WHERE id = $1", newBook.Id).
 		SeeOne("SELECT * FROM author_p WHERE id = $1", newAuthor.Id).
@@ -183,7 +208,7 @@ func (u *UpdateTs) TestSelectThenSimpleUpdate() {
 
 	u.Equal(2, u.dbAdapter.UpdateCounter())
 
-	helpers.NewPgTester(u.T(), u.pgDb).
+	u.tester.
 		SeeOne("SELECT * FROM shop_p WHERE name = $1", "new shop 1001 name").
 		SeeOne("SELECT * FROM shop_p WHERE name = $1", "new shop 1002 name")
 }
@@ -204,7 +229,7 @@ func (u *UpdateTs) TestSelectThenUpdateOtoORelation() {
 
 	u.Equal(1, u.dbAdapter.UpdateCounter())
 
-	helpers.NewPgTester(u.T(), u.pgDb).
+	u.tester.
 		SeeOne("SELECT * FROM profile_p WHERE description = $1", "new shop 1001 profile")
 }
 
@@ -224,7 +249,7 @@ func (u *UpdateTs) TestSelectThenDeleteOtoORelation() {
 
 	u.Equal(1, u.dbAdapter.UpdateCounter())
 
-	helpers.NewPgTester(u.T(), u.pgDb).
+	u.tester.
 		SeeOne("SELECT * FROM shop_p WHERE profile_id IS NULL")
 }
 
@@ -246,7 +271,7 @@ func (u *UpdateTs) TestSelectThenChangeOtoORelation() {
 
 	u.Equal(1, u.dbAdapter.UpdateCounter())
 
-	helpers.NewPgTester(u.T(), u.pgDb).
+	u.tester.
 		SeeOne("SELECT * FROM shop_p WHERE id = 1001 AND profile_id IS NOT NULL").
 		SeeOne("SELECT * FROM profile_p WHERE description='changed profile'")
 }
@@ -286,7 +311,7 @@ func (u *UpdateTs) TestSelectThenUpdateOtoMRelation() {
 
 	u.Equal(2, u.dbAdapter.UpdateCounter())
 
-	helpers.NewPgTester(u.T(), u.pgDb).
+	u.tester.
 		SeeOne("SELECT * FROM book_p WHERE name = $1", "new book 0").
 		SeeOne("SELECT * FROM book_p WHERE name = $1", "new book 1")
 }
@@ -308,7 +333,7 @@ func (u *UpdateTs) TestSelectThenDeleteOtoMRelation() {
 
 	u.Equal(1, u.dbAdapter.UpdateCounter())
 
-	helpers.NewPgTester(u.T(), u.pgDb).
+	u.tester.
 		See(oldBookCount-1, "SELECT * FROM book_p WHERE shop_id = 1001")
 }
 
@@ -332,7 +357,7 @@ func (u *UpdateTs) TestSelectThenAddOtoMRelation() {
 
 	u.Equal(1, u.dbAdapter.InsertCounter())
 
-	helpers.NewPgTester(u.T(), u.pgDb).
+	u.tester.
 		SeeOne("SELECT * FROM book_p WHERE shop_id = 1001 AND name = 'new book'")
 }
 
@@ -371,7 +396,7 @@ func (u *UpdateTs) TestSelectThenUpdateMtoMRelation() {
 
 	u.Equal(2, u.dbAdapter.UpdateCounter())
 
-	helpers.NewPgTester(u.T(), u.pgDb).
+	u.tester.
 		SeeOne("SELECT * FROM author_p WHERE name = $1", "new author 1").
 		SeeOne("SELECT * FROM author_p WHERE name = $1", "new author 2")
 }
@@ -393,7 +418,7 @@ func (u *UpdateTs) TestSelectThenDeleteMtoMRelation() {
 
 	u.Equal(1, u.dbAdapter.DeleteCounter())
 
-	helpers.NewPgTester(u.T(), u.pgDb).
+	u.tester.
 		See(oldAuthorCount-1, "SELECT * FROM book_author_p WHERE book_id = 1002")
 }
 
@@ -419,7 +444,7 @@ func (u *UpdateTs) TestSelectThenAddMtoMRelation() {
 
 	u.Equal(3, u.dbAdapter.InsertCounter())
 
-	helpers.NewPgTester(u.T(), u.pgDb).
+	u.tester.
 		SeeOne("SELECT * FROM author_p WHERE name = 'new author'").
 		SeeOne("SELECT * FROM book_author_p WHERE book_id = 1001 AND author_id = $1", newAuthor.Id).
 		SeeOne("SELECT * FROM book_author_p WHERE book_id = 1002 AND author_id = $1", newAuthor.Id)
@@ -474,7 +499,7 @@ func (u *UpdateTs) TestSelectThenFullUpdate() {
 	u.Equal(2, u.dbAdapter.UpdateCounter())
 	u.Equal(4, u.dbAdapter.InsertCounter())
 
-	helpers.NewPgTester(u.T(), u.pgDb).
+	u.tester.
 		SeeOne("SELECT * FROM shop_p WHERE name = $1 and profile_id = $2", "new shop", newProfile.Id).
 		SeeOne("SELECT * FROM book_p WHERE id = $1", newBook.Id).
 		SeeOne("SELECT * FROM author_p WHERE id = $1", newAuthor.Id).
@@ -504,6 +529,6 @@ func (u *UpdateTs) TestDoubleAddMToMIsIdempotence() {
 	u.NoError(repo.Persists(newCtx, book))
 	u.NoError(orm.Session(newCtx).Flush())
 
-	helpers.NewPgTester(u.T(), u.pgDb).
+	u.tester.
 		SeeOne("SELECT * FROM book_author_p")
 }

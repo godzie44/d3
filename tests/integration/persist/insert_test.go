@@ -2,36 +2,24 @@ package persist
 
 import (
 	"context"
-	d3pgx "github.com/godzie44/d3/adapter/pgx"
 	"github.com/godzie44/d3/orm"
 	"github.com/godzie44/d3/orm/entity"
 	"github.com/godzie44/d3/tests/helpers"
-	"github.com/jackc/pgx/v4"
+	"github.com/godzie44/d3/tests/helpers/db"
 	"github.com/stretchr/testify/suite"
-	"os"
 	"testing"
 )
 
 type PersistsTS struct {
 	suite.Suite
-	pgDb      *pgx.Conn
+	tester    helpers.DBTester
 	dbAdapter *helpers.DbAdapterWithQueryCounter
 	d3Orm     *orm.Orm
 	ctx       context.Context
+	execSqlFn func(sql string) error
 }
 
 func (o *PersistsTS) SetupSuite() {
-	cfg, _ := pgx.ParseConfig(os.Getenv("D3_PG_TEST_DB"))
-	driver, err := d3pgx.NewPgxDriver(cfg)
-	o.NoError(err)
-
-	o.pgDb = driver.UnwrapConn().(*pgx.Conn)
-
-	err = createSchema(o.pgDb)
-	o.NoError(err)
-
-	o.dbAdapter = helpers.NewDbAdapterWithQueryCounter(driver)
-	o.d3Orm = orm.New(o.dbAdapter)
 	o.NoError(o.d3Orm.Register(
 		(*Book)(nil),
 		(*Shop)(nil),
@@ -39,7 +27,10 @@ func (o *PersistsTS) SetupSuite() {
 		(*Author)(nil),
 	))
 
+	schemaSql, err := o.d3Orm.GenerateSchema()
 	o.NoError(err)
+
+	o.NoError(o.execSqlFn(schemaSql))
 }
 
 func (o *PersistsTS) SetupTest() {
@@ -47,16 +38,48 @@ func (o *PersistsTS) SetupTest() {
 }
 
 func (o *PersistsTS) TearDownSuite() {
-	o.NoError(deleteSchema(o.pgDb))
+	o.NoError(o.execSqlFn(`
+DROP TABLE book_p;
+DROP TABLE author_p;
+DROP TABLE book_author_p;
+DROP TABLE shop_p;
+DROP TABLE profile_p;
+`))
 }
 
 func (o *PersistsTS) TearDownTest() {
 	o.dbAdapter.ResetCounters()
-	o.NoError(clearSchema(o.pgDb))
+	o.NoError(o.execSqlFn(`
+delete from book_p;
+delete from author_p;
+delete from book_author_p;
+delete from shop_p;
+delete from profile_p;
+`))
 }
 
-func TestPersistsSuite(t *testing.T) {
-	suite.Run(t, new(PersistsTS))
+func TestPGPersistsSuite(t *testing.T) {
+	adapter, d3orm, execSqlFn, tester := db.CreatePGTestComponents(t)
+
+	ts := &PersistsTS{
+		dbAdapter: adapter,
+		d3Orm:     d3orm,
+		execSqlFn: execSqlFn,
+		tester:    tester,
+	}
+	suite.Run(t, ts)
+}
+
+func TestSQLitePersistsSuite(t *testing.T) {
+	adapter, d3orm, execSqlFn, tester := db.CreateSQLiteTestComponents(t)
+
+	ts := &PersistsTS{
+		d3Orm:     d3orm,
+		dbAdapter: adapter,
+		execSqlFn: execSqlFn,
+		tester:    tester,
+	}
+	suite.Run(t, ts)
 }
 
 func (o *PersistsTS) TestSimpleInsert() {
@@ -77,7 +100,7 @@ func (o *PersistsTS) TestSimpleInsert() {
 	o.NotEqual(0, shop.Id.Int32)
 	o.NotEqual(0, shop.Profile.Unwrap().(*ShopProfile).Id.Int32)
 
-	helpers.NewPgTester(o.T(), o.pgDb).
+	o.tester.
 		SeeOne("SELECT * FROM shop_p WHERE name='simple-shop' AND profile_id IS NOT NULL").
 		SeeOne("SELECT * FROM profile_p WHERE description='this is simple tests shop'")
 }
@@ -95,7 +118,7 @@ func (o *PersistsTS) TestBigInsert() {
 	o.NotEqual(0, shop.Books.Get(0).(*Book).Authors.Get(0).(*Author).Id.Int32)
 	o.NotEqual(0, shop.Books.Get(1).(*Book).Authors.Get(0).(*Author).Id.Int32)
 
-	helpers.NewPgTester(o.T(), o.pgDb).
+	o.tester.
 		SeeOne("SELECT * FROM shop_p WHERE name='shop' AND profile_id IS NOT NULL").
 		SeeOne("SELECT * FROM profile_p WHERE description='this is tests shop'").
 		SeeTwo("SELECT * FROM book_p").

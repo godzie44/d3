@@ -23,7 +23,7 @@ type sqliteDriver struct {
 	db *sql.DB
 }
 
-func NewSqliteDriver(dataSourceName string) (*sqliteDriver, error) {
+func NewSQLiteDriver(dataSourceName string) (*sqliteDriver, error) {
 	db, err := sql.Open("sqlite3", dataSourceName)
 	if err != nil {
 		return nil, err
@@ -163,21 +163,22 @@ func (s *sqlitePusher) Insert(table string, cols []string, values []interface{},
 		argsPlaceHolders[i] = "$" + strconv.Itoa(i+1)
 	}
 
-	sql := fmt.Sprintf("INSERT INTO %s(%s) VALUES(%s)", table, strings.Join(cols, ","), strings.Join(argsPlaceHolders, ","))
+	var onConflictClause string
 	switch onConflict {
 	case persistence.DoNothing:
-		sql += " ON CONFLICT IGNORE"
+		onConflictClause = "OR IGNORE"
 	case persistence.Undefined:
 		break
 	}
+
+	sql := fmt.Sprintf("INSERT %s INTO %s(%s) VALUES(%s)", onConflictClause, table, strings.Join(cols, ","), strings.Join(argsPlaceHolders, ","))
 
 	_, err := s.tx.tx.Exec(
 		sql,
 		values...,
 	)
-
 	if err != nil {
-		return fmt.Errorf("insert pgx driver: %w", err)
+		return fmt.Errorf("insert sqlite driver: %w", err)
 	}
 
 	return nil
@@ -189,19 +190,13 @@ type idScanner struct {
 
 func (i *idScanner) Scan(v ...interface{}) error {
 	if len(v) > 0 {
-		switch val := v[0].(type) {
-		case *int:
-			*val = int(i.id)
-		case *int32:
-			*val = int32(i.id)
-		case *int64:
-			*val = i.id
+		switch v[0].(type) {
 		case *sql.NullInt32:
-			v[0].(*sql.NullInt32).Scan(int32(i.id))
+			return v[0].(*sql.NullInt32).Scan(int32(i.id))
 		case *sql.NullInt64:
-			v[0].(*sql.NullInt64).Scan(i.id)
+			return v[0].(*sql.NullInt64).Scan(i.id)
 		default:
-			return errors.New("unknown pk type, must be pointer to int, int32, int64, sql.NullInt32, sql.NullInt64")
+			return errors.New("unknown pk type, expected sql.NullInt32, sql.NullInt64")
 		}
 	}
 	return nil
@@ -262,6 +257,7 @@ func (s *sqlitePusher) Update(table string, cols []string, values []interface{},
 	if err != nil {
 		return fmt.Errorf("insert sqlite driver: %w", err)
 	}
+
 	return nil
 }
 
@@ -312,8 +308,10 @@ func (s *sqliteDriver) CreateTableSql(name string, columns map[string]schema.Col
 		case schema.Int:
 			if isPkCol(col) && pkStrategy == entity.Auto {
 				needAI = true
+				colSql.WriteString("INTEGER NOT NULL")
+			} else {
+				colSql.WriteString("BIGINT NOT NULL")
 			}
-			colSql.WriteString("BIGINT NOT NULL")
 		case schema.Int32:
 			if isPkCol(col) && pkStrategy == entity.Auto {
 				needAI = true
@@ -322,8 +320,10 @@ func (s *sqliteDriver) CreateTableSql(name string, columns map[string]schema.Col
 		case schema.Int64:
 			if isPkCol(col) && pkStrategy == entity.Auto {
 				needAI = true
+				colSql.WriteString("INTEGER NOT NULL")
+			} else {
+				colSql.WriteString("BIGINT NOT NULL")
 			}
-			colSql.WriteString("BIGINT NOT NULL")
 		case schema.Float32:
 			colSql.WriteString("FLOAT NOT NULL")
 		case schema.Float64:
@@ -337,8 +337,10 @@ func (s *sqliteDriver) CreateTableSql(name string, columns map[string]schema.Col
 		case schema.NullInt64:
 			if isPkCol(col) && pkStrategy == entity.Auto {
 				needAI = true
+				colSql.WriteString("INTEGER")
+			} else {
+				colSql.WriteString("BIGINT")
 			}
-			colSql.WriteString("BIGINT")
 		case schema.NullInt32:
 			if isPkCol(col) && pkStrategy == entity.Auto {
 				needAI = true

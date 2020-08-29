@@ -2,59 +2,51 @@ package relation
 
 import (
 	"context"
-	d3pgx "github.com/godzie44/d3/adapter/pgx"
 	"github.com/godzie44/d3/orm"
-	"github.com/jackc/pgx/v4"
+	"github.com/godzie44/d3/tests/helpers/db"
 	"github.com/stretchr/testify/suite"
-	"os"
 	"testing"
 )
 
 type OneToManyRelationTS struct {
 	suite.Suite
-	pgConn *pgx.Conn
-	orm    *orm.Orm
+	orm       *orm.Orm
+	execSqlFn func(sql string) error
 }
 
 func (o *OneToManyRelationTS) SetupSuite() {
-	cfg, _ := pgx.ParseConfig(os.Getenv("D3_PG_TEST_DB"))
-	driver, err := d3pgx.NewPgxDriver(cfg)
-	o.NoError(err)
-	o.pgConn = driver.UnwrapConn().(*pgx.Conn)
-
-	_, err = o.pgConn.Exec(context.Background(), `CREATE TABLE IF NOT EXISTS shop(
+	err := o.execSqlFn(`CREATE TABLE IF NOT EXISTS shop(
 		id integer NOT NULL,
 		name text NOT NULL,
 		CONSTRAINT test_entity_t1_pkey PRIMARY KEY (id)
 	)`)
-	o.Assert().NoError(err)
+	o.NoError(err)
 
-	_, err = o.pgConn.Exec(context.Background(), `CREATE TABLE IF NOT EXISTS book(
+	err = o.execSqlFn(`CREATE TABLE IF NOT EXISTS book(
 		id integer NOT NULL,
 		name character varying(200) NOT NULL,
 		t1_id integer,
 		CONSTRAINT test_entity_t2_pkey PRIMARY KEY (id)
 	)`)
-	o.Assert().NoError(err)
+	o.NoError(err)
 
-	_, err = o.pgConn.Exec(context.Background(), `CREATE TABLE IF NOT EXISTS discount(
+	err = o.execSqlFn(`CREATE TABLE IF NOT EXISTS discount(
 		id integer NOT NULL,
 		value integer NOT NULL,
 		t2_id integer,
 		CONSTRAINT test_entity_t3_pkey PRIMARY KEY (id)
 	)`)
-	o.Assert().NoError(err)
+	o.NoError(err)
 
-	_, err = o.pgConn.Exec(context.Background(), `
+	err = o.execSqlFn(`
 INSERT INTO shop(id, name) VALUES (1, 'book-shop');
 INSERT INTO book(id, name, t1_id) VALUES (1, 'Antic Hay', 1);
 INSERT INTO book(id, name, t1_id) VALUES (2, 'An Evil Cradling', 1);
 INSERT INTO book(id, name, t1_id) VALUES (3, 'Arms and the Man', 1);
 INSERT INTO discount(id, value, t2_id) VALUES (1, 33, 1);
 `)
-	o.Assert().NoError(err)
+	o.NoError(err)
 
-	o.orm = orm.New(driver)
 	o.NoError(o.orm.Register(
 		(*ShopLR)(nil),
 		(*BookLR)(nil),
@@ -65,16 +57,31 @@ INSERT INTO discount(id, value, t2_id) VALUES (1, 33, 1);
 }
 
 func (o *OneToManyRelationTS) TearDownSuite() {
-	_, err := o.pgConn.Exec(context.Background(), `
+	o.NoError(o.execSqlFn(`
 DROP TABLE shop;
 DROP TABLE book;
 DROP TABLE discount;
-`)
-	o.Assert().NoError(err)
+`))
 }
 
-func TestRunOneToManyTestSuite(t *testing.T) {
-	suite.Run(t, new(OneToManyRelationTS))
+func TestPGOneToManyTestSuite(t *testing.T) {
+	_, d3orm, execSqlFn, _ := db.CreatePGTestComponents(t)
+
+	mtmTS := &OneToManyRelationTS{
+		orm:       d3orm,
+		execSqlFn: execSqlFn,
+	}
+	suite.Run(t, mtmTS)
+}
+
+func TestSQLiteOneToManyTestSuite(t *testing.T) {
+	_, d3orm, execSqlFn, _ := db.CreateSQLiteTestComponents(t)
+
+	mtmTS := &OneToManyRelationTS{
+		orm:       d3orm,
+		execSqlFn: execSqlFn,
+	}
+	suite.Run(t, mtmTS)
 }
 
 func (o *OneToManyRelationTS) TestLazyRelation() {

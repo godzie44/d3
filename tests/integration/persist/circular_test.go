@@ -2,92 +2,78 @@ package persist
 
 import (
 	"context"
-	d3pgx "github.com/godzie44/d3/adapter/pgx"
 	"github.com/godzie44/d3/orm"
 	"github.com/godzie44/d3/orm/entity"
 	"github.com/godzie44/d3/tests/helpers"
-	"github.com/jackc/pgx/v4"
+	"github.com/godzie44/d3/tests/helpers/db"
 	"github.com/stretchr/testify/suite"
-	"os"
 	"testing"
 )
 
 type PersistsCircularTS struct {
 	suite.Suite
-	pgConn    *pgx.Conn
+	tester    helpers.DBTester
 	dbAdapter *helpers.DbAdapterWithQueryCounter
 	orm       *orm.Orm
+	execSqlFn func(sql string) error
 }
 
 func (o *PersistsCircularTS) SetupSuite() {
-	cfg, _ := pgx.ParseConfig(os.Getenv("D3_PG_TEST_DB"))
-	driver, err := d3pgx.NewPgxDriver(cfg)
-	o.NoError(err)
-
-	o.pgConn = driver.UnwrapConn().(*pgx.Conn)
-
-	_, err = o.pgConn.Exec(context.Background(), `CREATE TABLE IF NOT EXISTS shop_c(
-		id SERIAL PRIMARY KEY,
-		profile_id integer,
-		friend_id integer, --for tests circular ref
-		top_seller_id integer,
-		name character varying(200) NOT NULL
-	)`)
-	o.Assert().NoError(err)
-
-	_, err = o.pgConn.Exec(context.Background(), `CREATE TABLE IF NOT EXISTS profile_c(
-		id SERIAL PRIMARY KEY,
-		shop_id integer, --for tests circular ref
-		description character varying(1000) NOT NULL
-	)`)
-	o.Assert().NoError(err)
-
-	_, err = o.pgConn.Exec(context.Background(), `CREATE TABLE IF NOT EXISTS seller_c(
-		id SERIAL PRIMARY KEY,
-		name text NOT NULL,
-		shop_id integer
-	)`)
-	o.Assert().NoError(err)
-
-	_, err = o.pgConn.Exec(context.Background(), `CREATE TABLE IF NOT EXISTS known_shop_seller_c(
-		shop_id integer NOT NULL,
-		seller_id integer NOT NULL,
-		PRIMARY KEY (shop_id,seller_id)
-	)`)
-	o.Assert().NoError(err)
-
-	o.dbAdapter = helpers.NewDbAdapterWithQueryCounter(driver)
-	o.orm = orm.New(o.dbAdapter)
-	o.Assert().NoError(o.orm.Register(
+	o.NoError(o.orm.Register(
 		(*ShopCirc)(nil),
 		(*ShopProfileCirc)(nil),
 		(*SellerCirc)(nil),
 	))
+
+	schemaSql, err := o.orm.GenerateSchema()
+	o.NoError(err)
+
+	o.NoError(o.execSqlFn(schemaSql))
 }
 
 func (o *PersistsCircularTS) TearDownSuite() {
-	_, err := o.pgConn.Exec(context.Background(), `
+	o.NoError(o.execSqlFn(`
 DROP TABLE shop_c;
 DROP TABLE profile_c;
 DROP TABLE seller_c;
 DROP TABLE known_shop_seller_c;
-`)
-	o.Assert().NoError(err)
+`))
 }
 
 func (o *PersistsCircularTS) TearDownTest() {
-	_, err := o.pgConn.Exec(context.Background(), `
+	o.Assert().NoError(o.execSqlFn(`
 delete from shop_c;
 delete from profile_c;
 delete from seller_c;
 delete from known_shop_seller_c;
-`)
-	o.Assert().NoError(err)
+`))
 	o.dbAdapter.ResetCounters()
 }
 
-func TestPersistsCircularSuite(t *testing.T) {
-	suite.Run(t, new(PersistsCircularTS))
+func TestPGPersistsCircularSuite(t *testing.T) {
+	adapter, d3orm, execSqlFn, tester := db.CreatePGTestComponents(t)
+
+	mtmTS := &PersistsCircularTS{
+		orm:       d3orm,
+		dbAdapter: adapter,
+		execSqlFn: execSqlFn,
+		tester:    tester,
+	}
+
+	suite.Run(t, mtmTS)
+}
+
+func TestSQLitePersistsCircularSuite(t *testing.T) {
+	adapter, d3orm, execSqlFn, tester := db.CreateSQLiteTestComponents(t)
+
+	mtmTS := &PersistsCircularTS{
+		orm:       d3orm,
+		dbAdapter: adapter,
+		execSqlFn: execSqlFn,
+		tester:    tester,
+	}
+
+	suite.Run(t, mtmTS)
 }
 
 func (o *PersistsCircularTS) TestInsertWithCircularRef() {
@@ -112,7 +98,7 @@ func (o *PersistsCircularTS) TestInsertWithCircularRef() {
 	o.Assert().Equal(2, o.dbAdapter.InsertCounter())
 	o.Assert().Equal(1, o.dbAdapter.UpdateCounter())
 
-	helpers.NewPgTester(o.T(), o.pgConn).
+	o.tester.
 		SeeOne("SELECT * FROM shop_c WHERE name='shop' AND profile_id IS NOT NULL").
 		SeeOne("SELECT * FROM profile_c WHERE description='shop profile' AND shop_id IS NOT NULL")
 }
@@ -149,7 +135,7 @@ func (o *PersistsCircularTS) TestInsertWithSelfCircularRef() {
 	o.Assert().Equal(5, o.dbAdapter.InsertCounter())
 	o.Assert().Equal(2, o.dbAdapter.UpdateCounter())
 
-	helpers.NewPgTester(o.T(), o.pgConn).
+	o.tester.
 		SeeTwo("SELECT * FROM shop_c WHERE name in ('shop1', 'shop2') AND friend_id IS NOT NULL").
 		SeeThree("SELECT * FROM shop_c WHERE name in ('shop3', 'shop4', 'shop5') AND friend_id IS NOT NULL")
 }
@@ -187,7 +173,7 @@ func (o *PersistsCircularTS) TestBigCircularReferenceGraph() {
 	o.Assert().Equal(9, o.dbAdapter.InsertCounter())
 	o.Assert().Equal(4, o.dbAdapter.UpdateCounter())
 
-	helpers.NewPgTester(o.T(), o.pgConn).
+	o.tester.
 		SeeTwo("SELECT * FROM shop_c WHERE name in ('shop1', 'shop2') AND top_seller_id IS NOT NULL").
 		SeeThree("SELECT * FROM seller_c WHERE name in ('Ivan', 'Sergej', 'Nickolay') AND shop_id IS NOT NULL").
 		SeeFour("SELECT * FROM known_shop_seller_c")

@@ -2,6 +2,7 @@ package helpers
 
 import (
 	"context"
+	"database/sql"
 	"fmt"
 	"github.com/godzie44/d3/orm"
 	"github.com/godzie44/d3/orm/entity"
@@ -125,6 +126,15 @@ func (p *persistStoreWithCounters) Remove(table string, identityCond map[string]
 	return p.ps.Remove(table, identityCond)
 }
 
+type DBTester interface {
+	SeeOne(sql string, args ...interface{}) DBTester
+	SeeTwo(sql string, args ...interface{}) DBTester
+	SeeThree(sql string, args ...interface{}) DBTester
+	SeeFour(sql string, args ...interface{}) DBTester
+	See(count int, sql string, args ...interface{}) DBTester
+	SeeTable(tableName string) DBTester
+}
+
 type PgTester struct {
 	t    *testing.T
 	Conn *pgx.Conn
@@ -134,23 +144,23 @@ func NewPgTester(t *testing.T, conn *pgx.Conn) *PgTester {
 	return &PgTester{t, conn}
 }
 
-func (p *PgTester) SeeOne(sql string, args ...interface{}) *PgTester {
+func (p *PgTester) SeeOne(sql string, args ...interface{}) DBTester {
 	return p.See(1, sql, args...)
 }
 
-func (p *PgTester) SeeTwo(sql string, args ...interface{}) *PgTester {
+func (p *PgTester) SeeTwo(sql string, args ...interface{}) DBTester {
 	return p.See(2, sql, args...)
 }
 
-func (p *PgTester) SeeThree(sql string, args ...interface{}) *PgTester {
+func (p *PgTester) SeeThree(sql string, args ...interface{}) DBTester {
 	return p.See(3, sql, args...)
 }
 
-func (p *PgTester) SeeFour(sql string, args ...interface{}) *PgTester {
+func (p *PgTester) SeeFour(sql string, args ...interface{}) DBTester {
 	return p.See(4, sql, args...)
 }
 
-func (p *PgTester) See(count int, sql string, args ...interface{}) *PgTester {
+func (p *PgTester) See(count int, sql string, args ...interface{}) DBTester {
 	var cnt int
 	err := p.Conn.QueryRow(context.Background(), fmt.Sprintf("SELECT count(*) cnt FROM (%s) t", sql), args...).Scan(&cnt)
 	assert.NoError(p.t, err)
@@ -159,7 +169,7 @@ func (p *PgTester) See(count int, sql string, args ...interface{}) *PgTester {
 	return p
 }
 
-func (p *PgTester) SeeTable(tableName string) *PgTester {
+func (p *PgTester) SeeTable(tableName string) DBTester {
 	var tableSql = "SELECT * FROM pg_tables where schemaname = 'public' and tablename=$1"
 
 	var cnt int
@@ -168,4 +178,49 @@ func (p *PgTester) SeeTable(tableName string) *PgTester {
 
 	assert.GreaterOrEqual(p.t, cnt, 1)
 	return p
+}
+
+type SqliteTester struct {
+	t    *testing.T
+	Conn *sql.DB
+}
+
+func NewSQLiteTester(t *testing.T, conn *sql.DB) *SqliteTester {
+	return &SqliteTester{t, conn}
+}
+
+func (s *SqliteTester) SeeOne(sql string, args ...interface{}) DBTester {
+	return s.See(1, sql, args...)
+}
+
+func (s *SqliteTester) SeeTwo(sql string, args ...interface{}) DBTester {
+	return s.See(2, sql, args...)
+}
+
+func (s *SqliteTester) SeeThree(sql string, args ...interface{}) DBTester {
+	return s.See(3, sql, args...)
+}
+
+func (s *SqliteTester) SeeFour(sql string, args ...interface{}) DBTester {
+	return s.See(4, sql, args...)
+}
+
+func (s *SqliteTester) See(count int, sql string, args ...interface{}) DBTester {
+	var cnt int
+	err := s.Conn.QueryRow(fmt.Sprintf("SELECT count(*) cnt FROM (%s) t", sql), args...).Scan(&cnt)
+	assert.NoError(s.t, err)
+
+	assert.Equal(s.t, count, cnt)
+	return s
+}
+
+func (s *SqliteTester) SeeTable(tableName string) DBTester {
+	var tableSql = "SELECT name FROM sqlite_master WHERE type='table' AND name=$1"
+
+	var cnt int
+	err := s.Conn.QueryRow(fmt.Sprintf("SELECT count(*) cnt FROM (%s) t", tableSql), tableName).Scan(&cnt)
+	assert.NoError(s.t, err)
+
+	assert.GreaterOrEqual(s.t, cnt, 1)
+	return s
 }

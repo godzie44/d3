@@ -45,12 +45,12 @@ func (s *sqliteDriverTS) TearDownSuite() {
 }
 
 func TestPgxConnDriverTestSuite(t *testing.T) {
-	driver, err := NewSqliteDriver(dbName)
+	driver, err := NewSQLiteDriver(dbName)
 	assert.NoError(t, err)
 
 	suite.Run(t, &sqliteDriverTS{
 		driver: driver,
-		tester: helpers.NewSqliteTester(t, driver.UnwrapConn().(*sql.DB)),
+		tester: helpers.NewSQLiteTester(t, driver.UnwrapConn().(*sql.DB)),
 	})
 }
 

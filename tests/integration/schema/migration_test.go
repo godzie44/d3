@@ -1,30 +1,21 @@
 package schema
 
 import (
-	"context"
-	d3pgx "github.com/godzie44/d3/adapter/pgx"
 	"github.com/godzie44/d3/orm"
 	"github.com/godzie44/d3/tests/helpers"
-	"github.com/jackc/pgx/v4"
+	"github.com/godzie44/d3/tests/helpers/db"
 	"github.com/stretchr/testify/suite"
-	"os"
 	"testing"
 )
 
 type MigrationTestSuite struct {
 	suite.Suite
-	pgConn *pgx.Conn
-	orm    *orm.Orm
+	tester    helpers.DBTester
+	orm       *orm.Orm
+	execSqlFn func(sql string) error
 }
 
 func (m *MigrationTestSuite) SetupSuite() {
-	cfg, _ := pgx.ParseConfig(os.Getenv("D3_PG_TEST_DB"))
-	driver, err := d3pgx.NewPgxDriver(cfg)
-	m.NoError(err)
-
-	m.pgConn = driver.UnwrapConn().(*pgx.Conn)
-
-	m.orm = orm.New(driver)
 	m.Assert().NoError(m.orm.Register(
 		(*shop)(nil),
 		(*profile)(nil),
@@ -34,24 +25,22 @@ func (m *MigrationTestSuite) SetupSuite() {
 }
 
 func (m *MigrationTestSuite) TearDownSuite() {
-	_, err := m.pgConn.Exec(context.Background(), `
+	m.NoError(m.execSqlFn(`
 DROP TABLE IF EXISTS shop_m;
 DROP TABLE IF EXISTS profile_m;
 DROP TABLE IF EXISTS author_m;
 DROP TABLE IF EXISTS book_m;
 DROP TABLE IF EXISTS book_author_m;
-`)
-	m.Assert().NoError(err)
+`))
 }
 
 func (m *MigrationTestSuite) TestCreateSchema() {
 	sql, err := m.orm.GenerateSchema()
 	m.NoError(err)
 
-	_, err = m.pgConn.Exec(context.Background(), sql)
-	m.NoError(err)
+	m.NoError(m.execSqlFn(sql))
 
-	helpers.NewPgTester(m.T(), m.pgConn).
+	m.tester.
 		SeeTable("shop_m").
 		SeeTable("profile_m").
 		SeeTable("author_m").
@@ -59,6 +48,22 @@ func (m *MigrationTestSuite) TestCreateSchema() {
 		SeeTable("book_author_m")
 }
 
-func TestMigrationTs(t *testing.T) {
-	suite.Run(t, new(MigrationTestSuite))
+func TestPGMigrationTs(t *testing.T) {
+	_, d3orm, execSqlFn, tester := db.CreatePGTestComponents(t)
+
+	suite.Run(t, &MigrationTestSuite{
+		orm:       d3orm,
+		tester:    tester,
+		execSqlFn: execSqlFn,
+	})
+}
+
+func TestSqliteMigrationTs(t *testing.T) {
+	_, d3orm, execSqlFn, tester := db.CreateSQLiteTestComponents(t)
+
+	suite.Run(t, &MigrationTestSuite{
+		orm:       d3orm,
+		tester:    tester,
+		execSqlFn: execSqlFn,
+	})
 }
