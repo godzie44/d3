@@ -66,7 +66,7 @@ func (s *session) Execute(q *query.Query) ([]map[string]interface{}, error) {
 		if err != nil {
 			return nil, err
 		}
-		defer tx.Commit()
+		defer tx.Commit() //nolint
 	}
 
 	return s.storage.ExecuteQuery(q, tx)

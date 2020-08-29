@@ -57,7 +57,7 @@ func TestPgxConnDriverTestSuite(t *testing.T) {
 func (s *sqliteDriverTS) TestPgxDriverQuery() {
 	tx, err := s.driver.BeginTx()
 	s.NoError(err)
-	defer tx.Commit()
+	defer tx.Commit() //nolint
 
 	data, err := s.driver.ExecuteQuery(query.New().Select("*").From("d3_test_table").Where("id", "=", "1"), tx)
 	s.NoError(err)

@@ -78,7 +78,7 @@ func TestPgxPoolDriverTestSuite(t *testing.T) {
 func (p *PgxDriverTS) TestPgxDriverQuery() {
 	tx, err := p.driver.BeginTx()
 	p.NoError(err)
-	defer tx.Commit()
+	defer tx.Commit() //nolint
 
 	data, err := p.driver.ExecuteQuery(query.New().Select("*").From("pgx_test_table").Where("id", "=", "1"), tx)
 	p.NoError(err)
