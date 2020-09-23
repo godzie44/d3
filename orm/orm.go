@@ -7,7 +7,9 @@ import (
 	"github.com/godzie44/d3/orm/schema"
 )
 
-const sessionKey = "d3_session"
+type ctxKey string
+
+const sessionKey ctxKey = "d3_session"
 
 // Orm - d3 orm instance.
 type Orm struct {
