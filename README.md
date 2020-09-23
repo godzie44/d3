@@ -44,11 +44,12 @@ D3 integration tests require a PostgreSQL database. Connect to the database spec
 
 ## Roadmap
 
-- [ ] add mysql and sqlite support
+- [ ] add mysql support
+- [X] add sqlite support
 - [ ] composite pk
 - [ ] not only schema generation but generation of schema diff's
 - [ ] embedding structures
-- [ ] index definition in entity comments
+- [X] index definition in entity comments
 - [ ] generate fk's for relations
 
-Note: Current project status - is pre-alpha. It can be used in production with some risky.
+Note: Current project status - is alpha. It can be used in production with some risky.
