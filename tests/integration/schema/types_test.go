@@ -31,7 +31,7 @@ DROP TABLE IF EXISTS test_aliases;
 }
 
 func initSqliteDb(t *testing.T) (*orm.Orm, Defer) {
-	_, d3orm, execSqlFn, _ := db.CreateSQLiteTestComponents(t)
+	_, d3orm, execSqlFn, _ := db.CreateSQLiteTestComponents(t, "_types")
 	assert.NoError(t, d3orm.Register((*allTypeStruct)(nil), (*entityWithAliases)(nil)))
 
 	sqlSchema, err := d3orm.GenerateSchema()

@@ -76,9 +76,9 @@ func TestPGTransactionalTs(t *testing.T) {
 }
 
 func TestSQLiteTransactionalTs(t *testing.T) {
-	adapter, d3orm, execSqlFn, tester := db.CreateSQLiteTestComponents(t)
+	adapter, d3orm, execSqlFn, tester := db.CreateSQLiteTestComponents(t, "_trans")
 
-	indConn, _ := sql.Open("sqlite3", "./../../data/sqlite/test.db")
+	indConn, _ := sql.Open("sqlite3", "./../../data/sqlite/test_trans.db")
 
 	ts := &TransactionalTs{
 		d3Orm:             d3orm,
@@ -261,7 +261,7 @@ func TestPGMultipleTransactionalTs(t *testing.T) {
 }
 
 func TestSQLiteMultipleTransactionalTs(t *testing.T) {
-	adapter, d3orm, execSqlFn, _ := db.CreateSQLiteTestComponents(t)
+	adapter, d3orm, execSqlFn, _ := db.CreateSQLiteTestComponents(t, "_mult_trans")
 
 	ts := &MultipleTransactionTs{
 		d3Orm:     d3orm,

@@ -30,8 +30,8 @@ func CreatePGTestComponents(t *testing.T) (*helpers.DbAdapterWithQueryCounter, *
 	return dbAdapter, orm.New(dbAdapter), execSqlFn, helpers.NewPgTester(t, conn)
 }
 
-func CreateSQLiteTestComponents(t *testing.T) (*helpers.DbAdapterWithQueryCounter, *orm.Orm, func(sql string) error, helpers.DBTester) {
-	driver, err := sqlite.NewSQLiteDriver("./../../data/sqlite/test.db")
+func CreateSQLiteTestComponents(t *testing.T, postfix string) (*helpers.DbAdapterWithQueryCounter, *orm.Orm, func(sql string) error, helpers.DBTester) {
+	driver, err := sqlite.NewSQLiteDriver("./../../data/sqlite/test" + postfix + ".db")
 	assert.NoError(t, err)
 
 	conn := driver.UnwrapConn().(*sql.DB)

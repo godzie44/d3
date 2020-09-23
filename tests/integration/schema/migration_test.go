@@ -68,7 +68,7 @@ func TestPGMigrationTs(t *testing.T) {
 }
 
 func TestSqliteMigrationTs(t *testing.T) {
-	_, d3orm, execSqlFn, tester := db.CreateSQLiteTestComponents(t)
+	_, d3orm, execSqlFn, tester := db.CreateSQLiteTestComponents(t, "_migrations")
 
 	suite.Run(t, &MigrationTestSuite{
 		orm:       d3orm,

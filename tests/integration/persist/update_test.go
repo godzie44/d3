@@ -71,7 +71,7 @@ func TestPGUpdateSuite(t *testing.T) {
 }
 
 func TestSQLiteUpdateSuite(t *testing.T) {
-	adapter, d3orm, execSqlFn, tester := db.CreateSQLiteTestComponents(t)
+	adapter, d3orm, execSqlFn, tester := db.CreateSQLiteTestComponents(t, "_upd")
 
 	ts := &UpdateTs{
 		d3Orm:     d3orm,

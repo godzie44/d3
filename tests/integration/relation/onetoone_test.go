@@ -73,7 +73,7 @@ func TestPGOneToOneTestSuite(t *testing.T) {
 }
 
 func TestSQLiteOneToOneTestSuite(t *testing.T) {
-	_, d3orm, execSqlFn, _ := db.CreateSQLiteTestComponents(t)
+	_, d3orm, execSqlFn, _ := db.CreateSQLiteTestComponents(t, "_o_to_o")
 
 	mtmTS := &OneToOneRelationTS{
 		orm:       d3orm,

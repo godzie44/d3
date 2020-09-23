@@ -71,7 +71,7 @@ func TestPGPersistsSuite(t *testing.T) {
 }
 
 func TestSQLitePersistsSuite(t *testing.T) {
-	adapter, d3orm, execSqlFn, tester := db.CreateSQLiteTestComponents(t)
+	adapter, d3orm, execSqlFn, tester := db.CreateSQLiteTestComponents(t, "_persist")
 
 	ts := &PersistsTS{
 		d3Orm:     d3orm,

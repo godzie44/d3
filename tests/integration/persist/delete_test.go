@@ -69,7 +69,7 @@ func TestPGDeleteTestSuite(t *testing.T) {
 }
 
 func TestSQLiteDeleteTestSuite(t *testing.T) {
-	adapter, d3orm, execSqlFn, _ := db.CreateSQLiteTestComponents(t)
+	adapter, d3orm, execSqlFn, _ := db.CreateSQLiteTestComponents(t, "_del")
 
 	ts := &DeleteTS{
 		d3Orm:     d3orm,

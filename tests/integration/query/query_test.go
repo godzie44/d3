@@ -71,7 +71,7 @@ func TestPGQueryTestSuite(t *testing.T) {
 }
 
 func TestSQLiteQueryTestSuite(t *testing.T) {
-	adapter, d3orm, execSqlFn, _ := db.CreateSQLiteTestComponents(t)
+	adapter, d3orm, execSqlFn, _ := db.CreateSQLiteTestComponents(t, "_query")
 
 	qts := &QueryTS{
 		orm:       d3orm,

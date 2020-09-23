@@ -64,7 +64,7 @@ func TestPGPersistsCircularSuite(t *testing.T) {
 }
 
 func TestSQLitePersistsCircularSuite(t *testing.T) {
-	adapter, d3orm, execSqlFn, tester := db.CreateSQLiteTestComponents(t)
+	adapter, d3orm, execSqlFn, tester := db.CreateSQLiteTestComponents(t, "_circ")
 
 	mtmTS := &PersistsCircularTS{
 		orm:       d3orm,

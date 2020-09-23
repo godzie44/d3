@@ -93,7 +93,7 @@ func TestPGManyToManyTestSuite(t *testing.T) {
 }
 
 func TestSQLiteManyToManyTestSuite(t *testing.T) {
-	_, d3orm, execSqlFn, _ := db.CreateSQLiteTestComponents(t)
+	_, d3orm, execSqlFn, _ := db.CreateSQLiteTestComponents(t, "_m_to_m")
 
 	mtmTS := &ManyToManyRelationTS{
 		orm:       d3orm,
