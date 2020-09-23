@@ -55,6 +55,7 @@ import (
 	"os"
 	"reflect"
 	"github.com/godzie44/d3/orm/gen"
+	"github.com/godzie44/d3/orm/entity"
 	al "{{.PkgPath}}"
 )
 
@@ -64,7 +65,7 @@ func main() {
 	g := gen.NewGenerator(os.Stdout, "{{.PkgPath}}")
 	{{$pref := .Prefix}}
 	{{range .metas}}
-	g.Prepare(reflect.TypeOf(al.{{$pref}}{{.Name}}(nil)), "{{.TableName}}")
+	g.Prepare(reflect.TypeOf(al.{{$pref}}{{.Name}}(nil)), "{{.TableName}}", {{range .Indexes}} entity.Index{Name: "{{.Name}}", Columns: []string{ {{range .Columns}} "{{.}}", {{end}} }, Unique: {{.Unique}} }, {{end}})
 	{{end}}
 	g.Write()
 }

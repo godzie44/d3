@@ -79,7 +79,7 @@ func toNotNullEquivalent(t ColumnType) ColumnType {
 
 type StorageSchemaGenerator interface {
 	CreateTableSql(name string, columns map[string]ColumnType, pkColumns []string, pkStrategy entity.PkStrategy) string
-	CreateIndexSql(name string, table1 string, columns ...string) string
+	CreateIndexSql(name string, unique bool, table string, columns ...string) string
 }
 
 type Builder struct {
@@ -99,6 +99,10 @@ func (b *Builder) Build(registry *entity.MetaRegistry) (string, error) {
 	var res strings.Builder
 	for _, cmd := range createTableCommands {
 		res.WriteString(b.schemaBuilder.CreateTableSql(cmd.tableName, cmd.columns, cmd.pkColumns, cmd.pkStrategy))
+
+		for _, ind := range cmd.indexes {
+			res.WriteString(b.schemaBuilder.CreateIndexSql(ind.Name, ind.Unique, cmd.tableName, ind.Columns...))
+		}
 	}
 
 	return res.String(), nil
@@ -109,6 +113,7 @@ type newTableCmd struct {
 	columns    map[string]ColumnType
 	pkColumns  []string
 	pkStrategy entity.PkStrategy
+	indexes    []entity.Index
 }
 
 func (b *Builder) createNewTableCommands(registry *entity.MetaRegistry) (map[entity.Name]*newTableCmd, error) {
@@ -122,6 +127,7 @@ func (b *Builder) createNewTableCommands(registry *entity.MetaRegistry) (map[ent
 		}
 
 		createTableCommand := createTableCmdQueue[meta.EntityName]
+		createTableCommand.indexes = meta.Indexes
 		createTableCommand.tableName = meta.TableName
 
 		for _, field := range meta.Fields {

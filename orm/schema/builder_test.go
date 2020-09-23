@@ -79,7 +79,11 @@ type shop struct {
 }
 
 func (s *shop) D3Token() entity.MetaToken {
-	return entity.MetaToken{}
+	return entity.MetaToken{
+		Indexes: []entity.Index{
+			{Name: "name_idx", Unique: false, Columns: []string{"name"}},
+		},
+	}
 }
 
 type profile struct {
@@ -128,6 +132,9 @@ func TestCreateTables(t *testing.T) {
 		columns:    map[string]ColumnType{"id": NullInt32, "profile_uuid": String, "name": String},
 		pkColumns:  []string{"id"},
 		pkStrategy: entity.Auto,
+		indexes: []entity.Index{
+			{Name: "name_idx", Unique: false, Columns: []string{"name"}},
+		},
 	}, commands["github.com/godzie44/d3/orm/schema/shop"])
 	assert.Equal(t, &newTableCmd{
 		tableName:  "profile",

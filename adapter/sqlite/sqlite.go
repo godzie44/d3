@@ -376,6 +376,11 @@ func (s *sqliteDriver) CreateTableSql(name string, columns map[string]schema.Col
 	return sql.String()
 }
 
-func (s *sqliteDriver) CreateIndexSql(name string, table string, columns ...string) string {
-	panic("implement me")
+func (s *sqliteDriver) CreateIndexSql(name string, unique bool, table string, columns ...string) string {
+	var uniqueDef string
+	if unique {
+		uniqueDef = "UNIQUE"
+	}
+
+	return fmt.Sprintf("CREATE %s INDEX IF NOT EXISTS %s ON %s (%s);\n", uniqueDef, name, table, strings.Join(columns, ","))
 }

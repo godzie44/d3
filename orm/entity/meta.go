@@ -17,6 +17,11 @@ const (
 )
 
 type (
+	Index struct {
+		Name    string
+		Columns []string
+		Unique  bool
+	}
 	InternalTools struct {
 		ExtractField  FieldExtractor
 		SetFieldVal   FieldSetter
@@ -35,6 +40,7 @@ type MetaToken struct {
 	Tools     InternalTools
 	Tpl       interface{}
 	TableName string
+	Indexes   []Index
 }
 
 type D3Entity interface {
@@ -45,6 +51,7 @@ type MetaInfo struct {
 	Tpl        interface{}
 	EntityName Name
 	TableName  string
+	Indexes    []Index
 
 	Relations map[string]Relation
 	Fields    map[string]*FieldInfo
@@ -87,6 +94,7 @@ func NewMeta(e interface{}) (*MetaInfo, error) {
 
 	meta := &MetaInfo{
 		Tpl:         e,
+		Indexes:     e.(D3Entity).D3Token().Indexes,
 		TableName:   tableName,
 		Fields:      make(map[string]*FieldInfo),
 		Relations:   make(map[string]Relation),

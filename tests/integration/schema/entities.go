@@ -9,6 +9,7 @@ import (
 
 //d3:entity
 //d3_table:shop_m
+//d3_index:shop_name_idx(name)
 type shop struct {
 	Id      sql.NullInt32      `d3:"pk:auto"`
 	Books   *entity.Collection `d3:"one_to_many:<target_entity:book,join_on:shop_id,delete:nullable>,type:lazy"`
@@ -25,17 +26,22 @@ type profile struct {
 
 //d3:entity
 //d3_table:book_m
+//d3_index:book_name_idx(name)
+//d3_index_unique:book_isbn_idx(isbn)
 type book struct {
 	Id      sql.NullInt32      `d3:"pk:auto"`
 	Authors *entity.Collection `d3:"many_to_many:<target_entity:author,join_on:book_id,reference_on:author_id,join_table:book_author_m>,type:lazy"`
 	Name    string
+	ISBN    string
 }
 
 //d3:entity
 //d3_table:author_m
+//d3_index:author_name_idx(name, surname)
 type author struct {
-	Id   sql.NullInt32 `d3:"pk:auto"`
-	Name string
+	Id      sql.NullInt32 `d3:"pk:auto"`
+	Name    string
+	Surname string
 }
 
 //d3:entity

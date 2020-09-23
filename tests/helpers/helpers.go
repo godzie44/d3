@@ -26,9 +26,9 @@ func (d *DbAdapterWithQueryCounter) CreateTableSql(name string, columns map[stri
 	panic("not implemented")
 }
 
-func (d *DbAdapterWithQueryCounter) CreateIndexSql(name string, table1 string, columns ...string) string {
+func (d *DbAdapterWithQueryCounter) CreateIndexSql(name string, unique bool, table1 string, columns ...string) string {
 	if generator, ok := d.dbAdapter.(schema.StorageSchemaGenerator); ok {
-		return generator.CreateIndexSql(name, table1, columns...)
+		return generator.CreateIndexSql(name, unique, table1, columns...)
 	}
 	panic("not implemented")
 }
@@ -133,6 +133,7 @@ type DBTester interface {
 	SeeFour(sql string, args ...interface{}) DBTester
 	See(count int, sql string, args ...interface{}) DBTester
 	SeeTable(tableName string) DBTester
+	SeeIndex(tableName, indexName string, unique bool) DBTester
 }
 
 type PgTester struct {
@@ -180,6 +181,23 @@ func (p *PgTester) SeeTable(tableName string) DBTester {
 	return p
 }
 
+func (p *PgTester) SeeIndex(tableName, indexName string, unique bool) DBTester {
+	var tableSql = `
+SELECT i.relname, indisunique
+FROM      pg_class c
+JOIN      pg_index x ON c.oid = x.indrelid
+JOIN      pg_class i ON i.oid = x.indexrelid
+WHERE     i.relname = $1 and indisunique = $2
+`
+
+	var cnt int
+	err := p.Conn.QueryRow(context.Background(), fmt.Sprintf("SELECT count(*) cnt FROM (%s) t", tableSql), indexName, unique).Scan(&cnt)
+	assert.NoError(p.t, err)
+
+	assert.GreaterOrEqual(p.t, cnt, 1, fmt.Sprintf("index %s not found in table %s", indexName, tableName))
+	return p
+}
+
 type SqliteTester struct {
 	t    *testing.T
 	Conn *sql.DB
@@ -222,5 +240,16 @@ func (s *SqliteTester) SeeTable(tableName string) DBTester {
 	assert.NoError(s.t, err)
 
 	assert.GreaterOrEqual(s.t, cnt, 1)
+	return s
+}
+
+func (s *SqliteTester) SeeIndex(tableName, indexName string, unique bool) DBTester {
+	var tableSql = fmt.Sprintf("select * from pragma_index_list('%s') where name = $1 and `unique` = $2", tableName)
+
+	var cnt int
+	err := s.Conn.QueryRow(fmt.Sprintf("SELECT count(*) cnt FROM (%s) t", tableSql), indexName, unique).Scan(&cnt)
+	assert.NoError(s.t, err)
+
+	assert.GreaterOrEqual(s.t, cnt, 1, fmt.Sprintf("index %s not found in table %s", indexName, tableName))
 	return s
 }

@@ -3,6 +3,7 @@ package gen
 import (
 	"bytes"
 	"fmt"
+	"github.com/godzie44/d3/orm/entity"
 	"io"
 	"reflect"
 	"strings"
@@ -41,7 +42,7 @@ func (r *CodeGenerator) commonPreamble() []string {
 	}
 }
 
-func (r *CodeGenerator) Prepare(t reflect.Type, tableName string) {
+func (r *CodeGenerator) Prepare(t reflect.Type, tableName string, indexes ...entity.Index) {
 	if t.Kind() == reflect.Ptr {
 		t = t.Elem()
 	}
@@ -67,6 +68,11 @@ func ({{.receiver}} *{{.entity}}) D3Token() entity.MetaToken {
 			NewInstance: {{.receiver}}.__d3_makeInstantiator(),
 			Copy: {{.receiver}}.__d3_makeCopier(),
 		},
+		Indexes: []entity.Index{
+			{{range .indexes}}
+			{Name: "{{.Name}}", Columns: []string{ {{range .Columns}} "{{.}}", {{end}} }, Unique: {{.Unique}} },
+			{{end}}
+		},
 	}
 }
 `)
@@ -78,6 +84,7 @@ func ({{.receiver}} *{{.entity}}) D3Token() entity.MetaToken {
 		"receiver": receiverName,
 		"entity":   name,
 		"table":    tableName,
+		"indexes":  indexes,
 	}); err != nil {
 		return
 	}

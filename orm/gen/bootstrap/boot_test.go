@@ -3,6 +3,7 @@ package bootstrap
 import (
 	"bytes"
 	"github.com/godzie44/d3/d3/parser"
+	"github.com/godzie44/d3/orm/entity"
 	"github.com/stretchr/testify/assert"
 	"strings"
 	"testing"
@@ -15,6 +16,7 @@ var boot = Generator{
 		{
 			Name:      "Entity1",
 			TableName: "table1",
+			Indexes:   []entity.Index{{Name: "idx", Columns: []string{"col1", "col2"}, Unique: true}},
 		},
 		{
 			Name:      "Entity2",
@@ -59,6 +61,7 @@ import (
 	"os"
 	"reflect"
 	"github.com/godzie44/d3/orm/gen"
+	"github.com/godzie44/d3/orm/entity"
 	al "test-pkg-path"
 )
 
@@ -68,9 +71,9 @@ func main() {
 	g := gen.NewGenerator(os.Stdout, "test-pkg-path")
 	
 	
-	g.Prepare(reflect.TypeOf(al.D3_entity_Entity1(nil)), "table1")
+	g.Prepare(reflect.TypeOf(al.D3_entity_Entity1(nil)), "table1",  entity.Index{Name: "idx", Columns: []string{  "col1",  "col2",  }, Unique: true }, )
 	
-	g.Prepare(reflect.TypeOf(al.D3_entity_Entity2(nil)), "table2")
+	g.Prepare(reflect.TypeOf(al.D3_entity_Entity2(nil)), "table2", )
 	
 	g.Write()
 }`

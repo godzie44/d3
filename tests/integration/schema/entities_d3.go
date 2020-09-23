@@ -4,8 +4,8 @@ package schema
 
 import "fmt"
 import "github.com/godzie44/d3/orm/entity"
-import "time"
 import "database/sql/driver"
+import "time"
 
 func (s *shop) D3Token() entity.MetaToken {
 	return entity.MetaToken{
@@ -17,6 +17,10 @@ func (s *shop) D3Token() entity.MetaToken {
 			CompareFields: s.__d3_makeComparator(),
 			NewInstance:   s.__d3_makeInstantiator(),
 			Copy:          s.__d3_makeCopier(),
+		},
+		Indexes: []entity.Index{
+
+			{Name: "shop_name_idx", Columns: []string{"name"}, Unique: false},
 		},
 	}
 }
@@ -152,6 +156,7 @@ func (p *profile) D3Token() entity.MetaToken {
 			NewInstance:   p.__d3_makeInstantiator(),
 			Copy:          p.__d3_makeCopier(),
 		},
+		Indexes: []entity.Index{},
 	}
 }
 
@@ -263,6 +268,12 @@ func (b *book) D3Token() entity.MetaToken {
 			NewInstance:   b.__d3_makeInstantiator(),
 			Copy:          b.__d3_makeCopier(),
 		},
+		Indexes: []entity.Index{
+
+			{Name: "book_name_idx", Columns: []string{"name"}, Unique: false},
+
+			{Name: "book_isbn_idx", Columns: []string{"isbn"}, Unique: true},
+		},
 	}
 }
 
@@ -283,6 +294,9 @@ func (b *book) __d3_makeFieldExtractor() entity.FieldExtractor {
 
 		case "Name":
 			return sTyped.Name, nil
+
+		case "ISBN":
+			return sTyped.ISBN, nil
 
 		default:
 			return nil, fmt.Errorf("field %s not found", name)
@@ -309,6 +323,9 @@ func (b *book) __d3_makeFieldSetter() entity.FieldSetter {
 			return nil
 		case "Name":
 			eTyped.Name = val.(string)
+			return nil
+		case "ISBN":
+			eTyped.ISBN = val.(string)
 			return nil
 
 		case "Id":
@@ -337,6 +354,7 @@ func (b *book) __d3_makeCopier() entity.Copier {
 
 		copy.Id = srcTyped.Id
 		copy.Name = srcTyped.Name
+		copy.ISBN = srcTyped.ISBN
 
 		if srcTyped.Authors != nil {
 			copy.Authors = srcTyped.Authors.DeepCopy().(*entity.Collection)
@@ -369,6 +387,8 @@ func (b *book) __d3_makeComparator() entity.FieldComparator {
 			return e1Typed.Authors == e2Typed.Authors
 		case "Name":
 			return e1Typed.Name == e2Typed.Name
+		case "ISBN":
+			return e1Typed.ISBN == e2Typed.ISBN
 		default:
 			return false
 		}
@@ -385,6 +405,10 @@ func (a *author) D3Token() entity.MetaToken {
 			CompareFields: a.__d3_makeComparator(),
 			NewInstance:   a.__d3_makeInstantiator(),
 			Copy:          a.__d3_makeCopier(),
+		},
+		Indexes: []entity.Index{
+
+			{Name: "author_name_idx", Columns: []string{"name", "surname"}, Unique: false},
 		},
 	}
 }
@@ -403,6 +427,9 @@ func (a *author) __d3_makeFieldExtractor() entity.FieldExtractor {
 
 		case "Name":
 			return sTyped.Name, nil
+
+		case "Surname":
+			return sTyped.Surname, nil
 
 		default:
 			return nil, fmt.Errorf("field %s not found", name)
@@ -426,6 +453,9 @@ func (a *author) __d3_makeFieldSetter() entity.FieldSetter {
 		switch name {
 		case "Name":
 			eTyped.Name = val.(string)
+			return nil
+		case "Surname":
+			eTyped.Surname = val.(string)
 			return nil
 
 		case "Id":
@@ -454,6 +484,7 @@ func (a *author) __d3_makeCopier() entity.Copier {
 
 		copy.Id = srcTyped.Id
 		copy.Name = srcTyped.Name
+		copy.Surname = srcTyped.Surname
 
 		return copy
 	}
@@ -480,6 +511,8 @@ func (a *author) __d3_makeComparator() entity.FieldComparator {
 			return e1Typed.Id == e2Typed.Id
 		case "Name":
 			return e1Typed.Name == e2Typed.Name
+		case "Surname":
+			return e1Typed.Surname == e2Typed.Surname
 		default:
 			return false
 		}
@@ -497,6 +530,7 @@ func (a *allTypeStruct) D3Token() entity.MetaToken {
 			NewInstance:   a.__d3_makeInstantiator(),
 			Copy:          a.__d3_makeCopier(),
 		},
+		Indexes: []entity.Index{},
 	}
 }
 
@@ -776,6 +810,7 @@ func (e *entityWithAliases) D3Token() entity.MetaToken {
 			NewInstance:   e.__d3_makeInstantiator(),
 			Copy:          e.__d3_makeCopier(),
 		},
+		Indexes: []entity.Index{},
 	}
 }
 

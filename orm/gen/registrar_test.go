@@ -22,6 +22,9 @@ var expectedRegistrarCode = `func (r *registrarTestStruct) D3Token() entity.Meta
 			NewInstance: r.__d3_makeInstantiator(),
 			Copy: r.__d3_makeCopier(),
 		},
+		Indexes: []entity.Index{
+			
+		},
 	}
 }
 

@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"errors"
 	"fmt"
+	"github.com/godzie44/d3/orm/entity"
 	"go/ast"
 	"go/parser"
 	"go/token"
@@ -18,6 +19,8 @@ import (
 const (
 	entityAnnotation = "d3:entity"
 	tableAnnotation  = "d3_table:"
+	indexAnnotation  = "d3_index:"
+	uniqueAnnotation = "d3_index_unique:"
 )
 
 type Parser struct {
@@ -29,6 +32,7 @@ type Parser struct {
 type EntityMeta struct {
 	Name      string
 	TableName string
+	Indexes   []entity.Index
 }
 
 func (p *Parser) needProcess(comments string) bool {
@@ -47,6 +51,34 @@ func (p *Parser) extractTableName(comments string) string {
 		}
 	}
 	return ""
+}
+
+func (p *Parser) extractIndexes(comments string, annotation string) []entity.Index {
+	var result []entity.Index
+	for _, v := range strings.Split(comments, "\n") {
+		if strings.HasPrefix(v, annotation) {
+			indexDec := strings.TrimSpace(strings.TrimPrefix(v, annotation))
+
+			obIndex := strings.Index(indexDec, "(")
+			cbIndex := strings.Index(indexDec, ")")
+
+			if obIndex == -1 || cbIndex == -1 {
+				continue
+			}
+
+			cols := strings.Split(indexDec[obIndex+1:cbIndex], ",")
+			for i := range cols {
+				cols[i] = strings.TrimSpace(cols[i])
+			}
+
+			result = append(result, entity.Index{
+				Name:    indexDec[:obIndex],
+				Columns: cols,
+				Unique:  annotation == uniqueAnnotation,
+			})
+		}
+	}
+	return result
 }
 
 func (p *Parser) Visit(n ast.Node) (w ast.Visitor) {
@@ -76,6 +108,7 @@ func (p *Parser) Visit(n ast.Node) (w ast.Visitor) {
 		p.Metas = append(p.Metas, EntityMeta{
 			Name:      n.Name.String(),
 			TableName: p.extractTableName(n.Doc.Text()),
+			Indexes:   append(p.extractIndexes(n.Doc.Text(), indexAnnotation), p.extractIndexes(n.Doc.Text(), uniqueAnnotation)...),
 		})
 		return nil
 	}

@@ -184,8 +184,13 @@ func (g *pgxDriver) CreateTableSql(name string, columns map[string]schema.Column
 	return sql.String()
 }
 
-func (g *pgxDriver) CreateIndexSql(name string, table string, columns ...string) string {
-	panic("implement me")
+func (g *pgxDriver) CreateIndexSql(name string, unique bool, table string, columns ...string) string {
+	var uniqueDef string
+	if unique {
+		uniqueDef = "UNIQUE"
+	}
+
+	return fmt.Sprintf("CREATE %s INDEX IF NOT EXISTS %s ON %s (%s);\n", uniqueDef, name, table, strings.Join(columns, ","))
 }
 
 func (g *pgxDriver) BeforeQuery(fn func(query string, args ...interface{})) {

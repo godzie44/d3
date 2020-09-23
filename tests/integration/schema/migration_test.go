@@ -31,6 +31,11 @@ DROP TABLE IF EXISTS profile_m;
 DROP TABLE IF EXISTS author_m;
 DROP TABLE IF EXISTS book_m;
 DROP TABLE IF EXISTS book_author_m;
+
+DROP INDEX IF EXISTS shop_name_idx;
+DROP INDEX IF EXISTS book_name_idx;
+DROP INDEX IF EXISTS author_name_idx;
+DROP INDEX IF EXISTS book_isbn_idx;
 `))
 }
 
@@ -45,7 +50,11 @@ func (m *MigrationTestSuite) TestCreateSchema() {
 		SeeTable("profile_m").
 		SeeTable("author_m").
 		SeeTable("book_m").
-		SeeTable("book_author_m")
+		SeeTable("book_author_m").
+		SeeIndex("shop_m", "shop_name_idx", false).
+		SeeIndex("book_m", "book_name_idx", false).
+		SeeIndex("book_m", "book_isbn_idx", true).
+		SeeIndex("author_m", "author_name_idx", false)
 }
 
 func TestPGMigrationTs(t *testing.T) {
