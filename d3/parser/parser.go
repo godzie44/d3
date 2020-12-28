@@ -35,29 +35,33 @@ type EntityMeta struct {
 	Indexes   []entity.Index
 }
 
-func (p *Parser) needProcess(comments string) bool {
-	for _, v := range strings.Split(comments, "\n") {
-		if strings.HasPrefix(v, entityAnnotation) {
+func (p *Parser) needProcess(comments []*ast.Comment) bool {
+	for _, c := range comments {
+		commentText := strings.TrimLeft(c.Text, "/ ")
+		if strings.HasPrefix(commentText, entityAnnotation) {
 			return true
 		}
 	}
 	return false
 }
 
-func (p *Parser) extractTableName(comments string) string {
-	for _, v := range strings.Split(comments, "\n") {
-		if strings.HasPrefix(v, tableAnnotation) {
-			return strings.TrimSpace(strings.TrimPrefix(v, tableAnnotation))
+func (p *Parser) extractTableName(comments []*ast.Comment) string {
+	for _, c := range comments {
+		commentText := strings.TrimLeft(c.Text, "/ ")
+		if strings.HasPrefix(commentText, tableAnnotation) {
+			return strings.TrimSpace(strings.TrimPrefix(commentText, tableAnnotation))
 		}
 	}
 	return ""
 }
 
-func (p *Parser) extractIndexes(comments string, annotation string) []entity.Index {
+func (p *Parser) extractIndexes(comments []*ast.Comment, annotation string) []entity.Index {
 	var result []entity.Index
-	for _, v := range strings.Split(comments, "\n") {
-		if strings.HasPrefix(v, annotation) {
-			indexDec := strings.TrimSpace(strings.TrimPrefix(v, annotation))
+	for _, c := range comments {
+		commentText := strings.TrimLeft(c.Text, "/ ")
+
+		if strings.HasPrefix(commentText, annotation) {
+			indexDec := strings.TrimSpace(strings.TrimPrefix(commentText, annotation))
 
 			obIndex := strings.Index(indexDec, "(")
 			cbIndex := strings.Index(indexDec, ")")
@@ -90,7 +94,7 @@ func (p *Parser) Visit(n ast.Node) (w ast.Visitor) {
 		return p
 
 	case *ast.GenDecl:
-		if p.needProcess(n.Doc.Text()) {
+		if n.Doc != nil && p.needProcess(n.Doc.List) {
 			for _, nc := range n.Specs {
 				switch nct := nc.(type) {
 				case *ast.TypeSpec:
@@ -101,14 +105,14 @@ func (p *Parser) Visit(n ast.Node) (w ast.Visitor) {
 
 		return p
 	case *ast.TypeSpec:
-		if !p.needProcess(n.Doc.Text()) {
+		if n.Doc == nil || !p.needProcess(n.Doc.List) {
 			return nil
 		}
 
 		p.Metas = append(p.Metas, EntityMeta{
 			Name:      n.Name.String(),
-			TableName: p.extractTableName(n.Doc.Text()),
-			Indexes:   append(p.extractIndexes(n.Doc.Text(), indexAnnotation), p.extractIndexes(n.Doc.Text(), uniqueAnnotation)...),
+			TableName: p.extractTableName(n.Doc.List),
+			Indexes:   append(p.extractIndexes(n.Doc.List, indexAnnotation), p.extractIndexes(n.Doc.List, uniqueAnnotation)...),
 		})
 		return nil
 	}
