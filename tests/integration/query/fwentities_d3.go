@@ -16,6 +16,7 @@ func (f *fwTestEntity1) D3Token() entity.MetaToken {
 			NewInstance:   f.__d3_makeInstantiator(),
 			Copy:          f.__d3_makeCopier(),
 		},
+		Indexes: []entity.Index{},
 	}
 }
 
@@ -133,6 +134,7 @@ func (f *fwTestEntity2) D3Token() entity.MetaToken {
 			NewInstance:   f.__d3_makeInstantiator(),
 			Copy:          f.__d3_makeCopier(),
 		},
+		Indexes: []entity.Index{},
 	}
 }
 
@@ -250,6 +252,7 @@ func (f *fwTestEntity3) D3Token() entity.MetaToken {
 			NewInstance:   f.__d3_makeInstantiator(),
 			Copy:          f.__d3_makeCopier(),
 		},
+		Indexes: []entity.Index{},
 	}
 }
 
@@ -367,6 +370,7 @@ func (f *fwTestEntity4) D3Token() entity.MetaToken {
 			NewInstance:   f.__d3_makeInstantiator(),
 			Copy:          f.__d3_makeCopier(),
 		},
+		Indexes: []entity.Index{},
 	}
 }
 

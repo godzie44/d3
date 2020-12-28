@@ -16,6 +16,7 @@ func (s *ShopLR) D3Token() entity.MetaToken {
 			NewInstance:   s.__d3_makeInstantiator(),
 			Copy:          s.__d3_makeCopier(),
 		},
+		Indexes: []entity.Index{},
 	}
 }
 
@@ -133,6 +134,7 @@ func (b *BookLR) D3Token() entity.MetaToken {
 			NewInstance:   b.__d3_makeInstantiator(),
 			Copy:          b.__d3_makeCopier(),
 		},
+		Indexes: []entity.Index{},
 	}
 }
 
@@ -238,6 +240,7 @@ func (s *ShopER) D3Token() entity.MetaToken {
 			NewInstance:   s.__d3_makeInstantiator(),
 			Copy:          s.__d3_makeCopier(),
 		},
+		Indexes: []entity.Index{},
 	}
 }
 
@@ -355,6 +358,7 @@ func (b *BookER) D3Token() entity.MetaToken {
 			NewInstance:   b.__d3_makeInstantiator(),
 			Copy:          b.__d3_makeCopier(),
 		},
+		Indexes: []entity.Index{},
 	}
 }
 
@@ -472,6 +476,7 @@ func (d *DiscountER) D3Token() entity.MetaToken {
 			NewInstance:   d.__d3_makeInstantiator(),
 			Copy:          d.__d3_makeCopier(),
 		},
+		Indexes: []entity.Index{},
 	}
 }
 

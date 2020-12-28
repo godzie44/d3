@@ -17,6 +17,7 @@ func (s *ShopLL) D3Token() entity.MetaToken {
 			NewInstance:   s.__d3_makeInstantiator(),
 			Copy:          s.__d3_makeCopier(),
 		},
+		Indexes: []entity.Index{},
 	}
 }
 
@@ -140,6 +141,7 @@ func (p *ProfileLL) D3Token() entity.MetaToken {
 			NewInstance:   p.__d3_makeInstantiator(),
 			Copy:          p.__d3_makeCopier(),
 		},
+		Indexes: []entity.Index{},
 	}
 }
 
@@ -257,6 +259,7 @@ func (p *PhotoLL) D3Token() entity.MetaToken {
 			NewInstance:   p.__d3_makeInstantiator(),
 			Copy:          p.__d3_makeCopier(),
 		},
+		Indexes: []entity.Index{},
 	}
 }
 
@@ -362,6 +365,7 @@ func (s *ShopEL) D3Token() entity.MetaToken {
 			NewInstance:   s.__d3_makeInstantiator(),
 			Copy:          s.__d3_makeCopier(),
 		},
+		Indexes: []entity.Index{},
 	}
 }
 

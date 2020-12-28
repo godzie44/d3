@@ -16,6 +16,7 @@ func (b *BookLL) D3Token() entity.MetaToken {
 			NewInstance:   b.__d3_makeInstantiator(),
 			Copy:          b.__d3_makeCopier(),
 		},
+		Indexes: []entity.Index{},
 	}
 }
 
@@ -133,6 +134,7 @@ func (a *AuthorLL) D3Token() entity.MetaToken {
 			NewInstance:   a.__d3_makeInstantiator(),
 			Copy:          a.__d3_makeCopier(),
 		},
+		Indexes: []entity.Index{},
 	}
 }
 
@@ -238,6 +240,7 @@ func (b *BookEL) D3Token() entity.MetaToken {
 			NewInstance:   b.__d3_makeInstantiator(),
 			Copy:          b.__d3_makeCopier(),
 		},
+		Indexes: []entity.Index{},
 	}
 }
 
@@ -355,6 +358,7 @@ func (a *AuthorEL) D3Token() entity.MetaToken {
 			NewInstance:   a.__d3_makeInstantiator(),
 			Copy:          a.__d3_makeCopier(),
 		},
+		Indexes: []entity.Index{},
 	}
 }
 
@@ -472,6 +476,7 @@ func (r *Redactor) D3Token() entity.MetaToken {
 			NewInstance:   r.__d3_makeInstantiator(),
 			Copy:          r.__d3_makeCopier(),
 		},
+		Indexes: []entity.Index{},
 	}
 }
 

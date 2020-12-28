@@ -2,9 +2,9 @@
 
 package query
 
-import "fmt"
 import "github.com/godzie44/d3/orm/entity"
 import "database/sql/driver"
+import "fmt"
 
 func (u *User) D3Token() entity.MetaToken {
 	return entity.MetaToken{
@@ -17,6 +17,7 @@ func (u *User) D3Token() entity.MetaToken {
 			NewInstance:   u.__d3_makeInstantiator(),
 			Copy:          u.__d3_makeCopier(),
 		},
+		Indexes: []entity.Index{},
 	}
 }
 
@@ -149,6 +150,7 @@ func (p *Photo) D3Token() entity.MetaToken {
 			NewInstance:   p.__d3_makeInstantiator(),
 			Copy:          p.__d3_makeCopier(),
 		},
+		Indexes: []entity.Index{},
 	}
 }
 

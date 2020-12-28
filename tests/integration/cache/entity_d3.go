@@ -16,6 +16,7 @@ func (e *entity1) D3Token() entity.MetaToken {
 			NewInstance:   e.__d3_makeInstantiator(),
 			Copy:          e.__d3_makeCopier(),
 		},
+		Indexes: []entity.Index{},
 	}
 }
 
@@ -133,6 +134,7 @@ func (e *entity2) D3Token() entity.MetaToken {
 			NewInstance:   e.__d3_makeInstantiator(),
 			Copy:          e.__d3_makeCopier(),
 		},
+		Indexes: []entity.Index{},
 	}
 }
 

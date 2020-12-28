@@ -17,6 +17,7 @@ func (s *Shop) D3Token() entity.MetaToken {
 			NewInstance:   s.__d3_makeInstantiator(),
 			Copy:          s.__d3_makeCopier(),
 		},
+		Indexes: []entity.Index{},
 	}
 }
 
@@ -151,6 +152,7 @@ func (s *ShopProfile) D3Token() entity.MetaToken {
 			NewInstance:   s.__d3_makeInstantiator(),
 			Copy:          s.__d3_makeCopier(),
 		},
+		Indexes: []entity.Index{},
 	}
 }
 
@@ -262,6 +264,7 @@ func (b *Book) D3Token() entity.MetaToken {
 			NewInstance:   b.__d3_makeInstantiator(),
 			Copy:          b.__d3_makeCopier(),
 		},
+		Indexes: []entity.Index{},
 	}
 }
 
@@ -385,6 +388,7 @@ func (a *Author) D3Token() entity.MetaToken {
 			NewInstance:   a.__d3_makeInstantiator(),
 			Copy:          a.__d3_makeCopier(),
 		},
+		Indexes: []entity.Index{},
 	}
 }
 

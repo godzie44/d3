@@ -17,6 +17,7 @@ func (s *ShopCirc) D3Token() entity.MetaToken {
 			NewInstance:   s.__d3_makeInstantiator(),
 			Copy:          s.__d3_makeCopier(),
 		},
+		Indexes: []entity.Index{},
 	}
 }
 
@@ -184,6 +185,7 @@ func (s *ShopProfileCirc) D3Token() entity.MetaToken {
 			NewInstance:   s.__d3_makeInstantiator(),
 			Copy:          s.__d3_makeCopier(),
 		},
+		Indexes: []entity.Index{},
 	}
 }
 
@@ -307,6 +309,7 @@ func (s *SellerCirc) D3Token() entity.MetaToken {
 			NewInstance:   s.__d3_makeInstantiator(),
 			Copy:          s.__d3_makeCopier(),
 		},
+		Indexes: []entity.Index{},
 	}
 }
 
