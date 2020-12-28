@@ -3,6 +3,7 @@ on:
   push:
     branches:
       - master
+      - main
   pull_request:
 jobs:
   golangci:
@@ -11,6 +12,6 @@ jobs:
     steps:
       - uses: actions/checkout@v2
       - name: golangci-lint
-        uses: golangci/golangci-lint-action@v0.2.0
+        uses: golangci/golangci-lint-action@v2
         with:
-          version: v1.26
+          version: v1.29
