@@ -55,13 +55,28 @@ func (o *Orm) MakeSession() *session {
 // MakeRepository - create new repository for entity.
 //
 // entity - entity to store in repository.
-func (o *Orm) MakeRepository(entity interface{}) (*Repository, error) {
+//
+//deprecated
+//func (o *Orm) MakeRepository(entity interface{}) (*Repository, error) {
+//	entityMeta, err := o.metaRegistry.GetMeta(entity)
+//	if err != nil {
+//		return nil, fmt.Errorf("repository: %w", err)
+//	}
+//
+//	return &Repository{
+//		entityMeta: entityMeta,
+//	}, nil
+//}
+
+// MakeRepository - create new repository for entity T.
+func MakeRepository[T d3Entity.D3Entity](o *Orm) (*Repository[T], error) {
+	var entity T
 	entityMeta, err := o.metaRegistry.GetMeta(entity)
 	if err != nil {
 		return nil, fmt.Errorf("repository: %w", err)
 	}
 
-	return &Repository{
+	return &Repository[T]{
 		entityMeta: entityMeta,
 	}, nil
 }

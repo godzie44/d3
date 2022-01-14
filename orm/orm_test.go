@@ -34,3 +34,12 @@ func TestRegisterEntities(t *testing.T) {
 
 	assert.NoError(t, orm2.Register((*testEntity1)(nil), &testEntity2{}))
 }
+
+func TestMakeRepository(t *testing.T) {
+	orm := New(nil)
+	assert.NoError(t, orm.Register(&testEntity1{}, &testEntity2{}))
+
+	repo, err := MakeRepository[*testEntity1](orm)
+	assert.NoError(t, err)
+	assert.NotNil(t, repo)
+}
